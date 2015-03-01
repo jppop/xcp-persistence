@@ -1,6 +1,7 @@
-package org.pockito.xcp.repository.impl;
+package org.pockito.xcp.entitymanager;
 
 import org.junit.Test;
+import org.pockito.xcp.entitymanager.DctmDriverImpl;
 import org.pockito.xcp.repository.DctmDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

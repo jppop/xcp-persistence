@@ -1,4 +1,4 @@
-package org.pockito.xcp.repository.impl;
+package org.pockito.xcp.entitymanager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final IDfSessionManager getSessionManager() throws DmsException {
 		IDfSessionManager manager;
 		try {
-			manager = Repository.getInstance().getSessionManager();
+			manager = DmsRepository.getInstance().getSessionManager();
 		} catch (DfException e) {
 			throw new DmsException("failed to get the session manager",  e);
 		}
@@ -38,7 +38,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final void setCredendatials(final String repository, final String username,
 			final String password) {
 		try {
-			Repository.getInstance().setIdentity(repository, username, password);
+			DmsRepository.getInstance().setIdentity(repository, username, password);
 			setRepository(repository);
 		} catch (DfException e) {
 			throw new DmsException("failed to set credentials",  e);
@@ -49,7 +49,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final IDfSession getSession() {
 		IDfSession session;
 		try {
-			session = Repository.getInstance().getSession(getRepository());
+			session = DmsRepository.getInstance().getSession(getRepository());
 		} catch (DfException e) {
 			throw new DmsException("failed to get the session manager",  e);
 		}
@@ -58,7 +58,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public final void releaseSession(final IDfSession session) {
-		Repository.getInstance().releaseSession(session);
+		DmsRepository.getInstance().releaseSession(session);
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public abstract class PersistentProperty {
 			if (Collection.class.isAssignableFrom(rawClass)) {
 				throw new IllegalAccessException("property is a collection");
 			}
-			if (rawClass.isAssignableFrom(boolean.class)) {
+			if (rawClass.isAssignableFrom(Boolean.class)) {
 				getSetter().invoke(target, value == null ? false : value.asBoolean());
 			} else if (rawClass.isAssignableFrom(int.class)) {
 				getSetter().invoke(target, value == null ? -1 : value.asInteger());
@@ -77,7 +77,7 @@ public abstract class PersistentProperty {
 		Class<?> rawClass = getPropertyClass();
 		Object obj = null;
 		if (value != null) {
-			if (rawClass.isAssignableFrom(boolean.class)) {
+			if (rawClass.isAssignableFrom(Boolean.class)) {
 				obj = value.asBoolean();
 			} else if (rawClass.isAssignableFrom(int.class)) {
 				obj = value.asInteger();

@@ -38,7 +38,7 @@
 	
 	<!-- Errors in console -->
 	<root>
-		<priority value="error" />
+		<priority value="debug" />
 <!-- 		<appender-ref ref="console" /> -->
 		<appender-ref ref="debug-file" />
 	</root>

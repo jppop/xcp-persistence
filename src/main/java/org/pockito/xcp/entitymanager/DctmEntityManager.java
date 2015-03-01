@@ -17,17 +17,17 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.IDfValue;
 
-public class DmsEntityManagerDctm implements DmsEntityManager {
+public class DctmEntityManager implements DmsEntityManager {
 
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger LOGGER = LoggerFactory.getLogger(DctmEntityManager.class);
 	
-	private DmsEntityManagerFactoryImpl factory = null;
+	private DctmEntityManagerFactory factory = null;
 	private DctmDriver dctmDriver = null;
 	private Map<String, ?> properties;
 	private String repository;
 
-	public DmsEntityManagerDctm(
-			DmsEntityManagerFactoryImpl dmsEntityManagerFactoryImpl,
+	public DctmEntityManager(
+			DctmEntityManagerFactory dmsEntityManagerFactoryImpl,
 			Map<String, ?> map,
 			DctmDriver dctmDriver) {
 		this.factory = dmsEntityManagerFactoryImpl;
@@ -53,13 +53,15 @@ public class DmsEntityManagerDctm implements DmsEntityManager {
 			
 			IDfPersistentObject dmsObj = getDmsObj(dfSession, ai, primaryKey);
 			if (dmsObj != null) {
-				logger.debug("Found dms object {}", primaryKey.toString());
+				
+				LOGGER.debug("Found dms object {}", primaryKey.toString());
 				
 				newInstance = entityClass.newInstance();
 
 				Collection<PersistentProperty> persistentProperties = ai
 						.getPersistentProperties();
 				for (PersistentProperty field : persistentProperties) {
+					LOGGER.debug("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
 					if (field.isRepeating()) {
 						List<Object> values = getRepeatingValues(dmsObj, field);
 						field.setProperty(newInstance, values);
@@ -105,7 +107,7 @@ public class DmsEntityManagerDctm implements DmsEntityManager {
 			}
 			if (dmsObj == null) {
 				dmsObj = dfSession.newObject(ai.getDmsType());
-				logger.debug("created new object: {}", dmsObj.getObjectId().toString());
+				LOGGER.debug("created new object: {}", dmsObj.getObjectId().toString());
 			}
 			
 			for (PersistentProperty field : ai.getPersistentProperties()) {
@@ -167,7 +169,7 @@ public class DmsEntityManagerDctm implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	protected DmsEntityManagerFactoryImpl factory() {
+	protected DctmEntityManagerFactory factory() {
 		return factory;
 	}
 

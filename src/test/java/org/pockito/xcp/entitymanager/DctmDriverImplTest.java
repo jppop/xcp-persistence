@@ -1,5 +1,6 @@
 package org.pockito.xcp.entitymanager;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.pockito.xcp.entitymanager.DctmDriverImpl;
 import org.pockito.xcp.repository.DctmDriver;
@@ -11,15 +12,21 @@ import com.documentum.fc.client.IDfSession;
 public class DctmDriverImplTest {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DctmDriverImplTest.class);
-	@Test
+	
+	@Ignore
 	public final void test() {
 		
 		LOGGER.info("Hello");
-		DctmDriver driver = new DctmDriverImpl();
-		driver.setCredendatials("devbox", "dmadmin", "dmadmin");
-		IDfSession session = driver.getSession();
 		
-		driver.releaseSession(session);
+		LOGGER.warn("Watch for the step!");
+		
+		final Logger audit = LoggerFactory.getLogger("org.pockito.xcp.audit");
+		audit.info("Task added to the repository");
+//		DctmDriver driver = new DctmDriverImpl();
+//		driver.setCredendatials("devbox", "dmadmin", "dmadmin");
+//		IDfSession session = driver.getSession();
+//		
+//		driver.releaseSession(session);
 		
 	}
 

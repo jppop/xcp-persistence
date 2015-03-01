@@ -13,7 +13,7 @@ import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsEntityManagerFactory;
 
-public class DmsEntityManagerFactoryImpl implements DmsEntityManagerFactory {
+public class DctmEntityManagerFactory implements DmsEntityManagerFactory {
 
 	/**
 	 * Stores annotation info about our entities for easy retrieval when needed
@@ -23,11 +23,15 @@ public class DmsEntityManagerFactoryImpl implements DmsEntityManagerFactory {
 	private String persistenceUnitName;
 	private Map<String, ?> props;
 
-	public DmsEntityManagerFactoryImpl(String persistenceUnitName) {
+	public DctmEntityManagerFactory(String persistenceUnitName) {
 		this(persistenceUnitName, null);
 	}
 
-	public DmsEntityManagerFactoryImpl(String persistenceUnitName,
+	public DctmEntityManagerFactory(Map<String, ?> props) {
+		this("dctm", props);
+	}
+
+	public DctmEntityManagerFactory(String persistenceUnitName,
 			Map<String, ?> props) {
 		this.persistenceUnitName = persistenceUnitName;
 		this.props = props;
@@ -52,7 +56,7 @@ public class DmsEntityManagerFactoryImpl implements DmsEntityManagerFactory {
 			
 			// set single identity for all docbases
 			dctmDriver.setCredendatials(repository, username, password);
-			return new DmsEntityManagerDctm(this, map, dctmDriver);
+			return new DctmEntityManager(this, map, dctmDriver);
 			
 		} catch (Exception e) {
 			throw new XcpPersistenceException(e);

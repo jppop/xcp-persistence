@@ -7,7 +7,6 @@ import java.util.Hashtable;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.pockito.xcp.repository.DmsException;
 
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
@@ -23,9 +22,9 @@ import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
 
-public class Repository {
+public final class Repository {
 
-	static final Logger _logger = Logger.getLogger(Repository.class);
+	static final Logger LOGGER = Logger.getLogger(Repository.class);
 
 	// hide constructor (avoid multiple instantiation).
 	private Repository() {
@@ -33,7 +32,9 @@ public class Repository {
 	}
 
 	static class InstanceHolder {
+		//CHECKSTYLE:OFF
 		static Repository instance = new Repository();
+		//CHECKSTYLE:ON
 	}
 
 	public static Repository getInstance() {
@@ -52,10 +53,10 @@ public class Repository {
 	 * @param password
 	 * @return
 	 * @throws DmsException
-	 * @throws DfException 
+	 * @throws DfException
 	 */
-	public IDfSession getSession(String repository, String username,
-			String password) throws DfException {
+	public IDfSession getSession(final String repository, final String username,
+			final String password) throws DfException {
 		IDfLoginInfo li = new DfLoginInfo();
 		li.setUser(username);
 		li.setPassword(password);
@@ -66,7 +67,7 @@ public class Repository {
 		dfSession = client.newSession(repository, li);
 		return dfSession;
 	}
-	
+
 	/**
 	 * Gets the session manager.
 	 * 
@@ -74,14 +75,14 @@ public class Repository {
 	 * @throws DfException
 	 */
 	public IDfSessionManager getSessionManager() throws DfException {
-		if (_sessMgr == null) {
+		if (sessMgr == null) {
 			synchronized (lockSessionMgr) {
-				if (_sessMgr == null) {
-					_sessMgr = createSessionManager();
+				if (sessMgr == null) {
+					sessMgr = createSessionManager();
 				}
 			}
 		}
-		return _sessMgr;
+		return sessMgr;
 	}
 
 	/**
@@ -101,10 +102,10 @@ public class Repository {
 	 * @param alias
 	 * @return - the resolved alias or the alias it self if no alias is found.
 	 */
-	public String resolveRepositoryAlias(String alias) {
+	public String resolveRepositoryAlias(final String alias) {
 		String value = alias;
-		if (_reposAliases.containsKey(alias)) {
-			value = (String) _reposAliases.get(alias);
+		if (reposAliases.containsKey(alias)) {
+			value = (String) reposAliases.get(alias);
 		}
 		return value;
 	}
@@ -119,8 +120,8 @@ public class Repository {
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession getManagedSession(String repository, String username,
-			String password) throws DfException {
+	public IDfSession getManagedSession(final String repository, final String username,
+			final String password) throws DfException {
 
 		IDfClientX clientX = new DfClientX();
 
@@ -158,8 +159,8 @@ public class Repository {
 		return dfSession;
 	}
 
-	public IDfLoginInfo setIdentity(String repository, String username,
-			String password) throws DfException {
+	public IDfLoginInfo setIdentity(final String repository, final String username,
+			final String password) throws DfException {
 		IDfClientX clientX = new DfClientX();
 
 		IDfLoginInfo li = clientX.getLoginInfo();
@@ -169,7 +170,7 @@ public class Repository {
 
 		// WBD-308 - use aliases for repository names
 		String realRepo = resolveRepositoryAlias(repository);
-		
+
 		IDfSessionManager sessMgr = getSessionManager();
 
 		synchronized (lockSessionMgr) {
@@ -181,7 +182,7 @@ public class Repository {
 
 		return li;
 	}
-	
+
 	/**
 	 * Gets a session for the repository using the current identity.
 	 * 
@@ -189,7 +190,7 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public IDfSession getSession(String repository) throws DfException {
+	public IDfSession getSession(final String repository) throws DfException {
 		return getSessionManager().getSession(repository);
 	}
 
@@ -202,14 +203,14 @@ public class Repository {
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession getManagedSession(String repository, String username)
+	public IDfSession getManagedSession(final String repository, final String username)
 			throws DfException {
 
 		String ticket = getLoginTicketForUser(repository, username);
 		return getManagedSession(repository, username, ticket);
 	}
 
-	public IDfSession getManagedSessionForOperator(String repository)
+	public IDfSession getManagedSessionForOperator(final String repository)
 			throws DfException {
 		return getManagedSession(repository, getOperatorName(),
 				getOperatorPassword());
@@ -224,14 +225,14 @@ public class Repository {
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession newManagedSession(String repository, String username,
-			String password) throws DfException {
+	public IDfSession newManagedSession(final String repository, final String username,
+			final String password) throws DfException {
 		return newManagedSession(getSessionManager(), repository, username,
 				password);
 	}
 
-	public IDfSession newManagedSession(IDfSessionManager sessMgr,
-			String repository, String username, String password)
+	public IDfSession newManagedSession(final IDfSessionManager sessMgr,
+			final String repository, final String username, final String password)
 			throws DfException {
 
 		IDfClientX clientX = new DfClientX();
@@ -266,14 +267,14 @@ public class Repository {
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession newManagedSession(String repository, String username)
+	public IDfSession newManagedSession(final String repository, final String username)
 			throws DfException {
 
 		String ticket = getLoginTicketForUser(repository, username);
 		return newManagedSession(repository, username, ticket);
 	}
 
-	public IDfSession newManagedSessionForOperator(String repository)
+	public IDfSession newManagedSessionForOperator(final String repository)
 			throws DfException {
 		return newManagedSession(repository, getOperatorName(),
 				getOperatorPassword());
@@ -284,7 +285,7 @@ public class Repository {
 	 * 
 	 * @param dfSession
 	 */
-	public void releaseSession(IDfSession dfSession) {
+	public void releaseSession(final IDfSession dfSession) {
 		try {
 			if (dfSession != null) {
 				IDfSessionManager sMgr = dfSession.getSessionManager();
@@ -307,7 +308,7 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public IDfSession getPrivilegedSession(String repository)
+	public IDfSession getPrivilegedSession(final String repository)
 			throws DfException {
 		IDfSession dfSession = null;
 		try {
@@ -344,7 +345,7 @@ public class Repository {
 	 * 
 	 * @param dfSession
 	 */
-	public void releasePrivilegedSession(IDfSession dfSession) {
+	public void releasePrivilegedSession(final IDfSession dfSession) {
 		if (dfSession != null) {
 			try {
 				dfSession.disconnect();
@@ -362,7 +363,7 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public String getLoginTicketForUser(String repository, String username)
+	public String getLoginTicketForUser(final String repository, final String username)
 			throws DfException {
 		String ticket = null;
 		// WBD-308 - use aliases for repository names
@@ -407,7 +408,7 @@ public class Repository {
 		return docbroker;
 	}
 
-	public void setDocbroker(String docbroker) {
+	public void setDocbroker(final String docbroker) {
 		if (docbroker == null || docbroker.trim().length() == 0
 				|| "_default_".equals(docbroker.trim())) {
 			Repository.docbroker = null;
@@ -420,7 +421,7 @@ public class Repository {
 		return port;
 	}
 
-	public void setPort(String port) {
+	public void setPort(final String port) {
 		if (port == null || port.trim().length() == 0
 				|| "_default_".equals(port.trim())) {
 			Repository.port = null;
@@ -433,7 +434,7 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public void setDocbase(String docbase) {
+	public void setDocbase(final String docbase) {
 		this.repositoryName = docbase;
 	}
 
@@ -441,7 +442,7 @@ public class Repository {
 		return suUsername;
 	}
 
-	public void setSuUsername(String suUsername) {
+	public void setSuUsername(final String suUsername) {
 		this.suUsername = suUsername;
 	}
 
@@ -449,7 +450,7 @@ public class Repository {
 		return suPassword;
 	}
 
-	public void setSuPassword(String suPassword) {
+	public void setSuPassword(final String suPassword) {
 		this.suPassword = suPassword;
 	}
 
@@ -457,7 +458,7 @@ public class Repository {
 		return operatorName;
 	}
 
-	public void setOperatorName(String operatorName) {
+	public void setOperatorName(final String operatorName) {
 		this.operatorName = operatorName;
 	}
 
@@ -465,7 +466,7 @@ public class Repository {
 		return operatorPassword;
 	}
 
-	public void setOperatorPassword(String operatorPassword) {
+	public void setOperatorPassword(final String operatorPassword) {
 		this.operatorPassword = operatorPassword;
 	}
 
@@ -473,7 +474,7 @@ public class Repository {
 		return repositoryName;
 	}
 
-	public void setRepositoryName(String repositoryName) {
+	public void setRepositoryName(final String repositoryName) {
 		this.repositoryName = repositoryName;
 	}
 
@@ -491,7 +492,7 @@ public class Repository {
 				docbaseName = getDocbaseNameFromId(objectId);
 			}
 		} catch (DfException ignore) {
-			_logger.debug(
+			LOGGER.debug(
 					"failed to retrieve the docbase name from the object id",
 					ignore);
 		}
@@ -539,7 +540,7 @@ public class Repository {
 	 * @return
 	 */
 	public static boolean isObjectId(final String anObjectId,
-			String repository, int type) {
+			final String repository, final int type) {
 		Boolean isAnId = null;
 		try {
 			final IDfId objectId = new DfId(anObjectId);
@@ -562,14 +563,14 @@ public class Repository {
 				isAnId = Boolean.FALSE;
 			}
 		} catch (DfException ignore) {
-			_logger.debug(
+			LOGGER.debug(
 					"failed to retrieve the docbase name from the object id",
 					ignore);
 		}
 		return isAnId.booleanValue();
 	}
 
-	private Hashtable<String, String> _reposAliases = new Hashtable<String, String>();
+	private Hashtable<String, String> reposAliases = new Hashtable<String, String>();
 
 	private void loadProperties() {
 
@@ -606,15 +607,15 @@ public class Repository {
 								.getProperty("repository.alias.value."
 										+ indexKey);
 						if (name != null && value != null) {
-							_reposAliases.put(name, value);
+							reposAliases.put(name, value);
 						}
 					}
 				} catch (NumberFormatException ignore) {
-					_logger.debug("invalid aliases count", ignore);
+					LOGGER.debug("invalid aliases count", ignore);
 				}
 			}
 		} catch (IOException ignore) {
-			_logger.debug("failed to load default config values", ignore);
+			LOGGER.debug("failed to load default config values", ignore);
 		}
 
 	}
@@ -626,7 +627,7 @@ public class Repository {
 	private String suPassword;
 	private String operatorName;
 	private String operatorPassword;
-	private IDfSessionManager _sessMgr = null;
+	private IDfSessionManager sessMgr = null;
 	private String repositoryName;
 
 }

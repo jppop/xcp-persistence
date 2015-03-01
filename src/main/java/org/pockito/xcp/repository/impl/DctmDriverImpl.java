@@ -19,12 +19,12 @@ import com.documentum.fc.common.IDfId;
 
 public class DctmDriverImpl implements DctmDriver {
 
-	private static final Logger logger = LoggerFactory.getLogger(DctmDriver.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DctmDriver.class);
 	
 	private String repository = null;
 	
 	@Override
-	public IDfSessionManager getSessionManager() throws DmsException {
+	public final IDfSessionManager getSessionManager() throws DmsException {
 		IDfSessionManager manager;
 		try {
 			manager = Repository.getInstance().getSessionManager();
@@ -35,8 +35,8 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public void setCredendatials(String repository, String username,
-			String password) {
+	public final void setCredendatials(final String repository, final String username,
+			final String password) {
 		try {
 			Repository.getInstance().setIdentity(repository, username, password);
 			setRepository(repository);
@@ -46,7 +46,7 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public IDfSession getSession() {
+	public final IDfSession getSession() {
 		IDfSession session;
 		try {
 			session = Repository.getInstance().getSession(getRepository());
@@ -57,17 +57,17 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public void releaseSession(IDfSession session) {
+	public final void releaseSession(final IDfSession session) {
 		Repository.getInstance().releaseSession(session);
 	}
 
 	@Override
-	public IDfQuery createQuery() {
+	public final IDfQuery createQuery() {
 		return new DfClientX().getQuery();
 	}
 
 	@Override
-	public List<IDfId> getObjectsByQuery(IDfSession session, String query)
+	public final List<IDfId> getObjectsByQuery(final IDfSession session, final String query)
 			throws DmsException {
 		
 		List<IDfId> results = new ArrayList<IDfId>();
@@ -80,20 +80,22 @@ public class DctmDriverImpl implements DctmDriver {
 				results.add(col.getId("r_object_id"));
 
 			}
-		} catch(DfException e) {
+		} catch (DfException e) {
 			throw new DmsException("Failed to query the database using: " + query, e);
 		} finally {
 			try {
-				if (col != null) col.close();
+				if (col != null) {
+					col.close();
+				}
 			} catch (DfException ignore) {
-				logger.error("failed to close a collection", ignore);
+				LOGGER.error("failed to close a collection", ignore);
 			}
 		}
 		return results;
 	}
 
 	@Override
-	public int getCountOfObjects(IDfSession session, String query)
+	public final int getCountOfObjects(final IDfSession session, final String query)
 			throws DmsException {
 		
 		int count = -1;
@@ -110,19 +112,21 @@ public class DctmDriverImpl implements DctmDriver {
 			throw new DmsException("Failed to query the database using: " + query, e);
 		} finally {
 			try {
-				if (col != null) col.close();
+				if (col != null) {
+					col.close();
+				}
 			} catch (DfException ignore) {
-				logger.error("failed to close a collection", ignore);
+				LOGGER.error("failed to close a collection", ignore);
 			}
 		}
 		return count;
 	}
 
-	public String getRepository() {
+	public final String getRepository() {
 		return repository;
 	}
 
-	public void setRepository(String repository) {
+	public final void setRepository(final String repository) {
 		this.repository = repository;
 	}
 

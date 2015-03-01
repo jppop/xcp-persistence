@@ -11,15 +11,15 @@ public class DmsException extends RuntimeException {
 		super();
 	}
 
-	public DmsException(String message, Throwable cause) {
+	public DmsException(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 
-	public DmsException(String message) {
+	public DmsException(final String message) {
 		super(message);
 	}
 
-	public DmsException(Throwable cause) {
+	public DmsException(final Throwable cause) {
 		super(cause);
 	}
 	

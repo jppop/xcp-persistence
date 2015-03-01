@@ -10,32 +10,32 @@ import org.pockito.xcp.query.FolderPath;
 public interface XcpRepository {
 
 	// basic CRUD operations
-    public void create(Object entity);
-    public void create(Object entity, FolderPath folder);
-	public <T> T find(Class<T> entityClass, SystemId primaryKey);
-    public void update(Object entity);
-    public void delete(Object entity);
+    void create(Object entity);
+    void create(Object entity, FolderPath folder);
+	<T> T find(Class<T> entityClass, SystemId primaryKey);
+    void update(Object entity);
+    void delete(Object entity);
 
-    public <T> List<T> query(DqlSpecification<T> spec);
-    public <T> int query(DqlCountSpecification<T> spec);
-    public <T> List<T> query(Class<T> entity, BasicSpecification query);
-    public <P, C> List<C> findChildren(Object entity, Relation<P, C> relation);
-    public <P, C> List<P> findParents(Object entity, Relation<P, C> relation);
+    <T> List<T> query(DqlSpecification<T> spec);
+    <T> int query(DqlCountSpecification<T> spec);
+    <T> List<T> query(Class<T> entity, BasicSpecification query);
+    <P, C> List<C> findChildren(Object entity, Relation<P, C> relation);
+    <P, C> List<P> findParents(Object entity, Relation<P, C> relation);
     
-    public XcpRepository within(Transaction transaction);
+    XcpRepository within(Transaction transaction);
 
-    public XcpRepository link(Object entity);
-    public XcpRepository to(Object entity);
-    public <P, C> XcpRepository with(Relation<P, C> relation);
+    XcpRepository link(Object entity);
+    XcpRepository to(Object entity);
+    <P, C> XcpRepository with(Relation<P, C> relation);
     
-    public XcpRepository copy(Object entity);
-    public XcpRepository move(Object entity);
-    public XcpRepository to(FolderPath folder);
-    public FolderPath locate(Object entity);
-    public List<FolderPath> locateAll(Object entity);
+    XcpRepository copy(Object entity);
+    XcpRepository move(Object entity);
+    XcpRepository to(FolderPath folder);
+    FolderPath locate(Object entity);
+    List<FolderPath> locateAll(Object entity);
 
-    public <P, C> void relate(Object parent, Object child, Relation<P, C> relation);
-    public void link(Object parent, FolderPath folder);
-    public void unlink(Object parent, FolderPath folder);
+    <P, C> void relate(Object parent, Object child, Relation<P, C> relation);
+    void link(Object parent, FolderPath folder);
+    void unlink(Object parent, FolderPath folder);
     
 }

@@ -9,11 +9,11 @@ import com.documentum.fc.client.IDfSession;
 
 public class DctmDriverImplTest {
 
-	private static final Logger logger = LoggerFactory.getLogger(DctmDriverImplTest.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DctmDriverImplTest.class);
 	@Test
-	public void test() {
+	public final void test() {
 		
-		logger.info("Hello");
+		LOGGER.info("Hello");
 		DctmDriver driver = new DctmDriverImpl();
 		driver.setCredendatials("devbox", "dmadmin", "dmadmin");
 		IDfSession session = driver.getSession();

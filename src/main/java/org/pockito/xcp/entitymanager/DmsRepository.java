@@ -1,4 +1,4 @@
-package org.pockito.xcp.repository.impl;
+package org.pockito.xcp.entitymanager;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,27 +22,27 @@ import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
 
-public final class Repository {
+public final class DmsRepository {
 
-	static final Logger LOGGER = Logger.getLogger(Repository.class);
+	static final Logger LOGGER = Logger.getLogger(DmsRepository.class);
 
 	// hide constructor (avoid multiple instantiation).
-	private Repository() {
+	private DmsRepository() {
 		loadProperties();
 	}
 
 	static class InstanceHolder {
 		//CHECKSTYLE:OFF
-		static Repository instance = new Repository();
+		static DmsRepository instance = new DmsRepository();
 		//CHECKSTYLE:ON
 	}
 
-	public static Repository getInstance() {
+	public static DmsRepository getInstance() {
 		return InstanceHolder.instance;
 	}
 
-	public static Repository getNewInstance() {
-		return new Repository();
+	public static DmsRepository getNewInstance() {
+		return new DmsRepository();
 	}
 
 	/**
@@ -411,9 +411,9 @@ public final class Repository {
 	public void setDocbroker(final String docbroker) {
 		if (docbroker == null || docbroker.trim().length() == 0
 				|| "_default_".equals(docbroker.trim())) {
-			Repository.docbroker = null;
+			DmsRepository.docbroker = null;
 		} else {
-			Repository.docbroker = docbroker;
+			DmsRepository.docbroker = docbroker;
 		}
 	}
 
@@ -424,9 +424,9 @@ public final class Repository {
 	public void setPort(final String port) {
 		if (port == null || port.trim().length() == 0
 				|| "_default_".equals(port.trim())) {
-			Repository.port = null;
+			DmsRepository.port = null;
 		} else {
-			Repository.port = port;
+			DmsRepository.port = port;
 		}
 	}
 
@@ -579,7 +579,7 @@ public final class Repository {
 			String configFilename = System.getProperty("DctmDriver.config");
 			InputStream is;
 			if (configFilename == null) {
-				is = Repository.class
+				is = DmsRepository.class
 						.getResourceAsStream("Repository.properties");
 			} else {
 				is = new FileInputStream(configFilename);

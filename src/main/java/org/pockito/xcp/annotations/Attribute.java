@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 public @interface Attribute {
 
-	String name();
+	String name() default "";
 
 	boolean readonly() default false;
 }

@@ -64,12 +64,12 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.pockito.xcp" level="INFO" additivity="false">
+	<logger name="org.pockito.xcp" level="INFO" additivity="true">
 		<appender-ref ref="log-file" />
 	</logger>
 
 	<logger name="org.pockito.xcp.audit" level="TRACE" additivity="false">
-		<appender-ref ref="log-file" />
+		<appender-ref ref="audit-file" />
 	</logger>
 
 	<root level="DEBUG">

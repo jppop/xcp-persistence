@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 
 public @interface XcpEntity {
 
-	String name() default "";
+	String namespace();
 
 }

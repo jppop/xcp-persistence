@@ -1,4 +1,4 @@
-package org.pockito.xcp.repository.impl;
+package org.pockito.xcp.entitymanager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import com.documentum.fc.common.IDfId;
 
 public class DctmDriverImpl implements DctmDriver {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DctmDriver.class);
+	private static final Logger logger = LoggerFactory.getLogger(DctmDriver.class);
 	
 	private String repository = null;
 	
@@ -27,7 +27,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final IDfSessionManager getSessionManager() throws DmsException {
 		IDfSessionManager manager;
 		try {
-			manager = Repository.getInstance().getSessionManager();
+			manager = DmsRepository.getInstance().getSessionManager();
 		} catch (DfException e) {
 			throw new DmsException("failed to get the session manager",  e);
 		}
@@ -38,7 +38,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final void setCredendatials(final String repository, final String username,
 			final String password) {
 		try {
-			Repository.getInstance().setIdentity(repository, username, password);
+			DmsRepository.getInstance().setIdentity(repository, username, password);
 			setRepository(repository);
 		} catch (DfException e) {
 			throw new DmsException("failed to set credentials",  e);
@@ -49,7 +49,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final IDfSession getSession() {
 		IDfSession session;
 		try {
-			session = Repository.getInstance().getSession(getRepository());
+			session = DmsRepository.getInstance().getSession(getRepository());
 		} catch (DfException e) {
 			throw new DmsException("failed to get the session manager",  e);
 		}
@@ -58,7 +58,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public final void releaseSession(final IDfSession session) {
-		Repository.getInstance().releaseSession(session);
+		DmsRepository.getInstance().releaseSession(session);
 	}
 
 	@Override
@@ -73,6 +73,7 @@ public class DctmDriverImpl implements DctmDriver {
 		List<IDfId> results = new ArrayList<IDfId>();
 		
 		IDfQuery queryExecutor = createQuery();
+		queryExecutor.setDQL(query);
 		IDfCollection col = null;
 		try {
 			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
@@ -88,7 +89,7 @@ public class DctmDriverImpl implements DctmDriver {
 					col.close();
 				}
 			} catch (DfException ignore) {
-				LOGGER.error("failed to close a collection", ignore);
+				logger.error("failed to close a collection", ignore);
 			}
 		}
 		return results;
@@ -116,7 +117,7 @@ public class DctmDriverImpl implements DctmDriver {
 					col.close();
 				}
 			} catch (DfException ignore) {
-				LOGGER.error("failed to close a collection", ignore);
+				logger.error("failed to close a collection", ignore);
 			}
 		}
 		return count;

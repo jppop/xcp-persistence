@@ -9,6 +9,9 @@ import org.apache.commons.lang.StringUtils;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
+import org.pockito.xcp.repository.DmsException;
+import org.pockito.xcp.repository.DmsQuery;
+import org.pockito.xcp.repository.DmsTypedQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,10 +24,10 @@ public class DctmEntityManager implements DmsEntityManager {
 
 	private Logger LOGGER = LoggerFactory.getLogger(DctmEntityManager.class);
 	
-	private DctmEntityManagerFactory factory = null;
-	private DctmDriver dctmDriver = null;
-	private Map<String, ?> properties;
-	private String repository;
+	private final DctmEntityManagerFactory factory;
+	private final DctmDriver dctmDriver;
+	private final Map<String, ?> properties;
+	private final String repository;
 
 	public DctmEntityManager(
 			DctmEntityManagerFactory dmsEntityManagerFactoryImpl,
@@ -173,7 +176,7 @@ public class DctmEntityManager implements DmsEntityManager {
 		return factory;
 	}
 
-	public IDfSession getSession() throws DfException {
+	public IDfSession getSession() throws DmsException {
 		return getDctmDriver().getSession();
 	}
 
@@ -193,6 +196,26 @@ public class DctmEntityManager implements DmsEntityManager {
 
 	public String repository() {
 		return repository;
+	}
+
+	@Override
+	public void remove(Object entity) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public <T> DmsTypedQuery<T> createNamedQuery(String qlString) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public DmsQuery createNativeQuery(String dqlString) {
+		return new DctmQuery(this, dqlString);
+	}
+
+	@Override
+	public <T> DctmTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
+		return new DctmTypedQuery<T>(this, dqlString, entityClass, true);
 	}
 
 }

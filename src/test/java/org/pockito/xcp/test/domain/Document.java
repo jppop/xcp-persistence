@@ -1,5 +1,7 @@
 package org.pockito.xcp.test.domain;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import org.pockito.xcp.annotations.Attribute;
@@ -22,6 +24,13 @@ public class Document extends PersistedObject {
 
 	@Attribute(name="i_has_folder", readonly=true)
 	private Boolean hasFolder;
+
+	@Attribute(name="r_content_size", readonly=true)
+	private int contentSize;
+	
+	// FIXME: r_version_label is readonly but can be modified (mark api)
+	@Attribute(name = "r_version_label", readonly=true)
+	protected Collection<String> versionLabels = new ArrayList<String>();
 
 	public String getName() {
 		return name;
@@ -53,6 +62,22 @@ public class Document extends PersistedObject {
 
 	public void setHasFolder(Boolean hasFolder) {
 		this.hasFolder = hasFolder;
+	}
+
+	public int getContentSize() {
+		return contentSize;
+	}
+
+	public void setContentSize(int contentSize) {
+		this.contentSize = contentSize;
+	}
+
+	public Collection<String> getVersionLabels() {
+		return versionLabels;
+	}
+
+	public void setVersionLabels(Collection<String> versionLabels) {
+		this.versionLabels = versionLabels;
 	}
 
 }

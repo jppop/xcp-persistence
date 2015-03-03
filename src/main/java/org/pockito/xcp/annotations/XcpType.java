@@ -13,4 +13,5 @@ public @interface XcpType {
 
 	String name();
 	XcpTypes type() default XcpTypes.BUSINESS_OBJECT;
+	String label() default "";
 }

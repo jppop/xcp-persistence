@@ -16,8 +16,14 @@ package org.pockito.xcp.repository;
 
 public interface DmsEntityManager {
 
-    public <T> T find(Class<T> entityClass, Object primaryKey);
+    <T> T find(Class<T> entityClass, Object primaryKey);
     
-    public void persist(Object entity);
+    void persist(Object entity);
+    void remove(Object entity);
+    
+    <T> DmsTypedQuery<T> createNamedQuery(String qlString);
 
+    DmsQuery createNativeQuery(String qlString);
+
+    <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
 }

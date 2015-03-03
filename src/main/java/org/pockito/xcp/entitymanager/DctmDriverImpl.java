@@ -19,7 +19,7 @@ import com.documentum.fc.common.IDfId;
 
 public class DctmDriverImpl implements DctmDriver {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(DctmDriver.class);
+	private static final Logger logger = LoggerFactory.getLogger(DctmDriver.class);
 	
 	private String repository = null;
 	
@@ -73,6 +73,7 @@ public class DctmDriverImpl implements DctmDriver {
 		List<IDfId> results = new ArrayList<IDfId>();
 		
 		IDfQuery queryExecutor = createQuery();
+		queryExecutor.setDQL(query);
 		IDfCollection col = null;
 		try {
 			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
@@ -88,7 +89,7 @@ public class DctmDriverImpl implements DctmDriver {
 					col.close();
 				}
 			} catch (DfException ignore) {
-				LOGGER.error("failed to close a collection", ignore);
+				logger.error("failed to close a collection", ignore);
 			}
 		}
 		return results;
@@ -116,7 +117,7 @@ public class DctmDriverImpl implements DctmDriver {
 					col.close();
 				}
 			} catch (DfException ignore) {
-				LOGGER.error("failed to close a collection", ignore);
+				logger.error("failed to close a collection", ignore);
 			}
 		}
 		return count;

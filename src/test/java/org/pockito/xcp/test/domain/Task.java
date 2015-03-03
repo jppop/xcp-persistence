@@ -3,12 +3,14 @@ package org.pockito.xcp.test.domain;
 import java.util.Date;
 
 import org.pockito.xcp.annotations.Attribute;
+import org.pockito.xcp.annotations.Relation;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.annotations.XcpTypes;
 
 @XcpEntity(namespace = "todo")
 @XcpType(type = XcpTypes.BUSINESS_OBJECT, name = "task")
+@Relation(child = Person.class, name = "task_person")
 public class Task extends PersistedObject {
 
 	@Attribute(name = "subject")

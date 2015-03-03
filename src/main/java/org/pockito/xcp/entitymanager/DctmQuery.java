@@ -5,7 +5,6 @@ import java.util.List;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsException;
 import org.pockito.xcp.repository.DmsQuery;
-import org.pockito.xcp.repository.Parameter;
 
 import com.documentum.fc.client.IDfSession;
 
@@ -35,11 +34,6 @@ public class DctmQuery implements DmsQuery {
 		return resultList;
 	}
 
-	@Override
-	public <P> DmsQuery setParameter(Parameter<P> param, P value) {
-		throw new NotYetImplemented();
-	}
-
 	public DctmEntityManager entityManager() {
 		return em;
 	}
@@ -50,6 +44,26 @@ public class DctmQuery implements DmsQuery {
 
 	public String getDqlString() {
 		return dqlString;
+	}
+
+	@Override
+	public DmsQuery setParameter(String name, Object value) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public DmsQuery setParameter(int position, Object value) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public DmsQuery setHint(String hintName, Object value) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public int setMaxResults(int maxResult) {
+		throw new NotYetImplemented();
 	}
 
 }

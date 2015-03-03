@@ -2,9 +2,15 @@ package org.pockito.xcp.repository;
 
 import java.util.List;
 
-public interface DmsTypedQuery<T> extends DmsQuery {
+public interface DmsTypedQuery<T> {
 
 	List<T> getResultList();
 	
-	<P> DmsTypedQuery<T> setParameter(Parameter<P> param, P value);
+	DmsTypedQuery<T> setParameter(String name, Object value);
+
+	DmsTypedQuery<T> setParameter(int position, Object value);
+    
+	DmsTypedQuery<T> setHint(String hintName, Object value);
+    
+    int setMaxResults(int maxResult);
 }

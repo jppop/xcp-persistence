@@ -6,6 +6,13 @@ public interface DmsQuery {
 
 	@SuppressWarnings("rawtypes")
 	List getResultList();
-	
-	<P> DmsQuery setParameter(Parameter<P> param, P value);
+
+	DmsQuery setParameter(String name, Object value);
+
+    DmsQuery setParameter(int position, Object value);
+    
+    DmsQuery setHint(String hintName, Object value);
+    
+    int setMaxResults(int maxResult);
+    
 }

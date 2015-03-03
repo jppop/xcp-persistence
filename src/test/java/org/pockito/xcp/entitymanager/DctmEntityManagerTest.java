@@ -102,8 +102,14 @@ public class DctmEntityManagerTest extends RepositoryRequiredTest {
 		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
 		try {
 
+			Calendar c = new GregorianCalendar();
+			c.set(1965, 2, 28);
+
 			DmsTypedQuery<Document> query
-				= em.createNativeQuery("select r_object_id from dm_document where folder('/Temp')", Document.class);
+				= em.createNativeQuery("select r_object_id from dm_document where folder(:path)"
+						+ "and r_creation_date > :creationDate", Document.class)
+				 .setParameter("path", "/Templates")
+				 .setParameter("creationDate", c.getTime());
 			List<Document> docs = query.getResultList();
 			if (docs != null) {
 				for (Document document : docs) {

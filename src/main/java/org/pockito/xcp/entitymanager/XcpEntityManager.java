@@ -20,17 +20,17 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.IDfValue;
 
-public class DctmEntityManager implements DmsEntityManager {
+public class XcpEntityManager implements DmsEntityManager {
 
-	private Logger LOGGER = LoggerFactory.getLogger(DctmEntityManager.class);
+	private Logger LOGGER = LoggerFactory.getLogger(XcpEntityManager.class);
 	
-	private final DctmEntityManagerFactory factory;
+	private final XcpEntityManagerFactory factory;
 	private final DctmDriver dctmDriver;
 	private final Map<String, ?> properties;
 	private final String repository;
 
-	public DctmEntityManager(
-			DctmEntityManagerFactory dmsEntityManagerFactoryImpl,
+	public XcpEntityManager(
+			XcpEntityManagerFactory dmsEntityManagerFactoryImpl,
 			Map<String, ?> map,
 			DctmDriver dctmDriver) {
 		this.factory = dmsEntityManagerFactoryImpl;
@@ -172,7 +172,7 @@ public class DctmEntityManager implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	protected DctmEntityManagerFactory factory() {
+	protected XcpEntityManagerFactory factory() {
 		return factory;
 	}
 
@@ -210,12 +210,12 @@ public class DctmEntityManager implements DmsEntityManager {
 
 	@Override
 	public DmsQuery createNativeQuery(String dqlString) {
-		return new DctmQuery(this, dqlString);
+		return new XcpQuery(this, dqlString);
 	}
 
 	@Override
-	public <T> DctmTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
-		return new DctmTypedQuery<T>(this, dqlString, entityClass, true);
+	public <T> XcpTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
+		return new XcpTypedQuery<T>(this, dqlString, entityClass, true);
 	}
 
 }

@@ -15,9 +15,9 @@ import org.pockito.xcp.repository.DmsTypedQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.IDfId;
 
-public class DctmTypedQuery<T> implements DmsTypedQuery<T> {
+public class XcpTypedQuery<T> implements DmsTypedQuery<T> {
 
-	private final DctmEntityManager em;
+	private final XcpEntityManager em;
 	private final DctmDriver dctmDriver;
 	private final String dqlString;
 	private final Class<T> entityClass;
@@ -25,15 +25,15 @@ public class DctmTypedQuery<T> implements DmsTypedQuery<T> {
 
 	protected final Map<String, Object> parameters = new HashMap<String, Object>();
 
-	public DctmTypedQuery(DctmEntityManager em, String qlString) {
+	public XcpTypedQuery(XcpEntityManager em, String qlString) {
 		this(em, qlString, null, false);
 	}
 
-	public DctmTypedQuery(DctmEntityManager em, String qlString, Class<T> entityClass) {
+	public XcpTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass) {
 		this(em, qlString, entityClass, false);
 	}
 
-	public DctmTypedQuery(DctmEntityManager em, String qlString, Class<T> entityClass, boolean nativeQuery) {
+	public XcpTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass, boolean nativeQuery) {
 		this.em = em;
 		this.dqlString = qlString;
 		this.dctmDriver = em.getDctmDriver();
@@ -55,7 +55,7 @@ public class DctmTypedQuery<T> implements DmsTypedQuery<T> {
 		return resultList;
 	}
 
-	public DctmEntityManager em() {
+	public XcpEntityManager em() {
 		return em;
 	}
 
@@ -95,13 +95,13 @@ public class DctmTypedQuery<T> implements DmsTypedQuery<T> {
 	}
 
 	@Override
-	public DctmTypedQuery<T> setParameter(String name, Object value) {
+	public XcpTypedQuery<T> setParameter(String name, Object value) {
 		parameters.put(name, value);
 		return this;
 	}
 
 	@Override
-	public DctmTypedQuery<T> setParameter(int position, Object value) {
+	public XcpTypedQuery<T> setParameter(int position, Object value) {
 		throw new NotYetImplemented();
 	}
 
@@ -166,7 +166,7 @@ public class DctmTypedQuery<T> implements DmsTypedQuery<T> {
 	}
 
 	@Override
-	public DctmTypedQuery<T> setHint(String hintName, Object value) {
+	public XcpTypedQuery<T> setHint(String hintName, Object value) {
 		throw new NotYetImplemented();
 	}
 

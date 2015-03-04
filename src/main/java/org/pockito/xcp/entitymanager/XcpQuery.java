@@ -8,14 +8,14 @@ import org.pockito.xcp.repository.DmsQuery;
 
 import com.documentum.fc.client.IDfSession;
 
-public class DctmQuery implements DmsQuery {
+public class XcpQuery implements DmsQuery {
 
 	// TODO should be in a super class shared with DctmTypedQuery
-	private final DctmEntityManager em;
+	private final XcpEntityManager em;
 	private final DctmDriver dctmDriver;
 	private final String dqlString;
 
-	public DctmQuery(DctmEntityManager em, String dqlString) {
+	public XcpQuery(XcpEntityManager em, String dqlString) {
 		this.em = em;
 		this.dqlString = dqlString;
 		this.dctmDriver = em.getDctmDriver();
@@ -34,7 +34,7 @@ public class DctmQuery implements DmsQuery {
 		return resultList;
 	}
 
-	public DctmEntityManager entityManager() {
+	public XcpEntityManager entityManager() {
 		return em;
 	}
 

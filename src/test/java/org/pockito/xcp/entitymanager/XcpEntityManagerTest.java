@@ -23,7 +23,7 @@ import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 
-public class DctmEntityManagerTest extends RepositoryRequiredTest {
+public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 	@Rule
 	public TestName name = new TestName();
@@ -36,7 +36,7 @@ public class DctmEntityManagerTest extends RepositoryRequiredTest {
 		props.put(PropertyConstants.Repository, getRepository().getRepositoryName());
 		props.put(PropertyConstants.Username, getRepository().getOperatorName());
 		props.put(PropertyConstants.Password, getRepository().getOperatorPassword());
-		DctmEntityManagerFactory dmsEmFactory = new DctmEntityManagerFactory(props);
+		XcpEntityManagerFactory dmsEmFactory = new XcpEntityManagerFactory(props);
 
 		em = dmsEmFactory.createDmsEntityManager();
 	}
@@ -113,7 +113,7 @@ public class DctmEntityManagerTest extends RepositoryRequiredTest {
 			List<Document> docs = query.getResultList();
 			if (docs != null) {
 				for (Document document : docs) {
-					System.out.println("doc ID: " + document.getId() + ", name: " + document.getName());
+					System.out.println(document.toString());
 				}
 			}
 

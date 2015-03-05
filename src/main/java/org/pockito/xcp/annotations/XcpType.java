@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 public @interface XcpType {
 
 	String name();
-	XcpTypes type() default XcpTypes.BUSINESS_OBJECT;
+	XcpTypeCategory type() default XcpTypeCategory.BUSINESS_OBJECT;
 	String label() default "";
 }

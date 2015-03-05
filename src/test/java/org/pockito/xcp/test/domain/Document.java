@@ -8,10 +8,10 @@ import java.util.Date;
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
-import org.pockito.xcp.annotations.XcpTypes;
+import org.pockito.xcp.annotations.XcpTypeCategory;
 
 @XcpEntity(namespace = "dm")
-@XcpType(type = XcpTypes.CONTENT, name = "document")
+@XcpType(type = XcpTypeCategory.CONTENT, name = "document")
 public class Document extends PersistedObject {
 
 	@Attribute(name = "object_name")
@@ -83,8 +83,11 @@ public class Document extends PersistedObject {
 
 	@Override
 	public String toString() {
-		return String.format("Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, hasFolder=%b]", getId(), name,
-				Arrays.toString(versionLabels.toArray()), creationDate, contentSize, hasFolder);
+		return String.format(
+				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, hasFolder=%b, vstamp=%d]",
+				getId(), name, Arrays.toString(versionLabels.toArray()),
+				creationDate, contentSize, hasFolder, getvStamp()
+				);
 	}
 
 }

@@ -19,14 +19,14 @@ public interface XcpRepository {
     <T> List<T> query(DqlSpecification<T> spec);
     <T> int query(DqlCountSpecification<T> spec);
     <T> List<T> query(Class<T> entity, BasicSpecification query);
-    <P, C> List<C> findChildren(Object entity, Relation<P, C> relation);
-    <P, C> List<P> findParents(Object entity, Relation<P, C> relation);
+//    <P, C> List<C> findChildren(Object entity, Relation<P, C> relation);
+//    <P, C> List<P> findParents(Object entity, Relation<P, C> relation);
     
     XcpRepository within(Transaction transaction);
 
     XcpRepository link(Object entity);
     XcpRepository to(Object entity);
-    <P, C> XcpRepository with(Relation<P, C> relation);
+//    <P, C> XcpRepository with(Relation<P, C> relation);
     
     XcpRepository copy(Object entity);
     XcpRepository move(Object entity);
@@ -34,7 +34,7 @@ public interface XcpRepository {
     FolderPath locate(Object entity);
     List<FolderPath> locateAll(Object entity);
 
-    <P, C> void relate(Object parent, Object child, Relation<P, C> relation);
+//    <P, C> void relate(Object parent, Object child, Relation<P, C> relation);
     void link(Object parent, FolderPath folder);
     void unlink(Object parent, FolderPath folder);
     

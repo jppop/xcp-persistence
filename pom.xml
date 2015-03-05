@@ -13,6 +13,7 @@
 		<dfc.version>7.1.0120.0167</dfc.version>
 		<slf4j.version>1.7.10</slf4j.version>
 		<logback.version>1.1.2</logback.version>
+		<guava.version>18.0</guava.version>
 	</properties>
 
 	<dependencies>
@@ -20,12 +21,12 @@
 			<groupId>com.emc.documentum.dfc</groupId>
 			<artifactId>dfc</artifactId>
 			<version>${dfc.version}</version>
-<!-- 			<exclusions> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>log4j</artifactId> -->
-<!-- 					<groupId>log4j</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 			</exclusions> -->
+			<!-- <exclusions> -->
+			<!-- <exclusion> -->
+			<!-- <artifactId>log4j</artifactId> -->
+			<!-- <groupId>log4j</groupId> -->
+			<!-- </exclusion> -->
+			<!-- </exclusions> -->
 		</dependency>
 
 		<dependency>
@@ -44,6 +45,12 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
 		</dependency>
 
 		<dependency>

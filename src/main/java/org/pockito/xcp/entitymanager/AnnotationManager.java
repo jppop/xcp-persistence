@@ -61,6 +61,7 @@ public class AnnotationManager {
 	            		String namespace = entity.namespace();
 	            		String shortName = xcpType.name();
 	            		dmsTypeName = namespace + "_" + shortName;
+	            		ai.setTypeCategory(xcpType.type());
             		}
             	}
                 addProperties(ai, superClass);
@@ -103,18 +104,18 @@ public class AnnotationManager {
 	}
 
 	// TODO: this should be externalized
-	public static String getTypeOfNativeEntity(String entityName) {
-		if ("native.PersistedObject".equals(entityName)) {
-			return "dm_sysobject";
-		} else if ("native.Document".equals(entityName)) {
-			return "dm_sysobject";
-		} else if ("native.Folder".equals(entityName)) {
-			return "dm_folder";
-		}
-		return null;
-		
-	}
-
+//	public static String getTypeOfNativeEntity(String entityName) {
+//		if ("native.PersistedObject".equals(entityName)) {
+//			return "dm_sysobject";
+//		} else if ("native.Document".equals(entityName)) {
+//			return "dm_sysobject";
+//		} else if ("native.Folder".equals(entityName)) {
+//			return "dm_folder";
+//		}
+//		return null;
+//		
+//	}
+//
 	protected Map<String, AnnotationInfo> getAnnotationMap() {
 		return annotationMap;
 	}

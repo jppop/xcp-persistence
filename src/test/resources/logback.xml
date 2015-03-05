@@ -39,7 +39,7 @@
 		</filter>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- rotate every day for log collection and archiving -->
-			<fileNamePattern>my-application.%d{yyyyMMdd}.log</fileNamePattern>
+			<fileNamePattern>xcp-persistence.%d{yyyyMMdd}.log</fileNamePattern>
 		</rollingPolicy>
 		<encoder>
 			<!-- only log 2 lines of stack trace per cause of an exception -->
@@ -52,7 +52,7 @@
 		<file>${project.build.directory}/logs/xcp-persistence.log-audit.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- rotate every day -->
-			<fileNamePattern>/my-application-audit.%d{yyyyMMdd}.log.zip
+			<fileNamePattern>xcp-persistence-audit.%d{yyyyMMdd}.log.zip
 			</fileNamePattern>
 		</rollingPolicy>
 		<encoder>
@@ -64,7 +64,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.pockito.xcp" level="INFO" additivity="true">
+	<logger name="org.pockito.xcp" level="INFO" additivity="false">
 		<appender-ref ref="log-file" />
 	</logger>
 
@@ -72,8 +72,12 @@
 		<appender-ref ref="audit-file" />
 	</logger>
 
-	<root level="DEBUG">
+	<logger name="org.pockito.xcp" level="DEBUG" additivity="false">
 		<appender-ref ref="troubleshooting-file" />
+	</logger>
+
+	<root level="ERROR">
+		<appender-ref ref="STDOUT" />
 	</root>
 
 </configuration>

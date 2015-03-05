@@ -12,5 +12,5 @@ public interface DmsTypedQuery<T> {
     
 	DmsTypedQuery<T> setHint(String hintName, Object value);
     
-    int setMaxResults(int maxResult);
+	DmsTypedQuery<T> setMaxResults(int maxResult);
 }

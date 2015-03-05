@@ -10,6 +10,7 @@ import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
+import org.pockito.xcp.repository.DmsJoinTypedQuery;
 import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.slf4j.Logger;
@@ -39,9 +40,14 @@ public class XcpEntityManager implements DmsEntityManager {
 		this.repository = (String) map.get(PropertyConstants.Repository);
 	}
 
+	public <T> AnnotationInfo getAnnotationInfo(Class<T> entityClass) {
+		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entityClass);
+		return ai;
+	}
+	
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 
-		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entityClass);
+		AnnotationInfo ai = getAnnotationInfo(entityClass);
 		return (T) doFind(entityClass, ai, primaryKey);
 	}
 
@@ -64,7 +70,7 @@ public class XcpEntityManager implements DmsEntityManager {
 				Collection<PersistentProperty> persistentProperties = ai
 						.getPersistentProperties();
 				for (PersistentProperty field : persistentProperties) {
-					LOGGER.debug("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
+					LOGGER.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
 					if (field.isRepeating()) {
 						List<Object> values = getRepeatingValues(dmsObj, field);
 						field.setProperty(newInstance, values);
@@ -214,8 +220,13 @@ public class XcpEntityManager implements DmsEntityManager {
 	}
 
 	@Override
-	public <T> XcpTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
+	public <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
 		return new XcpTypedQuery<T>(this, dqlString, entityClass, true);
+	}
+
+	@Override
+	public <T, B> DmsJoinTypedQuery<T, B> createJoinQuery(Class<T> joinTable, Class<B> beanClass) {
+		return new XcpJoinTypedQuery<T, B>(this, joinTable, beanClass);
 	}
 
 }

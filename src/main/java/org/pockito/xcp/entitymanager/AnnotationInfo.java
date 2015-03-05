@@ -6,10 +6,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.pockito.xcp.annotations.XcpTypeCategory;
+
 public class AnnotationInfo {
 
 	private String dmsType;
+	private XcpTypeCategory typeCategory;
 	private PersistentProperty idMethod;
+	private PersistentProperty childRelation = null;
+	private PersistentProperty parentRelation = null;
 	private Map<String, PersistentProperty> persistentProperties = new HashMap<String, PersistentProperty>();
 
 	public AnnotationInfo(String type) {
@@ -66,7 +71,37 @@ public class AnnotationInfo {
 		if (persistentField.isId()) {
 			setIdProperty(persistentField);
 		}
+		if (persistentField.isParent()) {
+			setParentRelation(persistentField);
+		}
+		if (persistentField.isChild()) {
+			setChildRelation(persistentField);
+		}
 		return persistentField;
+	}
+
+	public XcpTypeCategory getTypeCategory() {
+		return typeCategory;
+	}
+
+	public void setTypeCategory(XcpTypeCategory typeCategory) {
+		this.typeCategory = typeCategory;
+	}
+
+	public PersistentProperty getChildRelation() {
+		return childRelation;
+	}
+
+	public void setChildRelation(PersistentProperty childRelation) {
+		this.childRelation = childRelation;
+	}
+
+	public PersistentProperty getParentRelation() {
+		return parentRelation;
+	}
+
+	public void setParentRelation(PersistentProperty parentRelation) {
+		this.parentRelation = parentRelation;
 	}
 
 }

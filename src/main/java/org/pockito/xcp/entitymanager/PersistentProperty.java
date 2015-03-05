@@ -8,9 +8,11 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.pockito.xcp.annotations.Child;
 import org.pockito.xcp.annotations.GeneratedValue;
 import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.Attribute;
+import org.pockito.xcp.annotations.Parent;
 
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
@@ -149,6 +151,14 @@ public abstract class PersistentProperty {
 
 	public boolean isGeneratedValue() {
 		return element.isAnnotationPresent(GeneratedValue.class);
+	}
+	
+	public boolean isParent() {
+		return element.isAnnotationPresent(Parent.class);
+	}
+	
+	public boolean isChild() {
+		return element.isAnnotationPresent(Child.class);
 	}
 	
 	public boolean isReadonly() {

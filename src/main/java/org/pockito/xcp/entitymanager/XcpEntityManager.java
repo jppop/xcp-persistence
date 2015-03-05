@@ -10,6 +10,7 @@ import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
+import org.pockito.xcp.repository.DmsJoinTypedQuery;
 import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.slf4j.Logger;
@@ -20,17 +21,17 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.IDfValue;
 
-public class DctmEntityManager implements DmsEntityManager {
+public class XcpEntityManager implements DmsEntityManager {
 
-	private Logger LOGGER = LoggerFactory.getLogger(DctmEntityManager.class);
+	private Logger LOGGER = LoggerFactory.getLogger(XcpEntityManager.class);
 	
-	private final DctmEntityManagerFactory factory;
+	private final XcpEntityManagerFactory factory;
 	private final DctmDriver dctmDriver;
 	private final Map<String, ?> properties;
 	private final String repository;
 
-	public DctmEntityManager(
-			DctmEntityManagerFactory dmsEntityManagerFactoryImpl,
+	public XcpEntityManager(
+			XcpEntityManagerFactory dmsEntityManagerFactoryImpl,
 			Map<String, ?> map,
 			DctmDriver dctmDriver) {
 		this.factory = dmsEntityManagerFactoryImpl;
@@ -39,9 +40,14 @@ public class DctmEntityManager implements DmsEntityManager {
 		this.repository = (String) map.get(PropertyConstants.Repository);
 	}
 
+	public <T> AnnotationInfo getAnnotationInfo(Class<T> entityClass) {
+		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entityClass);
+		return ai;
+	}
+	
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 
-		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entityClass);
+		AnnotationInfo ai = getAnnotationInfo(entityClass);
 		return (T) doFind(entityClass, ai, primaryKey);
 	}
 
@@ -64,7 +70,7 @@ public class DctmEntityManager implements DmsEntityManager {
 				Collection<PersistentProperty> persistentProperties = ai
 						.getPersistentProperties();
 				for (PersistentProperty field : persistentProperties) {
-					LOGGER.debug("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
+					LOGGER.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
 					if (field.isRepeating()) {
 						List<Object> values = getRepeatingValues(dmsObj, field);
 						field.setProperty(newInstance, values);
@@ -172,7 +178,7 @@ public class DctmEntityManager implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	protected DctmEntityManagerFactory factory() {
+	protected XcpEntityManagerFactory factory() {
 		return factory;
 	}
 
@@ -210,12 +216,17 @@ public class DctmEntityManager implements DmsEntityManager {
 
 	@Override
 	public DmsQuery createNativeQuery(String dqlString) {
-		return new DctmQuery(this, dqlString);
+		return new XcpQuery(this, dqlString);
 	}
 
 	@Override
-	public <T> DctmTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
-		return new DctmTypedQuery<T>(this, dqlString, entityClass, true);
+	public <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
+		return new XcpTypedQuery<T>(this, dqlString, entityClass, true);
+	}
+
+	@Override
+	public <T, B> DmsJoinTypedQuery<T, B> createJoinQuery(Class<T> joinTable, Class<B> beanClass) {
+		return new XcpJoinTypedQuery<T, B>(this, joinTable, beanClass);
 	}
 
 }

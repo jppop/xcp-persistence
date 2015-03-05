@@ -14,6 +14,7 @@
 
 package org.pockito.xcp.repository;
 
+
 public interface DmsEntityManager {
 
     <T> T find(Class<T> entityClass, Object primaryKey);
@@ -26,4 +27,6 @@ public interface DmsEntityManager {
     DmsQuery createNativeQuery(String qlString);
 
     <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
+
+	<T, B> DmsJoinTypedQuery<T, B> createJoinQuery(Class<T> joinTable, Class<B> entityClass);
 }

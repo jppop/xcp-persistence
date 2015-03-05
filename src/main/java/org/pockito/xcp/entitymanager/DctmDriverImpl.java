@@ -16,6 +16,7 @@ import com.documentum.fc.client.IDfSessionManager;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.IDfAttr;
 import com.documentum.fc.common.IDfId;
+import com.google.common.base.Stopwatch;
 
 public class DctmDriverImpl implements DctmDriver {
 
@@ -70,6 +71,8 @@ public class DctmDriverImpl implements DctmDriver {
 	public final List<IDfId> getObjectsByQuery(final IDfSession session, final String query)
 			throws DmsException {
 		
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		
 		List<IDfId> results = new ArrayList<IDfId>();
 		
 		IDfQuery queryExecutor = createQuery();
@@ -82,6 +85,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 			}
 		} catch (DfException e) {
+			logger.debug("failed to query the repository", e);
 			throw new DmsException("Failed to query the database using: " + query, e);
 		} finally {
 			try {
@@ -92,6 +96,8 @@ public class DctmDriverImpl implements DctmDriver {
 				logger.error("failed to close a collection", ignore);
 			}
 		}
+		stopwatch.stop();
+		logger.debug("query executed in: {}", stopwatch);
 		return results;
 	}
 

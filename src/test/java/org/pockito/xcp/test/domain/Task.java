@@ -1,15 +1,16 @@
 package org.pockito.xcp.test.domain;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.Relation;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
-import org.pockito.xcp.annotations.XcpTypes;
+import org.pockito.xcp.annotations.XcpTypeCategory;
 
 @XcpEntity(namespace = "todo")
-@XcpType(type = XcpTypes.BUSINESS_OBJECT, name = "task")
+@XcpType(type = XcpTypeCategory.BUSINESS_OBJECT, name = "task")
 @Relation(child = Person.class, name = "task_person")
 public class Task extends PersistedObject {
 
@@ -79,4 +80,12 @@ public class Task extends PersistedObject {
 		this.hasFolder = hasFolder;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format(
+				"Task[id=%s, Subject=%s, priority=%s, creation date=%tc, due date=%tc]",
+				getId(), getWhat(), getPriority(),
+				creationDate, getDueDate()
+				);
+	}
 }

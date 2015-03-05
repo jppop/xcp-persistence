@@ -3,10 +3,10 @@ package org.pockito.xcp.test.domain;
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
-import org.pockito.xcp.annotations.XcpTypes;
+import org.pockito.xcp.annotations.XcpTypeCategory;
 
 @XcpEntity(namespace = "todo")
-@XcpType(type = XcpTypes.BUSINESS_OBJECT, name = "person")
+@XcpType(type = XcpTypeCategory.BUSINESS_OBJECT, name = "person")
 public class Person extends PersistedObject {
 
 	@Attribute(name = "first_name")
@@ -40,5 +40,14 @@ public class Person extends PersistedObject {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format(
+				"Person[id=%s, First Name=%s, Last Name=%s]",
+				getId(), 
+				getFirstName(), getLastName()
+				);
 	}
 }

@@ -28,5 +28,4 @@ public interface DmsEntityManager {
 
     <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
 
-	<T, B> DmsJoinTypedQuery<T, B> createJoinQuery(Class<T> joinTable, Class<B> entityClass);
 }

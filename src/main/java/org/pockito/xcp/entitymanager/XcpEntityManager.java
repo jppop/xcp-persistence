@@ -11,7 +11,6 @@ import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
-import org.pockito.xcp.repository.DmsJoinTypedQuery;
 import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.slf4j.Logger;
@@ -241,11 +240,6 @@ public class XcpEntityManager implements DmsEntityManager {
 	@Override
 	public <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
 		return new XcpTypedQuery<T>(this, dqlString, entityClass, true);
-	}
-
-	@Override
-	public <T, B> DmsJoinTypedQuery<T, B> createJoinQuery(Class<T> joinTable, Class<B> beanClass) {
-		return new XcpJoinTypedQuery<T, B>(this, joinTable, beanClass);
 	}
 
 }

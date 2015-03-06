@@ -1,6 +1,5 @@
 package org.pockito.xcp.test.domain;
 
-import java.util.Arrays;
 import java.util.Date;
 
 import org.pockito.xcp.annotations.Attribute;

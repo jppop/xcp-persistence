@@ -79,10 +79,10 @@ public class DctmDriverImpl implements DctmDriver {
 		queryExecutor.setDQL(query);
 		IDfCollection col = null;
 		try {
+			logger.debug("query: {}", query);
 			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
 			while (col.next()) {
 				results.add(col.getId("r_object_id"));
-
 			}
 		} catch (DfException e) {
 			logger.debug("failed to query the repository", e);
@@ -99,6 +99,38 @@ public class DctmDriverImpl implements DctmDriver {
 		stopwatch.stop();
 		logger.debug("query executed in: {}", stopwatch);
 		return results;
+	}
+
+	@Override
+	public int getObjectsByQuery(IDfSession session, String query, RowHandler rowHandler) throws DmsException {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		
+		int count = 0;
+		
+		IDfQuery queryExecutor = createQuery();
+		queryExecutor.setDQL(query);
+		IDfCollection col = null;
+		try {
+			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
+			while (col.next()) {
+				count++;
+				rowHandler.handleRow(session, col);
+			}
+		} catch (DfException e) {
+			logger.debug("failed to query the repository", e);
+			throw new DmsException("Failed to query the database using: " + query, e);
+		} finally {
+			try {
+				if (col != null) {
+					col.close();
+				}
+			} catch (DfException ignore) {
+				logger.error("failed to close a collection", ignore);
+			}
+		}
+		stopwatch.stop();
+		logger.debug("query executed in: {}", stopwatch);
+		return count;
 	}
 
 	@Override

@@ -161,6 +161,10 @@ public abstract class PersistentProperty {
 		return element.isAnnotationPresent(Child.class);
 	}
 	
+	public boolean isAttribute() {
+		return element.isAnnotationPresent(Attribute.class);
+	}
+	
 	public boolean isReadonly() {
 		Attribute annotation = element.getAnnotation(Attribute.class);
 		if (annotation == null) {

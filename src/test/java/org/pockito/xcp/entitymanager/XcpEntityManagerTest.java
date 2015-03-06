@@ -145,7 +145,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 		q1.select().join(TaskPerson.class).on(JoinType.childId)
 		 .setParameter(JoinType.parentId, task.getId())
 		 ;
-		List<Person> persons = q1.getRelatedResultList();
+		List<Person> persons = q1.getJoinedResultList();
 		for (Person person : persons) {
 			System.out.println(person);
 		}
@@ -164,9 +164,22 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 		 .setParameter(JoinType.childId, person.getId())
 		 .setParameter("priority", "urgent")
 		 ;
-		List<Task> tasks = q2.getRelatedResultList();
+		List<Task> tasks = q2.getJoinedResultList();
 		for (Task task2 : tasks) {
 			System.out.println(task2);
+		}
+
+//		select r.r_object_id, r.parent_id, r.child_id
+//		  from todo_task_person r
+//		 where r.parent_id = '08c11cef80002f24'
+
+		DmsJoinTypedQuery<TaskPerson, Task> q3 = em.createJoinQuery(TaskPerson.class, Task.class);
+		q3.select().join(TaskPerson.class)
+		 .setParameter(JoinType.parentId, person.getId())
+		 ;
+		List<TaskPerson> tasksPerson = q3.getResultList();
+		for (TaskPerson taskPerson : tasksPerson) {
+			System.out.println(taskPerson);
 		}
 	}
 }

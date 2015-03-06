@@ -9,5 +9,5 @@ public interface DmsJoinTypedQuery<T, B> extends DmsTypedQuery<T> {
 	DmsJoinTypedQuery<T, B> on(JoinType joinType);
 	DmsJoinTypedQuery<T, B> where(String qualification);
 	DmsJoinTypedQuery<T, B> setParameter(JoinType name, Object value);
-	List<B> getRelatedResultList();
+	List<B> getJoinedResultList();
 }

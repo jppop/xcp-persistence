@@ -23,7 +23,7 @@ import com.documentum.fc.common.IDfValue;
 
 public class XcpEntityManager implements DmsEntityManager {
 
-	private Logger LOGGER = LoggerFactory.getLogger(XcpEntityManager.class);
+	private Logger logger = LoggerFactory.getLogger(XcpEntityManager.class);
 	
 	private final XcpEntityManagerFactory factory;
 	private final DctmDriver dctmDriver;
@@ -63,14 +63,17 @@ public class XcpEntityManager implements DmsEntityManager {
 			IDfPersistentObject dmsObj = getDmsObj(dfSession, ai, primaryKey);
 			if (dmsObj != null) {
 				
-				LOGGER.debug("Found dms object {}", primaryKey.toString());
+				logger.debug("Found dms object {}", primaryKey.toString());
 				
 				newInstance = entityClass.newInstance();
 
 				Collection<PersistentProperty> persistentProperties = ai
 						.getPersistentProperties();
 				for (PersistentProperty field : persistentProperties) {
-					LOGGER.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
+					if (field.isChild() || field.isParent()) {
+						continue;
+					}
+					logger.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
 					if (field.isRepeating()) {
 						List<Object> values = getRepeatingValues(dmsObj, field);
 						field.setProperty(newInstance, values);
@@ -116,11 +119,11 @@ public class XcpEntityManager implements DmsEntityManager {
 			}
 			if (dmsObj == null) {
 				dmsObj = dfSession.newObject(ai.getDmsType());
-				LOGGER.debug("created new object: {}", dmsObj.getObjectId().toString());
+				logger.debug("created new object: {}", dmsObj.getObjectId().toString());
 			}
 			
 			for (PersistentProperty field : ai.getPersistentProperties()) {
-				if (field.isGeneratedValue() || field.isReadonly()) {
+				if (field.isGeneratedValue() || field.isReadonly() || field.isParent() || field.isChild()) {
 					continue;
 				}
 				Object fieldValue = field.getProperty(entity);
@@ -140,28 +143,32 @@ public class XcpEntityManager implements DmsEntityManager {
 			dmsObj.save();
 			
 			// update system generated value
-			for (PersistentProperty field : ai.getPersistentProperties()) {
-				if (field.isGeneratedValue() || field.isReadonly()) {
-					if (field.isRepeating()) {
-						List<Object> values = new ArrayList<Object>();
-						String attributeName = field.getAttributeName();
-						int valueCount = dmsObj.getValueCount(attributeName);
-						for (int i = 0; i < valueCount; i++) {
-							values.add(field.dfValueToObject(dmsObj.getRepeatingValue(attributeName, i)));
-						}
-						field.setProperty(entity, values);
-					} else {
-						IDfValue dfValue = dmsObj.getValue(field
-								.getAttributeName());
-						field.setProperty(entity, dfValue);
-					}
-				}
-			}
+			dms2Entity(dmsObj, entity, ai);
 			
 		} catch (Exception e) {
 			throw new XcpPersistenceException(e);
 		} finally {
 			releaseSession(dfSession);
+		}
+	}
+
+	void dms2Entity(IDfPersistentObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {
+		for (PersistentProperty field : ai.getPersistentProperties()) {
+			if (field.isGeneratedValue() || field.isReadonly()) {
+				if (field.isRepeating()) {
+					List<Object> values = new ArrayList<Object>();
+					String attributeName = field.getAttributeName();
+					int valueCount = dmsObj.getValueCount(attributeName);
+					for (int i = 0; i < valueCount; i++) {
+						values.add(field.dfValueToObject(dmsObj.getRepeatingValue(attributeName, i)));
+					}
+					field.setProperty(entity, values);
+				} else {
+					IDfValue dfValue = dmsObj.getValue(field
+							.getAttributeName());
+					field.setProperty(entity, dfValue);
+				}
+			}
 		}
 	}
 
@@ -174,6 +181,9 @@ public class XcpEntityManager implements DmsEntityManager {
 				.append(objectId.toString()).append("'");
 		
 		// retrieve the persisted object
+		if (logger.isDebugEnabled()) {
+			logger.debug("find by qualification: {}", buffer.toString());
+		}
 		IDfPersistentObject dmsObj = dfSession.getObjectByQualification(buffer.toString());
 		return dmsObj;
 	}

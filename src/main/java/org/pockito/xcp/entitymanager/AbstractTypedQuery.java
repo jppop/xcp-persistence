@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.IDfId;
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 
 public abstract class AbstractTypedQuery<T> extends AbstractQuery implements DmsTypedQuery<T> {
 
 	static final Logger logger = LoggerFactory.getLogger(AbstractTypedQuery.class);
+
+	private static Joiner fieldJoiner = Joiner.on(", ").skipNulls();
 	
 	protected final Class<T> entityClass;
 
@@ -85,5 +88,28 @@ public abstract class AbstractTypedQuery<T> extends AbstractQuery implements Dms
 		logger.debug("query executed in: {}", stopwatch);
 		return resultList;
 	}
+
+	protected String getDmsType(Class<?> bean) {
+		AnnotationInfo ai = em.getAnnotationInfo(bean);
+		return ai.getDmsType();
+	}
+
+	protected String getFields(String prefix) {
+			AnnotationInfo ai = em().getAnnotationInfo(getEntityClass());
+	//		String sep = "";
+	//		StringBuffer buffer = new StringBuffer();
+	//		for (PersistentProperty field : ai.getPersistentProperties()) {
+	//			buffer.append(field.getAttributeName()).append(sep);
+	//			sep = ", ";
+	//		}
+	//		return buffer.toString();
+			ArrayList<String> attributes = new ArrayList<String>();
+			for (PersistentProperty field : ai.getPersistentProperties()) {
+				if (field.isAttribute()) {
+					attributes.add(prefix + field.getAttributeName());
+				}
+			}
+			return fieldJoiner.join(attributes);
+		}
 
 }

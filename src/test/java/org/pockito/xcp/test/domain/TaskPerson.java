@@ -17,10 +17,10 @@ public class TaskPerson extends PersistedObject {
 	@Attribute(name = "order_no")
 	int order;
 	
-	@Parent
+	@Child
 	Person person; 
 
-	@Child
+	@Parent
 	Task task;
 
 	public Person getPerson() {
@@ -50,9 +50,9 @@ public class TaskPerson extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"TaskPerson[id=%s, person=%s, vstamp=%d, oder=%d]",
+				"TaskPerson[id=%s, task=%s, person=%s, vstamp=%d, oder=%d]",
 				getId(), 
-				getPerson(),
+				getTask(), getPerson(),
 				getvStamp(), getOrder()
 				);
 	}

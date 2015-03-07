@@ -7,6 +7,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.entitymanager.cache.CacheElement;
+import org.pockito.xcp.entitymanager.cache.CacheWrapper;
+import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
+import org.pockito.xcp.entitymanager.cache.SessionCache;
+import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
@@ -30,6 +35,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	private final DctmDriver dctmDriver;
 	private final Map<String, ?> properties;
 	private final String repository;
+	private final SessionCacheWrapper sessionCache;
 
 	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> map,
 			DctmDriver dctmDriver) {
@@ -37,6 +43,14 @@ public class XcpEntityManager implements DmsEntityManager {
 		this.dctmDriver = dctmDriver;
 		this.properties = map;
 		this.repository = (String) map.get(PropertyConstants.Repository);
+
+		// create the session cache
+		if (factory().isSessionLess()) {
+			this.sessionCache = new NoopSessionCache();
+		} else {
+			CacheWrapper<String, CacheElement> underCache = factory().getFirstLevelCache();
+			this.sessionCache = new SessionCache(this, underCache);
+		}
 	}
 
 	public <T> AnnotationInfo getAnnotationInfo(Class<T> entityClass) {
@@ -46,6 +60,12 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 
+		// Note: primary key is unique through all entities (as r_object_id)
+		@SuppressWarnings("unchecked")
+		T bean = (T) cacheGet(primaryKey.toString());
+		if (bean != null) {
+			return bean;
+		}
 		AnnotationInfo ai = getAnnotationInfo(entityClass);
 		return doFind(entityClass, ai, primaryKey);
 	}
@@ -94,6 +114,7 @@ public class XcpEntityManager implements DmsEntityManager {
 						}
 					}
 				}
+				cachePut(newInstance, ai);
 			}
 		} catch (Exception e) {
 			throw new XcpPersistenceException(e);
@@ -155,6 +176,9 @@ public class XcpEntityManager implements DmsEntityManager {
 
 			// update system generated value
 			dms2Entity(dmsObj, entity, ai);
+			
+			// refresh the cache
+			cachePut(entity, ai);
 
 		} catch (Exception e) {
 			throw new XcpPersistenceException(e);
@@ -163,7 +187,15 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	void dms2Entity(IDfPersistentObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {
+	private final void cachePut(Object entity, AnnotationInfo ai) {
+		sessionCache().put(entity, ai);
+	}
+	
+	private final Object cacheGet(String key) {
+		return sessionCache().get(key);
+	}
+
+	private final void dms2Entity(IDfPersistentObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {
 		for (PersistentProperty field : ai.getPersistentProperties()) {
 			if (field.isGeneratedValue() || field.isReadonly()) {
 				if (field.isRepeating()) {
@@ -182,11 +214,14 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	private IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId) throws DfException {
+	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp) throws DfException {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(ai.getDmsType());
 		buffer.append(" where ");
 		buffer.append(ai.getIdMethod().getAttributeName()).append(" = '").append(objectId.toString()).append("'");
+		if (vstamp >= 0) {
+			buffer.append(" and i_vstamp = ").append(vstamp);
+		}
 
 		// retrieve the persisted object
 		if (logger.isDebugEnabled()) {
@@ -196,7 +231,11 @@ public class XcpEntityManager implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	protected XcpEntityManagerFactory factory() {
+	IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId) throws DfException {
+		return getDmsObj(dfSession, ai, objectId, -1);
+	}
+	
+	public XcpEntityManagerFactory factory() {
 		return factory;
 	}
 
@@ -240,6 +279,10 @@ public class XcpEntityManager implements DmsEntityManager {
 	@Override
 	public <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass) {
 		return new XcpTypedQuery<T>(this, dqlString, entityClass, true);
+	}
+
+	SessionCacheWrapper sessionCache() {
+		return sessionCache;
 	}
 
 }

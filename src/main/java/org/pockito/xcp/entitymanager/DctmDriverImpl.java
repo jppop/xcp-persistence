@@ -36,7 +36,7 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public final void setCredendatials(final String repository, final String username,
+	public final void setCredentials(final String repository, final String username,
 			final String password) {
 		try {
 			DmsRepository.getInstance().setIdentity(repository, username, password);
@@ -134,15 +134,16 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public final int getCountOfObjects(final IDfSession session, final String query)
+	public final int executeQuery(final IDfSession session, final String query)
 			throws DmsException {
 		
 		int count = -1;
 		
 		IDfQuery queryExecutor = createQuery();
+		queryExecutor.setDQL(query);
 		IDfCollection col = null;
 		try {
-			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
+			col = queryExecutor.execute(session, IDfQuery.DF_QUERY);
 			if (col.next()) {
 				IDfAttr attr = col.getAttr(0);
 				count = col.getInt(attr.getName());

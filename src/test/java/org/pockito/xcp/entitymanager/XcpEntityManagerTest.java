@@ -14,23 +14,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
-import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.Person;
 import org.pockito.xcp.test.domain.TaskPerson;
 
+import com.documentum.fc.client.DfQuery;
+import com.documentum.fc.client.IDfCollection;
+import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
+import com.documentum.fc.common.IDfAttr;
 
 public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 	@Rule
 	public TestName name = new TestName();
 
-	private static DmsEntityManager em;
+	private static XcpEntityManager em;
 
 	@BeforeClass
 	public static void initResource() {
@@ -40,7 +43,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 		props.put(PropertyConstants.Password, getRepository().getOperatorPassword());
 		XcpEntityManagerFactory dmsEmFactory = new XcpEntityManagerFactory(props);
 
-		em = dmsEmFactory.createDmsEntityManager();
+		em = (XcpEntityManager) dmsEmFactory.createDmsEntityManager();
 	}
 
 	@Test
@@ -138,4 +141,64 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			System.out.println(taskPerson);
 		}
 	}
+
+	@Test
+	public void testCache() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			String expectedName = "_#_" + name.getMethodName();
+			IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			Document document1 = em.find(Document.class, docId);
+			assertNotNull(document1);
+			assertNotNull(em.sessionCache().get(docId));
+
+			int vtamp = document1.getvStamp();
+
+			Document document2 = em.find(Document.class, docId);
+			assertNotNull(document2);
+			assertEquals(document1, document2);
+			assertEquals(vtamp, document2.getvStamp());
+
+			// update the object from server (using DQL)
+			StringBuffer buffer = new StringBuffer();
+			buffer.append("update dm_document object")
+				.append(" set subject = 'a new subject'")
+				.append(" where r_object_id = '").append(docId.toString()).append("'")
+				;
+			IDfQuery queryExecutor = new DfQuery();
+			queryExecutor.setDQL(buffer.toString());
+			IDfCollection col = null;
+			int count = -1;
+			try {
+				col = queryExecutor.execute(session, IDfQuery.DF_QUERY);
+				if (col.next()) {
+					IDfAttr attr = col.getAttr(0);
+					count = col.getInt(attr.getName());
+				}
+			} finally {
+				try {
+					if (col != null) {
+						col.close();
+					}
+				} catch (DfException ignore) {
+				}
+			}
+			assertEquals(1, count);
+			Document document3 = em.find(Document.class, docId);
+			assertTrue(document2 != document3);
+			assertEquals(vtamp + 1, document3.getvStamp());
+			
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
 }

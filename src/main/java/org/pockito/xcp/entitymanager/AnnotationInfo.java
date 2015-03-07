@@ -8,13 +8,14 @@ import java.util.Map;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
 
+import com.google.common.primitives.Primitives;
+
 public class AnnotationInfo {
 
 	private String dmsType;
 	private XcpTypeCategory typeCategory;
 	private PersistentProperty idMethod;
-	private PersistentProperty childRelation = null;
-	private PersistentProperty parentRelation = null;
+	private PersistentProperty vstampMethod;
 	private Map<String, PersistentProperty> persistentProperties = new HashMap<String, PersistentProperty>();
 
 	public AnnotationInfo(String type) {
@@ -32,7 +33,7 @@ public class AnnotationInfo {
 		this.dmsType = dmsType;
 	}
 
-	protected PersistentProperty getIdMethod() {
+	public PersistentProperty getIdMethod() {
 		return idMethod;
 	}
 
@@ -44,7 +45,7 @@ public class AnnotationInfo {
 		return persistentProperties.values();
 	}
 
-	protected PersistentProperty getPersistentProperty(String property) {
+	public PersistentProperty getPersistentProperty(String property) {
 		return persistentProperties.get(property);
 	}
 
@@ -58,6 +59,12 @@ public class AnnotationInfo {
         if (persistentMethod.isId()) {
         	setIdProperty(persistentMethod);
         }
+        if (persistentMethod.isVStamp()) {
+        	Class<?> fieldType = persistentMethod.getRawClass();
+        	if (Primitives.unwrap(fieldType) == int.class) {
+            	setVStampProperty(persistentMethod);
+        	}
+       }
         return persistentMethod;
     }
 
@@ -71,12 +78,12 @@ public class AnnotationInfo {
 		if (persistentField.isId()) {
 			setIdProperty(persistentField);
 		}
-		if (persistentField.isParent()) {
-			setParentRelation(persistentField);
-		}
-		if (persistentField.isChild()) {
-			setChildRelation(persistentField);
-		}
+        if (persistentField.isVStamp()) {
+        	Class<?> fieldType = persistentField.getRawClass();
+        	if (Primitives.unwrap(fieldType) == int.class) {
+        		setVStampProperty(persistentField);
+        	}
+        }
 		return persistentField;
 	}
 
@@ -88,20 +95,12 @@ public class AnnotationInfo {
 		this.typeCategory = typeCategory;
 	}
 
-	public PersistentProperty getChildRelation() {
-		return childRelation;
+	public PersistentProperty getVStampMethod() {
+		return vstampMethod;
 	}
 
-	public void setChildRelation(PersistentProperty childRelation) {
-		this.childRelation = childRelation;
-	}
-
-	public PersistentProperty getParentRelation() {
-		return parentRelation;
-	}
-
-	public void setParentRelation(PersistentProperty parentRelation) {
-		this.parentRelation = parentRelation;
+	public void setVStampProperty(PersistentProperty vstampMethod) {
+		this.vstampMethod = vstampMethod;
 	}
 
 }

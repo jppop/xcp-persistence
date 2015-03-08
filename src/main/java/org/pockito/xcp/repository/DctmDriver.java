@@ -19,7 +19,7 @@ public interface DctmDriver {
 	 */
 	IDfSessionManager getSessionManager() throws DmsException;
 
-	void setCredendatials(String repository, String username,
+	void setCredentials(String repository, String username,
 			String password);
 
 	IDfSession getSession();
@@ -38,6 +38,6 @@ public interface DctmDriver {
 	int getObjectsByQuery(IDfSession session, String query, RowHandler rowHandler)
 			throws DmsException;
 	
-	int getCountOfObjects(IDfSession session, String query) throws DmsException;
+	int executeQuery(IDfSession session, String query) throws DmsException;
 
 }

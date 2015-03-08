@@ -82,7 +82,12 @@ public abstract class AbstractQuery {
 		}
 		return param;
 	}
-
+	
+//	protected void clearParams() {
+//		this.parameters.clear();
+//		this.hints.clear();
+//	}
+//
 	/**
 	 * static value hardcoding date format used for conversation of Date into
 	 * String

@@ -3,6 +3,7 @@ package org.pockito.xcp.test.domain;
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.GeneratedValue;
 import org.pockito.xcp.annotations.Id;
+import org.pockito.xcp.annotations.VStamp;
 import org.pockito.xcp.annotations.XcpEntity;
 
 @XcpEntity(namespace = "todo")
@@ -12,7 +13,7 @@ public class PersistedObject {
 	@Attribute(name = "r_object_id")
 	private String id;
 	
-	@GeneratedValue
+	@GeneratedValue @VStamp
 	@Attribute(name = "i_vstamp")
 	private int vStamp;
 

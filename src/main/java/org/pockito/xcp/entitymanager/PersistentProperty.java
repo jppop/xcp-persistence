@@ -13,6 +13,7 @@ import org.pockito.xcp.annotations.GeneratedValue;
 import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.Parent;
+import org.pockito.xcp.annotations.VStamp;
 
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
@@ -133,6 +134,11 @@ public abstract class PersistentProperty {
 		return getGetter().getReturnType();
 	}
 
+	public boolean isAssignableFrom(Class<?> c) {
+		Class<?> rawClass = getRawClass();
+		return rawClass.isAssignableFrom(c);
+	}
+
 	public abstract Method getGetter();
 
 	public abstract Method getSetter();
@@ -172,6 +178,10 @@ public abstract class PersistentProperty {
 		} else {
 			return annotation.readonly();
 		}
+	}
+
+	public boolean isVStamp() {
+		return element.isAnnotationPresent(VStamp.class);
 	}
 
 //	public boolean isParentFolder() {

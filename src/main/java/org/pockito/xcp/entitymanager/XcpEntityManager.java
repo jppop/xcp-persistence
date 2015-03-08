@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
@@ -22,10 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.documentum.fc.client.IDfPersistentObject;
+import com.documentum.fc.client.IDfRelation;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
+import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfValue;
+import com.google.common.base.Strings;
 
 public class XcpEntityManager implements DmsEntityManager {
 
@@ -143,43 +145,45 @@ public class XcpEntityManager implements DmsEntityManager {
 			// get a DFC session
 			dfSession = getSession();
 
-			// create a DMS object if needed
-			IDfPersistentObject dmsObj = null;
-			String identifier = (String) ai.getIdMethod().getProperty(entity);
-			if (StringUtils.isNotBlank(identifier)) {
-				dmsObj = getDmsObj(dfSession, ai, identifier);
-			}
-			if (dmsObj == null) {
-				dmsObj = dfSession.newObject(ai.getDmsType());
-				logger.debug("created new object: {}", dmsObj.getObjectId().toString());
+			final IDfPersistentObject dmsObj;
+			if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
+				dmsObj = createRelationObject(dfSession, entity, ai);
+			} else {
+				dmsObj = createDmsObject(dfSession, entity, ai);
 			}
 
 			for (PersistentProperty field : ai.getPersistentProperties()) {
 				if (field.isGeneratedValue() || field.isReadonly() || field.isParent() || field.isChild()) {
 					continue;
 				}
+
 				Object fieldValue = field.getProperty(entity);
-				if (field.isRepeating()) {
-					String attributeName = field.getAttributeName();
-					dmsObj.truncate(attributeName, 0);
-					int valueIndex = 0;
-					for (Object each : (Collection<?>) fieldValue) {
-						dmsObj.setRepeatingValue(attributeName, valueIndex++, field.objToDfValue(each));
+
+				if (fieldValue != null) {
+					if (field.isRepeating()) {
+						String attributeName = field.getAttributeName();
+						dmsObj.truncate(attributeName, 0);
+						int valueIndex = 0;
+						for (Object each : (Collection<?>) fieldValue) {
+							dmsObj.setRepeatingValue(attributeName, valueIndex++, field.objToDfValue(each));
+						}
+					} else {
+						dmsObj.setValue(field.getAttributeName(), field.objToDfValue(fieldValue));
 					}
-				} else {
-					dmsObj.setValue(field.getAttributeName(), field.objToDfValue(fieldValue));
 				}
 			}
-
+			
 			// save dms object
 			dmsObj.save();
 
 			// update system generated value
 			dms2Entity(dmsObj, entity, ai);
-			
+
 			// refresh the cache
 			cachePut(entity, ai);
 
+		} catch (XcpPersistenceException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new XcpPersistenceException(e);
 		} finally {
@@ -187,10 +191,56 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
+	private IDfPersistentObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai)
+			throws DfException {
+		// create a DMS object if needed
+		IDfPersistentObject dmsObj = null;
+		String identifier = (String) ai.getIdMethod().getProperty(entity);
+		if (!Strings.isNullOrEmpty(identifier)) {
+			dmsObj = getDmsObj(dfSession, ai, identifier);
+		}
+		if (dmsObj == null) {
+			dmsObj = dfSession.newObject(ai.getDmsType());
+			logger.debug("created new object: {}", dmsObj.getObjectId().toString());
+		}
+
+		return dmsObj;
+	}
+
+	private IDfPersistentObject createRelationObject(IDfSession dfSession, Object entity, AnnotationInfo ai)
+			throws DfException {
+
+		// retrieve the parent_id and child_id
+		PersistentProperty parentMethod = ai.getParentMethod();
+		if (parentMethod == null) {
+			throw new XcpPersistenceException("Relation must be annotated with @Parent");
+		}
+		PersistentProperty childMethod = ai.getChildMethod();
+		if (childMethod == null) {
+			throw new XcpPersistenceException("Relation must be annotated with @Child");
+		}
+		final Object parentObject = parentMethod.getProperty(entity);
+		final AnnotationInfo parentAi = factory().getAnnotationManager().getAnnotationInfo(parentObject);
+		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parentObject);
+		final Object childObject = childMethod.getProperty(entity);
+		final AnnotationInfo childAi = factory().getAnnotationManager().getAnnotationInfo(childObject);
+		final String childObjectId = (String) childAi.getIdMethod().getProperty(childObject);
+
+		IDfPersistentObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod().getAttributeName(),
+				parentObjectId, -1);
+		if (dmsParent == null) {
+			throw new XcpPersistenceException("Object with identifier {} not found");
+		}
+		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsType(), new DfId(childObjectId), null, false,
+				ai.getLabel());
+		
+		return relationObj;
+	}
+
 	private final void cachePut(Object entity, AnnotationInfo ai) {
 		sessionCache().put(entity, ai);
 	}
-	
+
 	private final Object cacheGet(String key) {
 		return sessionCache().get(key);
 	}
@@ -214,11 +264,17 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp) throws DfException {
+	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp)
+			throws DfException {
+		return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
+	}
+
+	public IDfPersistentObject getDmsObj(IDfSession dfSession, String objectType, String keyIdentifier,
+			Object objectId, int vstamp) throws DfException {
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(ai.getDmsType());
+		buffer.append(objectType);
 		buffer.append(" where ");
-		buffer.append(ai.getIdMethod().getAttributeName()).append(" = '").append(objectId.toString()).append("'");
+		buffer.append(keyIdentifier).append(" = '").append(objectId.toString()).append("'");
 		if (vstamp >= 0) {
 			buffer.append(" and i_vstamp = ").append(vstamp);
 		}
@@ -234,7 +290,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId) throws DfException {
 		return getDmsObj(dfSession, ai, objectId, -1);
 	}
-	
+
 	public XcpEntityManagerFactory factory() {
 		return factory;
 	}

@@ -16,18 +16,19 @@ import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.pockito.xcp.test.domain.Document;
-import org.pockito.xcp.test.domain.Person;
-import org.pockito.xcp.test.domain.TaskPerson;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
 
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.IDfCollection;
+import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
+import com.documentum.fc.client.IDfRelation;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.IDfAttr;
+import com.documentum.fc.common.IDfId;
 
 public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
@@ -89,7 +90,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			Calendar today = new GregorianCalendar();
 
-			// create a task object
+			// retrieve the document object
 			IDfSysObject dmDocument = (IDfSysObject) session.getObject(new DfId(document.getId()));
 			addToDeleteList(dmDocument.getObjectId());
 			assertEquals(expectedName, dmDocument.getObjectName());
@@ -184,6 +185,60 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(2, emailTemplates.size());
 			
 		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testRelate() throws DfException {
+
+		IDfCollection childRelatives = null;
+		
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			String expectedName = "_#_" + name.getMethodName();
+			Document parent = new Document();
+			parent.setName(expectedName);
+			parent.setSubject("test purpose -- parent");
+			parent.setStatus("draft");
+			em.persist(parent);
+			addToDeleteList(new DfId(parent.getId()));
+
+			Document template = new Document();
+			template.setName(expectedName);
+			template.setSubject("test purpose -- parent");
+			template.setStatus("draft");
+			em.persist(template);
+			addToDeleteList(new DfId(template.getId()));
+
+			WfEmailTemplate wfEmailTemplate = new WfEmailTemplate();
+			wfEmailTemplate.setWf(parent);
+			wfEmailTemplate.setTemplate(template);
+			em.persist(wfEmailTemplate);
+			
+			// retrieve the relation object using DFC
+			IDfPersistentObject dmsParent = session.getObject(new DfId(parent.getId()));
+			childRelatives = dmsParent.getChildRelatives("dm_wf_email_template");
+			assertNotNull(childRelatives);
+			// at least one child
+			assertTrue(childRelatives.next());
+			final IDfId relId = childRelatives.getId("r_object_id");
+			// the relation object should the one we created
+			assertEquals(wfEmailTemplate.getId(), relId.toString());
+			// the child id should refer the child object we created
+			final IDfId childId = childRelatives.getId("child_id");
+			assertEquals(template.getId(), childId.toString());
+			// no more child
+			assertTrue(childRelatives.next() == false);
+			
+		} finally {
+			if (childRelatives != null) {
+				try {
+					childRelatives.close();
+				} catch (Exception ignore) {
+				}
+			}
 			getRepository().releaseSession(session);
 		}
 	}

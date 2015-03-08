@@ -17,6 +17,12 @@ public class Document extends PersistedObject {
 	@Attribute(name = "object_name")
 	private String name;
 
+	@Attribute(name = "subject")
+	private String subject;
+
+	@Attribute(name = "title")
+	private String title;
+
 	@Attribute(name = "r_creation_date", readonly = true)
 	private Date creationDate;
 
@@ -39,6 +45,22 @@ public class Document extends PersistedObject {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public Date getCreationDate() {

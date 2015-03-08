@@ -5,15 +5,18 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.pockito.xcp.annotations.Transient;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
-import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.exception.XcpPersistenceException;
+
+import com.google.common.base.Strings;
 
 public class AnnotationManager {
 
+//	private static final String DMC_NAMESPACE = "dmc";
+//	private static final String DM_NAMESPACE = "dm";
+//	private static final String DM_RELATION = "dm_relation";
 	private Map<String, AnnotationInfo> annotationMap = new HashMap<String, AnnotationInfo>();
 
 	public AnnotationManager() {
@@ -44,7 +47,8 @@ public class AnnotationManager {
 				// TODO implements a better exception management
 				throw new XcpPersistenceException("Class not marked as an @Entity: " + c.getName());
 			}
-		}		
+		}
+		
         AnnotationInfo ai = new AnnotationInfo();
         
         String dmsTypeName = null;
@@ -60,18 +64,11 @@ public class AnnotationManager {
             		XcpType xcpType = superClass.getAnnotation(XcpType.class);
             		
             		if (xcpType != null) {
-	            		
             			ai.setTypeCategory(xcpType.type());
-
-	            		if (xcpType.type() == XcpTypeCategory.RELATION) {
-            				// always use the dm_relation type (allow to query relations not created by xCP).
-    		                // get the underlying DMS type
-            				dmsTypeName = "dm_relation";
-            			} else {
-    	            		String namespace = entity.namespace();
-    	            		String shortName = xcpType.name();
-    	            		dmsTypeName = namespace + "_" + shortName;
-            			}
+	            		String namespace = entity.namespace();
+	            		String shortName = xcpType.name();
+	            		dmsTypeName = namespace + "_" + shortName;
+	                    ai.setLabel(xcpType.label());
             		}
             	}
                 addProperties(ai, superClass);
@@ -80,7 +77,7 @@ public class AnnotationManager {
             }
             superClass = superClass.getSuperclass();
         }
-        if (StringUtils.isBlank(dmsTypeName)) {
+        if (Strings.isNullOrEmpty(dmsTypeName)) {
         	throw new XcpPersistenceException("Underlying type name not found. You must mark the entity with XcpType. Class: " + c.getName());
         }
         ai.setDmsType(dmsTypeName);
@@ -88,7 +85,11 @@ public class AnnotationManager {
 		return ai;
 	}
 	
-    private void addMethods(AnnotationInfo ai, Class<?> c) {
+//    private boolean isNativeNameSpace(String namespace) {
+//		return namespace.equals(DM_NAMESPACE) || namespace.equals(DMC_NAMESPACE);
+//	}
+//
+	private void addMethods(AnnotationInfo ai, Class<?> c) {
         Method[] methods = c.getDeclaredMethods();
         for (Method method : methods) {
             String methodName = method.getName();

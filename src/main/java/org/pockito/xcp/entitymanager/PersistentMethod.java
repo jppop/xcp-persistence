@@ -2,7 +2,7 @@ package org.pockito.xcp.entitymanager;
 
 import java.lang.reflect.Method;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.base.CaseFormat;
 
 /**
  * PersistentProperty that supports access to data through getter/setter pair.
@@ -22,13 +22,10 @@ public class PersistentMethod extends PersistentProperty {
 		this.getter.setAccessible(true);
 		String setterName = getter.getName().replaceFirst("get", "set");
 		try {
-			this.setter = method.getDeclaringClass().getDeclaredMethod(
-					setterName, getter.getReturnType());
+			this.setter = method.getDeclaringClass().getDeclaredMethod(setterName, getter.getReturnType());
 		} catch (NoSuchMethodException e) {
-			throw new IllegalStateException(
-					"No setter found for method provided: " + getter.getName()
-							+ " in class: "
-							+ method.getDeclaringClass().getName());
+			throw new IllegalStateException("No setter found for method provided: " + getter.getName() + " in class: "
+					+ method.getDeclaringClass().getName());
 		}
 		this.setter.setAccessible(true);
 	}
@@ -42,8 +39,7 @@ public class PersistentMethod extends PersistentProperty {
 	}
 
 	public String getFieldName() {
-		return StringUtils.uncapitalize(getGetter().getName().replaceFirst(
-				"get", ""));
+		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getGetter().getName().replaceFirst("get", ""));
 	}
 
 }

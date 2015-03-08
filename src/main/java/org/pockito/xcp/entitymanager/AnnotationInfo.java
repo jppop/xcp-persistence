@@ -6,16 +6,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.exception.XcpPersistenceException;
 
 import com.google.common.primitives.Primitives;
 
 public class AnnotationInfo {
 
 	private String dmsType;
+	private String label;
 	private XcpTypeCategory typeCategory;
 	private PersistentProperty idMethod;
 	private PersistentProperty vstampMethod;
+	private PersistentProperty parentMethod;
+	private PersistentProperty childMethod;
 	private Map<String, PersistentProperty> persistentProperties = new HashMap<String, PersistentProperty>();
 
 	public AnnotationInfo(String type) {
@@ -58,8 +63,11 @@ public class AnnotationInfo {
         persistentProperties.put(persistentMethod.getFieldName(), persistentMethod);
         if (persistentMethod.isId()) {
         	setIdProperty(persistentMethod);
-        }
-        if (persistentMethod.isVStamp()) {
+		} else if (persistentMethod.isParent()) {
+			setParentMethod(persistentMethod);
+		} else if (persistentMethod.isChild()) {
+			setChildMethod(persistentMethod);
+        } else if (persistentMethod.isVStamp()) {
         	Class<?> fieldType = persistentMethod.getRawClass();
         	if (Primitives.unwrap(fieldType) == int.class) {
             	setVStampProperty(persistentMethod);
@@ -76,9 +84,16 @@ public class AnnotationInfo {
 		}
 		persistentProperties.put(persistentField.getFieldName(), persistentField);
 		if (persistentField.isId()) {
+			final Attribute attr = field.getAnnotation(Attribute.class);
+			if (attr == null) {
+				throw new XcpPersistenceException("ID field must be annotated with Attribute");
+			}
 			setIdProperty(persistentField);
-		}
-        if (persistentField.isVStamp()) {
+		} else if (persistentField.isParent()) {
+			setParentMethod(persistentField);
+		} else if (persistentField.isChild()) {
+			setChildMethod(persistentField);
+		} else if (persistentField.isVStamp()) {
         	Class<?> fieldType = persistentField.getRawClass();
         	if (Primitives.unwrap(fieldType) == int.class) {
         		setVStampProperty(persistentField);
@@ -101,6 +116,30 @@ public class AnnotationInfo {
 
 	public void setVStampProperty(PersistentProperty vstampMethod) {
 		this.vstampMethod = vstampMethod;
+	}
+
+	public PersistentProperty getParentMethod() {
+		return parentMethod;
+	}
+
+	public void setParentMethod(PersistentProperty parentMethod) {
+		this.parentMethod = parentMethod;
+	}
+
+	public PersistentProperty getChildMethod() {
+		return childMethod;
+	}
+
+	public void setChildMethod(PersistentProperty childMethod) {
+		this.childMethod = childMethod;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 }

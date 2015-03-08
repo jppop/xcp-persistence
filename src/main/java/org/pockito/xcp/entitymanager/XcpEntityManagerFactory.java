@@ -8,14 +8,15 @@ import static org.pockito.xcp.entitymanager.PropertyConstants.Username;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.pockito.xcp.entitymanager.cache.BuiltInCache;
 import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
-import org.pockito.xcp.entitymanager.cache.BuiltInCache;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsEntityManagerFactory;
+
+import com.google.common.base.Strings;
 
 public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
@@ -60,10 +61,10 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 				dctmDriver = getDctmDriver();
 			}
 			String username = (String) props.get(Username);
-			if (StringUtils.isBlank(username)) throw new IllegalArgumentException("property 'username' is required");
+			if (Strings.isNullOrEmpty(username)) throw new IllegalArgumentException("property 'username' is required");
 			String password = (String) props.get(Password);
 			String repository = (String) props.get(Repository);
-			if (StringUtils.isBlank(repository)) throw new IllegalArgumentException("property 'repository' is required");
+			if (Strings.isNullOrEmpty(repository)) throw new IllegalArgumentException("property 'repository' is required");
 			
 			// set single identity for all repositories
 			dctmDriver.setCredentials(repository, username, password);

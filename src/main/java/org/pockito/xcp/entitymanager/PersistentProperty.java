@@ -7,17 +7,17 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
+import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.Child;
 import org.pockito.xcp.annotations.GeneratedValue;
 import org.pockito.xcp.annotations.Id;
-import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.Parent;
 import org.pockito.xcp.annotations.VStamp;
 
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
 import com.documentum.fc.common.IDfValue;
+import com.google.common.base.Strings;
 
 /**
  * from SimpleJPA https://github.com/appoxy/simplejpa (Kerry Wright)
@@ -26,6 +26,8 @@ import com.documentum.fc.common.IDfValue;
  * 
  */
 public abstract class PersistentProperty {
+	public static final String DMS_ATTR_PARENT_ID = "parent_id";
+	public static final String DMS_ATTR_CHILD_ID = "child_id";
 	protected final AnnotatedElement element;
 
 	protected PersistentProperty(final AnnotatedElement annotatedElement) {
@@ -211,14 +213,18 @@ public abstract class PersistentProperty {
 		String attributeName = null;
 		if (element.isAnnotationPresent(Attribute.class)) {
 			Attribute attribute = element.getAnnotation(Attribute.class);
-			if (!StringUtils.isBlank(attribute.name())) {
+			if (!Strings.isNullOrEmpty(attribute.name())) {
 				 attributeName = attribute.name();
 			}
+		} else if (element.isAnnotationPresent(Child.class)){
+			attributeName = DMS_ATTR_CHILD_ID;
+		} else if (element.isAnnotationPresent(Parent.class)){
+			attributeName = DMS_ATTR_PARENT_ID;
 		} else {
 			attributeName = getSystemAttributeName();
 		}
 		if (attributeName == null) {
-			attributeName = StringUtils.uncapitalize(getFieldName());
+			attributeName = getFieldName().toLowerCase();
 		}
 		return attributeName;
 	}

@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.pockito.xcp.annotations.Transient;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
+import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.exception.XcpPersistenceException;
 
 public class AnnotationManager {
@@ -55,13 +56,22 @@ public class AnnotationManager {
             XcpEntity entity = (XcpEntity) superClass.getAnnotation(XcpEntity.class);
             if (entity != null) {
             	if (dmsTypeName == null) {
+            		
             		XcpType xcpType = superClass.getAnnotation(XcpType.class);
+            		
             		if (xcpType != null) {
-		                // get the underlying DMS type
-	            		String namespace = entity.namespace();
-	            		String shortName = xcpType.name();
-	            		dmsTypeName = namespace + "_" + shortName;
-	            		ai.setTypeCategory(xcpType.type());
+	            		
+            			ai.setTypeCategory(xcpType.type());
+
+	            		if (xcpType.type() == XcpTypeCategory.RELATION) {
+            				// always use the dm_relation type (allow to query relations not created by xCP).
+    		                // get the underlying DMS type
+            				dmsTypeName = "dm_relation";
+            			} else {
+    	            		String namespace = entity.namespace();
+    	            		String shortName = xcpType.name();
+    	            		dmsTypeName = namespace + "_" + shortName;
+            			}
             		}
             	}
                 addProperties(ai, superClass);
@@ -103,7 +113,6 @@ public class AnnotationManager {
 			
 	}
 
-	// TODO: this should be externalized
 //	public static String getTypeOfNativeEntity(String entityName) {
 //		if ("native.PersistedObject".equals(entityName)) {
 //			return "dm_sysobject";

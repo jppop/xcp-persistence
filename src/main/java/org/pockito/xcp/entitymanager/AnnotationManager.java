@@ -80,6 +80,9 @@ public class AnnotationManager {
         if (Strings.isNullOrEmpty(dmsTypeName)) {
         	throw new XcpPersistenceException("Underlying type name not found. You must mark the entity with XcpType. Class: " + c.getName());
         }
+        if (ai.getIdMethod() == null) {
+        	throw new XcpPersistenceException("Entity must have an ID field");
+        }
         ai.setDmsType(dmsTypeName);
         getAnnotationMap().put(c.getName(), ai);
 		return ai;

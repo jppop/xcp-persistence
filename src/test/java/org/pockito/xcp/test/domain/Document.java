@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.pockito.xcp.annotations.Attribute;
+import org.pockito.xcp.annotations.ParentFolder;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.annotations.XcpTypeCategory;
@@ -35,6 +36,9 @@ public class Document extends PersistedObject {
 	@Attribute(name = "r_content_size", readonly = true)
 	private int contentSize;
 
+	@ParentFolder
+	private String parentFolder;
+	
 	// FIXME: r_version_label is readonly but can be modified (mark api)
 	@Attribute(name = "r_version_label", readonly = true)
 	protected Collection<String> versionLabels = new ArrayList<String>();
@@ -103,12 +107,20 @@ public class Document extends PersistedObject {
 		this.versionLabels = versionLabels;
 	}
 
+	public String getParentFolder() {
+		return parentFolder;
+	}
+
+	public void setParentFolder(String parentFolder) {
+		this.parentFolder = parentFolder;
+	}
+
 	@Override
 	public String toString() {
 		return String.format(
-				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, hasFolder=%b, vstamp=%d]",
+				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
 				getId(), name, Arrays.toString(versionLabels.toArray()),
-				creationDate, contentSize, hasFolder, getvStamp()
+				creationDate, contentSize, getParentFolder(), getvStamp()
 				);
 	}
 

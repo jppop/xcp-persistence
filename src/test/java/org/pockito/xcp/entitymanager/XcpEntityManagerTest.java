@@ -20,9 +20,9 @@ import org.pockito.xcp.test.domain.WfEmailTemplate;
 
 import com.documentum.fc.client.DfQuery;
 import com.documentum.fc.client.IDfCollection;
+import com.documentum.fc.client.IDfFolder;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
-import com.documentum.fc.client.IDfRelation;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
@@ -207,7 +207,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			Document template = new Document();
 			template.setName(expectedName);
-			template.setSubject("test purpose -- parent");
+			template.setSubject("test purpose -- child");
 			template.setStatus("draft");
 			em.persist(template);
 			addToDeleteList(new DfId(template.getId()));
@@ -239,6 +239,40 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 				} catch (Exception ignore) {
 				}
 			}
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testParentFolder() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			String expectedName = "_#_" + name.getMethodName();
+			IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			assertEquals(docId, document.getId());
+			String expectedFolderPath = "/" + getRepository().getOperatorName(); // its home cabinet
+			assertEquals(expectedFolderPath, document.getParentFolder());
+			
+			// move the object
+			document.setParentFolder("/Temp");
+			em.persist(document);
+			
+			IDfFolder tempFolder = session.getFolderByPath("/Temp");
+			dmDocument.fetch(null);
+			assertEquals(dmDocument.getId("i_folder_id").toString(), tempFolder.getObjectId().toString());
+			assertEquals(1, dmDocument.getValueCount("i_folder_id"));
+
+		} finally {
 			getRepository().releaseSession(session);
 		}
 	}

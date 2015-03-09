@@ -12,6 +12,7 @@ import org.pockito.xcp.annotations.Child;
 import org.pockito.xcp.annotations.GeneratedValue;
 import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.Parent;
+import org.pockito.xcp.annotations.ParentFolder;
 import org.pockito.xcp.annotations.VStamp;
 
 import com.documentum.fc.common.DfTime;
@@ -26,8 +27,11 @@ import com.google.common.base.Strings;
  * 
  */
 public abstract class PersistentProperty {
+	
 	public static final String DMS_ATTR_PARENT_ID = "parent_id";
 	public static final String DMS_ATTR_CHILD_ID = "child_id";
+	public static final String DMS_ATTR_FOLDER_ID = "i_folder_id";
+	
 	protected final AnnotatedElement element;
 
 	protected PersistentProperty(final AnnotatedElement annotatedElement) {
@@ -169,6 +173,10 @@ public abstract class PersistentProperty {
 		return element.isAnnotationPresent(Child.class);
 	}
 	
+	public boolean isParentFolder() {
+		return element.isAnnotationPresent(ParentFolder.class);
+	}
+	
 	public boolean isAttribute() {
 		return element.isAnnotationPresent(Attribute.class);
 	}
@@ -220,6 +228,8 @@ public abstract class PersistentProperty {
 			attributeName = DMS_ATTR_CHILD_ID;
 		} else if (element.isAnnotationPresent(Parent.class)){
 			attributeName = DMS_ATTR_PARENT_ID;
+		} else if (element.isAnnotationPresent(ParentFolder.class)){
+			attributeName = DMS_ATTR_FOLDER_ID;
 		} else {
 			attributeName = getSystemAttributeName();
 		}

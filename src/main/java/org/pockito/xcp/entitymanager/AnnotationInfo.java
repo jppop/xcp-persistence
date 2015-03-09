@@ -60,7 +60,9 @@ public class AnnotationInfo {
         if (persistentProperties.containsKey(persistentMethod.getFieldName())) {
         	return persistentProperties.get(persistentMethod.getFieldName());
         }
+        
         persistentProperties.put(persistentMethod.getFieldName(), persistentMethod);
+        
         if (persistentMethod.isId()) {
         	setIdProperty(persistentMethod);
 		} else if (persistentMethod.isParent()) {
@@ -73,7 +75,7 @@ public class AnnotationInfo {
             	setVStampProperty(persistentMethod);
         	}
        }
-        return persistentMethod;
+       return persistentMethod;
     }
 
 	public PersistentProperty addField(Field field) {

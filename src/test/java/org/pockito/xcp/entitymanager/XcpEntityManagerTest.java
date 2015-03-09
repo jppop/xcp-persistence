@@ -3,6 +3,7 @@ package org.pockito.xcp.entitymanager;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -126,8 +127,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 							"select r_object_id from dm_document where folder(:path)"
 									+ " and subject like :subject and a_status = :status", Document.class)
 					.setParameter("path", "/Temp").setParameter("subject", "test purpose #%")
-					.setParameter("status", "draft")
-					.setMaxResults(5);
+					.setParameter("status", "draft").setMaxResults(5);
 			List<Document> docs = query.getResultList();
 			assertNotNull(docs);
 			assertEquals(5, docs.size());
@@ -135,8 +135,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// query the last 5 docs
 			docs = null;
 			query.setParameter("path", "/Temp").setParameter("subject", "test purpose #%")
-				 .setParameter("status", "draft")
-				 .setHint("RETURN_RANGE", "6 10 'object_name'");
+					.setParameter("status", "draft").setHint("RETURN_RANGE", "6 10 'object_name'");
 			docs = query.getResultList();
 			assertNotNull(docs);
 			assertEquals(5, docs.size());
@@ -167,7 +166,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 				dmDocument.setString("subject", "test purpose -- child #" + Integer.toString(i));
 				dmDocument.setString("a_status", "draft");
 				dmDocument.save();
-				
+
 				// link to the parent object
 				dmDocument.addParentRelative("dm_wf_email_template", dmWfDoc.getObjectId(), null, true, "test purpose");
 				dmDocument.save();
@@ -178,12 +177,11 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			DmsTypedQuery<WfEmailTemplate> query = em.createNativeQuery(
 					"select r_object_id from dm_relation where relation_name = 'dm_wf_email_template'"
-					+ " and parent_id = :wfId", WfEmailTemplate.class)
-					.setParameter("wfId", wf.getId());
+							+ " and parent_id = :wfId", WfEmailTemplate.class).setParameter("wfId", wf.getId());
 			List<WfEmailTemplate> emailTemplates = query.getResultList();
 			assertNotNull(emailTemplates);
 			assertEquals(2, emailTemplates.size());
-			
+
 		} finally {
 			getRepository().releaseSession(session);
 		}
@@ -193,7 +191,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	public void testRelate() throws DfException {
 
 		IDfCollection childRelatives = null;
-		
+
 		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
 		try {
 
@@ -216,7 +214,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			wfEmailTemplate.setWf(parent);
 			wfEmailTemplate.setTemplate(template);
 			em.persist(wfEmailTemplate);
-			
+
 			// retrieve the relation object using DFC
 			IDfPersistentObject dmsParent = session.getObject(new DfId(parent.getId()));
 			childRelatives = dmsParent.getChildRelatives("dm_wf_email_template");
@@ -231,7 +229,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(template.getId(), childId.toString());
 			// no more child
 			assertTrue(childRelatives.next() == false);
-			
+
 		} finally {
 			if (childRelatives != null) {
 				try {
@@ -260,17 +258,45 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			Document document = em.find(Document.class, docId);
 			assertNotNull(document);
 			assertEquals(docId, document.getId());
-			String expectedFolderPath = "/" + getRepository().getOperatorName(); // its home cabinet
+			String expectedFolderPath = "/" + getRepository().getOperatorName(); // its
+																					// home
+																					// cabinet
 			assertEquals(expectedFolderPath, document.getParentFolder());
-			
+
 			// move the object
 			document.setParentFolder("/Temp");
 			em.persist(document);
-			
+
 			IDfFolder tempFolder = session.getFolderByPath("/Temp");
 			dmDocument.fetch(null);
 			assertEquals(dmDocument.getId("i_folder_id").toString(), tempFolder.getObjectId().toString());
 			assertEquals(1, dmDocument.getValueCount("i_folder_id"));
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testRemove() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			String expectedName = "_#_" + name.getMethodName();
+			IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			Document document = em.find(Document.class, docId);
+			em.remove(document);
+
+			IDfPersistentObject dmsObj = session.getObjectByQualification("dm_document where r_object_id = '" + docId
+					+ "'");
+			assertNull(dmsObj);
 
 		} finally {
 			getRepository().releaseSession(session);

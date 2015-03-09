@@ -13,8 +13,10 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
+import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
 import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
@@ -297,6 +299,40 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			IDfPersistentObject dmsObj = session.getObjectByQualification("dm_document where r_object_id = '" + docId
 					+ "'");
 			assertNull(dmsObj);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testExecuteUpdate() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			final String expectedName = "_#_" + name.getMethodName();
+			final int count = 5;
+			for (int i = 0; i < count; i++) {
+				IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+				dmDocument.setString("subject", "test purpose -- object #" + Integer.toString(i));
+				dmDocument.setString("a_status", "draft");
+				dmDocument.link("/Temp");
+				dmDocument.save();
+			}
+
+			DmsQuery updateQuery = em
+					.createNativeQuery(
+							"update dm_document objects set a_status = 'approved' "
+							+ "where folder('/Temp') and object_name = '" + expectedName + "'");
+			int updateCount = updateQuery.executeUpdate();
+			assertEquals(count, updateCount);
+
+			DmsQuery deleteQuery = em
+					.createNativeQuery("delete dm_document objects where folder('/Temp') and object_name = '"
+							+ expectedName + "'");
+			int deleteCount = deleteQuery.executeUpdate();
+			assertEquals(count, deleteCount);
 
 		} finally {
 			getRepository().releaseSession(session);

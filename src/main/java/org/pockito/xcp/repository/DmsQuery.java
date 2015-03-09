@@ -6,6 +6,8 @@ public interface DmsQuery {
 
 	@SuppressWarnings("rawtypes")
 	List getResultList();
+	
+	int executeUpdate();
 
 	DmsQuery setParameter(String name, Object value);
 
@@ -13,6 +15,6 @@ public interface DmsQuery {
     
     DmsQuery setHint(String hintName, Object value);
     
-    int setMaxResults(int maxResult);
+    DmsQuery setMaxResults(int maxResult);
     
 }

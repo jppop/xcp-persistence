@@ -2,7 +2,7 @@ package org.pockito.xcp.repository;
 
 import java.util.List;
 
-public interface DmsTypedQuery<T> {
+public interface DmsTypedQuery<T> extends DmsQuery {
 
 	List<T> getResultList();
 	

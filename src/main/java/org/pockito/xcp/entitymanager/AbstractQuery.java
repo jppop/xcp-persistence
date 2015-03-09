@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.pockito.xcp.repository.DctmDriver;
 
+import com.documentum.fc.client.IDfSession;
+
 public abstract class AbstractQuery {
 
 	protected final XcpEntityManager em;
@@ -40,6 +42,17 @@ public abstract class AbstractQuery {
 		return nativeQuery;
 	}
 
+	public int executeUpdate() {
+		final int count;
+		IDfSession session = dctmDriver().getSession();
+		try {
+			count = dctmDriver().executeQuery(session, getDqlString());
+		} finally {
+			dctmDriver().releaseSession(session);
+		}
+		return count;
+	}
+	
 	protected String replaceQueryParameters(final String originalQuery) {
 		String finalQuery = originalQuery;
 		for (Map.Entry<String, Object> entry : getParameters().entrySet()) {

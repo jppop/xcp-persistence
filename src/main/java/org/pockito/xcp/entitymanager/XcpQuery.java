@@ -42,7 +42,7 @@ public class XcpQuery extends AbstractQuery implements DmsQuery {
 	}
 
 	@Override
-	public int setMaxResults(int maxResult) {
+	public DmsQuery setMaxResults(int maxResult) {
 		throw new NotYetImplemented();
 	}
 

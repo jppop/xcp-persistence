@@ -65,6 +65,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return ai;
 	}
 
+	@Override
 	public <T> T find(Class<T> entityClass, Object primaryKey) {
 
 		// Note: primary key is unique through all entities (as r_object_id)
@@ -75,6 +76,36 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 		AnnotationInfo ai = getAnnotationInfo(entityClass);
 		return doFind(entityClass, ai, primaryKey);
+	}
+
+	@Override
+	public void remove(Object entity) {
+		
+		// get the id of the object to be deleted
+		final AnnotationInfo ai = getAnnotationInfo(entity.getClass());
+		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		IDfSession dfSession = null;
+		try {
+			// get a DFC session
+			dfSession = getSession();
+			
+			// retrieve the object
+			final IDfPersistentObject dmsObj = getDmsObj(dfSession, ai, objectId);
+			
+			if (dmsObj != null) {
+				
+				// destroy the object
+				dmsObj.destroy();
+				
+				// remove the entity from the cache
+				sessionCache().remove(objectId);
+			}
+			
+		} catch (Exception e) {
+			throw new XcpPersistenceException(e);
+		} finally {
+			releaseSession(dfSession);
+		}
 	}
 
 	private <B> B doFind(Class<B> entityClass, AnnotationInfo ai, Object primaryKey) {
@@ -177,6 +208,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return values;
 	}
 
+	@Override
 	public void persist(Object entity) {
 		// get annotation info
 		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
@@ -339,6 +371,9 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp)
 			throws DfException {
+		if (Strings.isNullOrEmpty(objectId.toString())) {
+			return null;
+		}
 		if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
 			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
 		} else {
@@ -407,11 +442,6 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	public String repository() {
 		return repository;
-	}
-
-	@Override
-	public void remove(Object entity) {
-		throw new NotYetImplemented();
 	}
 
 	@Override

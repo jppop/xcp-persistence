@@ -8,10 +8,6 @@ import java.lang.annotation.Target;
 
 @Target(FIELD)
 @Retention(RUNTIME)
+public @interface Parent {
 
-public @interface Attribute {
-
-	String name() default "";
-
-	boolean readonly() default false;
 }

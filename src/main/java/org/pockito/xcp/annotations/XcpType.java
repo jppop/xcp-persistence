@@ -6,11 +6,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+
 @Target(TYPE) 
 @Retention(RUNTIME)
+public @interface XcpType {
 
-public @interface XcpFolder {
-
-	String namespace();
 	String name();
+	XcpTypeCategory type() default XcpTypeCategory.BUSINESS_OBJECT;
+	String label() default "";
+	String relationName() default "";
 }

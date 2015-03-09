@@ -5,36 +5,39 @@ import org.pockito.xcp.query.DqlSpecification;
 import org.pockito.xcp.query.FolderPath;
 import org.pockito.xcp.query.FolderSpecification;
 import org.pockito.xcp.query.IdSpecification;
-import org.pockito.xcp.repository.Relation;
 import org.pockito.xcp.repository.SystemId;
 
-public class DctmSpecification {
+public final class DctmSpecification {
 
-	public static <T> DqlSpecification<T> dql(Class<T> entity, String whereClause) {
+	private DctmSpecification() {
+		
+	}
+	
+	public static <T> DqlSpecification<T> dql(final Class<T> entity, final String whereClause) {
 		return null;
 	}
 	
-	public static <T> DqlCountSpecification<T> dqlCount(Class<T> entity, String whereClause) {
+	public static <T> DqlCountSpecification<T> dqlCount(final Class<T> entity, final String whereClause) {
 		return null;
 	}
 	
-	public static <T> FolderSpecification folder(FolderPath folderPath) {
+	public static <T> FolderSpecification folder(final FolderPath folderPath) {
 		return null;
 	}
 	
-	public static <T> FolderSpecification folder(SystemId folderId) {
+	public static <T> FolderSpecification folder(final SystemId folderId) {
 		return null;
 	}
 
-	public static <T> IdSpecification id(SystemId folderId) {
+	public static <T> IdSpecification id(final SystemId folderId) {
 		return null;
 	}
 
-    public static <P, C> Relation<P, C> relation(Class<P> parent, Class<C> Child, String name) {
-		return null;
-	}
-
-    public static <P, C> Relation<P, C> relation(Class<P> entity, String relationName) {
-		return null;
-	}
+//    public static <P, C> Relation<P, C> relation(final Class<P> parent, final Class<C> child, final String name) {
+//		return null;
+//	}
+//
+//    public static <P, C> Relation<P, C> relation(final Class<P> entity, final String relationName) {
+//		return null;
+//	}
 }

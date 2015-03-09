@@ -13,6 +13,7 @@
 		<dfc.version>7.1.0120.0167</dfc.version>
 		<slf4j.version>1.7.10</slf4j.version>
 		<logback.version>1.1.2</logback.version>
+		<guava.version>18.0</guava.version>
 	</properties>
 
 	<dependencies>
@@ -20,12 +21,12 @@
 			<groupId>com.emc.documentum.dfc</groupId>
 			<artifactId>dfc</artifactId>
 			<version>${dfc.version}</version>
-<!-- 			<exclusions> -->
-<!-- 				<exclusion> -->
-<!-- 					<artifactId>log4j</artifactId> -->
-<!-- 					<groupId>log4j</groupId> -->
-<!-- 				</exclusion> -->
-<!-- 			</exclusions> -->
+			<!-- <exclusions> -->
+			<!-- <exclusion> -->
+			<!-- <artifactId>log4j</artifactId> -->
+			<!-- <groupId>log4j</groupId> -->
+			<!-- </exclusion> -->
+			<!-- </exclusions> -->
 		</dependency>
 
 		<dependency>
@@ -47,9 +48,21 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pockicto.dctm</groupId>
+			<artifactId>dctm-test-support</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

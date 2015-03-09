@@ -12,5 +12,5 @@ public @interface Relation {
 
 	String name();
 	Class<?> child();
-	Class<?> parent();
+//	Class<?> parent();
 }

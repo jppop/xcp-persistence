@@ -12,6 +12,7 @@ import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
+import org.pockito.xcp.repository.AttachementSpec;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
@@ -461,6 +462,11 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	SessionCacheWrapper sessionCache() {
 		return sessionCache;
+	}
+
+	@Override
+	public void addAttachement(Object entity, AttachementSpec attachment) {
+		throw new NotYetImplemented();
 	}
 
 }

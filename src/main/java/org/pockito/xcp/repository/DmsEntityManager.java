@@ -27,5 +27,7 @@ public interface DmsEntityManager {
     DmsQuery createNativeQuery(String qlString);
 
     <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
+    
+    void addAttachement(Object entity, AttachementSpec attachment);
 
 }

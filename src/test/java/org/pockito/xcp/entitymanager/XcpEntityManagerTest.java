@@ -2,8 +2,8 @@ package org.pockito.xcp.entitymanager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -13,7 +13,6 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
 import org.pockito.xcp.repository.DmsQuery;

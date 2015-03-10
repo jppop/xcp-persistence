@@ -33,6 +33,9 @@ public class Document extends PersistedObject {
 	@Attribute(name = "i_has_folder", readonly = true)
 	private Boolean hasFolder;
 
+	@Attribute(name = "a_content_type", readonly = true)
+	private String contentType;
+
 	@Attribute(name = "r_content_size", readonly = true)
 	private int contentSize;
 
@@ -89,6 +92,14 @@ public class Document extends PersistedObject {
 
 	public void setHasFolder(Boolean hasFolder) {
 		this.hasFolder = hasFolder;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
 	}
 
 	public int getContentSize() {

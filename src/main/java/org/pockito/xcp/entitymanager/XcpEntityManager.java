@@ -12,7 +12,6 @@ import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
-import org.pockito.xcp.repository.AttachementSpec;
 import org.pockito.xcp.repository.DctmDriver;
 import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
@@ -85,6 +84,9 @@ public class XcpEntityManager implements DmsEntityManager {
 		// get the id of the object to be deleted
 		final AnnotationInfo ai = getAnnotationInfo(entity.getClass());
 		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		if (Strings.isNullOrEmpty(objectId)) {
+			throw new IllegalStateException("An id must be provided");
+		}
 		IDfSession dfSession = null;
 		try {
 			// get a DFC session
@@ -218,13 +220,22 @@ public class XcpEntityManager implements DmsEntityManager {
 			// get a DFC session
 			dfSession = getSession();
 
-			final IDfPersistentObject dmsObj;
-			if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
-				dmsObj = createRelationObject(dfSession, entity, ai);
-			} else {
-				dmsObj = createDmsObject(dfSession, entity, ai);
+			IDfPersistentObject dmsObj = null;
+			// retrieve the object
+			final String objectId = (String) ai.getIdMethod().getProperty(entity);
+			if (!Strings.isNullOrEmpty(objectId)) {
+				dmsObj = getDmsObj(dfSession, ai, objectId);
 			}
-
+			
+			if (dmsObj == null) {
+				// create the dms object
+				if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
+					dmsObj = createRelationObject(dfSession, entity, ai);
+				} else {
+					dmsObj = createDmsObject(dfSession, entity, ai);
+				}
+			}
+			
 			// transfer bean fields to dctm attributes
 			for (PersistentProperty field : ai.getPersistentProperties()) {
 				if (field.isGeneratedValue() || field.isReadonly() || field.isParent() || field.isChild()) {
@@ -267,6 +278,95 @@ public class XcpEntityManager implements DmsEntityManager {
 		} finally {
 			releaseSession(dfSession);
 		}
+	}
+
+	@Override
+	public void addAttachment(Object entity, String filename, String contentType) {
+		// get annotation info
+		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
+		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		if (Strings.isNullOrEmpty(objectId)) {
+			throw new IllegalStateException("An id must be provided");
+		}
+		IDfSession dfSession = null;
+		try {
+			// get a DFC session
+			dfSession = getSession();
+
+			if (ai.getTypeCategory() == XcpTypeCategory.RELATION || ai.getTypeCategory() == XcpTypeCategory.FOLDER) {
+				throw new IllegalStateException("Cannot attach content to relation or folder objects");
+			}
+			
+			// retrieve the object from the dms repository
+			final IDfSysObject dmsObj = (IDfSysObject) getDmsObj(dfSession, ai, objectId);
+			
+			if (dmsObj == null) {
+				throw new XcpPersistenceException("object not found in the repository");
+			}
+			
+			// set the content type
+			dmsObj.setContentType(contentType);
+			// set content
+			dmsObj.setFile(filename);
+			
+			// save dms object
+			dmsObj.save();
+
+			// update system generated value
+			dms2Entity(dmsObj, entity, ai);
+
+			// refresh the cache
+			cachePut(entity, ai);
+
+		} catch (XcpPersistenceException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new XcpPersistenceException(e);
+		} finally {
+			releaseSession(dfSession);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public String getAttachment(final Object entity, final String filename) {
+		
+		String contentFile = null;
+		
+		// get annotation info
+		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
+		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		if (Strings.isNullOrEmpty(objectId)) {
+			throw new IllegalStateException("An id must be provided");
+		}
+		IDfSession dfSession = null;
+		try {
+			// get a DFC session
+			dfSession = getSession();
+
+			if (ai.getTypeCategory() == XcpTypeCategory.RELATION || ai.getTypeCategory() == XcpTypeCategory.FOLDER) {
+				throw new IllegalStateException("This entity does not have any content");
+			}
+			
+			// retrieve the object from the dms repository
+			final IDfSysObject dmsObj = (IDfSysObject) getDmsObj(dfSession, ai, objectId);
+			
+			if (dmsObj == null) {
+				throw new XcpPersistenceException("object not found in the repository");
+			}
+			
+			// get the content
+			contentFile = dmsObj.getFile(filename);
+			
+		} catch (XcpPersistenceException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new XcpPersistenceException(e);
+		} finally {
+			releaseSession(dfSession);
+		}
+		
+		return contentFile;
 	}
 
 	private void updateFolderLink(IDfSession dfSession, IDfSysObject dmsObj, Object fieldValue) throws DfException {
@@ -331,7 +431,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		IDfPersistentObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod()
 				.getAttributeName(), parentObjectId, -1);
 		if (dmsParent == null) {
-			throw new XcpPersistenceException("Object with identifier {} not found");
+			throw new XcpPersistenceException("Parent object with identifier {} not found");
 		}
 		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsType(), new DfId(childObjectId), null, false,
 				ai.getLabel());
@@ -462,11 +562,6 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	SessionCacheWrapper sessionCache() {
 		return sessionCache;
-	}
-
-	@Override
-	public void addAttachement(Object entity, AttachementSpec attachment) {
-		throw new NotYetImplemented();
 	}
 
 }

@@ -5,6 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -31,6 +36,8 @@ import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.IDfAttr;
 import com.documentum.fc.common.IDfId;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
@@ -99,6 +106,110 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals("draft", dmDocument.getStatus());
 			// should be overridden by the repository
 			assertTrue(dmDocument.getCreationDate().getYear() == today.get(Calendar.YEAR));
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testUpdate() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			String expectedName = "_#_" + name.getMethodName();
+			IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			
+			document.setStatus("approved");
+			em.persist(document);
+			
+			assertEquals("approved", document.getStatus());
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testAddContent() throws DfException, IOException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			
+			File tempFile = File.createTempFile(expectedName, ".expected");
+			tempFile.deleteOnExit();
+			PrintWriter writer = new PrintWriter(tempFile, "UTF-8");
+			writer.print("sample");
+			writer.close();
+			
+			em.addAttachment(document, tempFile.getAbsolutePath(), "text");
+			
+			assertTrue(document.getContentSize() > 0);
+			assertEquals("text", document.getContentType());
+			
+			final File actualFile = File.createTempFile(expectedName, ".actual");
+			actualFile.deleteOnExit();
+			
+			dmDocument.fetch(null);
+			dmDocument.getFile(actualFile.getAbsolutePath());
+			String actualContent = Files.toString(actualFile, Charsets.UTF_8);
+			assertEquals("sample", actualContent);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testGetContent() throws DfException, IOException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.setContentType("text");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			stream.write("sample".getBytes("UTF-8"));
+			dmDocument.setContent(stream);
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			assertTrue(document.getContentSize() > 0);
+			assertEquals("text", document.getContentType());
+			
+			File tempFile = File.createTempFile(expectedName, ".expected");
+			tempFile.deleteOnExit();
+			
+			final String actualFilename = em.getAttachment(document, tempFile.getAbsolutePath());
+			
+			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
+			assertEquals("sample", actualContent);
 
 		} finally {
 			getRepository().releaseSession(session);

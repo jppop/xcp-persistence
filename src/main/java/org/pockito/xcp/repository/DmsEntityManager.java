@@ -14,7 +14,6 @@
 
 package org.pockito.xcp.repository;
 
-
 public interface DmsEntityManager {
 
     <T> T find(Class<T> entityClass, Object primaryKey);
@@ -28,6 +27,8 @@ public interface DmsEntityManager {
 
     <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
     
-    void addAttachement(Object entity, AttachementSpec attachment);
+    void addAttachment(Object entity, String filename, String contentType);
+
+    String getAttachment(Object entity, String filename);
 
 }

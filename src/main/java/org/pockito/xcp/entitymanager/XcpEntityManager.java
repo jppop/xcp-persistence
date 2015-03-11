@@ -17,6 +17,7 @@ import org.pockito.xcp.repository.DmsEntityManager;
 import org.pockito.xcp.repository.DmsException;
 import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
+import org.pockito.xcp.repository.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	private final Map<String, ?> properties;
 	private final String repository;
 	private final SessionCacheWrapper sessionCache;
+	private Transaction currentTx = null;
 
 	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> map,
 			DctmDriver dctmDriver) {
@@ -327,7 +329,6 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public String getAttachment(final Object entity, final String filename) {
 		
@@ -367,6 +368,19 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 		
 		return contentFile;
+	}
+
+	@Override
+	public Transaction getTransaction() {
+		if (this.currentTx == null) {
+			this.currentTx = new DmsTransaction(factory().getDctmDriver().getSessionManager());
+		}
+		return this.currentTx;
+	}
+
+	@Override
+	public void close() {
+		sessionCache().clear();
 	}
 
 	private void updateFolderLink(IDfSession dfSession, IDfSysObject dmsObj, Object fieldValue) throws DfException {

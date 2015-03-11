@@ -87,7 +87,7 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
 	public boolean isOpen() {
 		// TODO isOpen (em)
-		return false;
+		return true;
 	}
 
 	public AnnotationManager getAnnotationManager() {

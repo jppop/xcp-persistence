@@ -1,10 +1,10 @@
 package org.pockito.xcp.entitymanager;
 
-import org.junit.Test;
+import org.junit.Ignore;
 
 public class JPAQueryParserTest {
 
-	@Test
+	@Ignore
 	public void test() {
         AbstractJPQLQuery query = new AbstractJPQLQuery();
         JPAQueryParser parser;

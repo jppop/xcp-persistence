@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -22,6 +21,7 @@ import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
 import org.pockito.xcp.repository.DmsQuery;
 import org.pockito.xcp.repository.DmsTypedQuery;
+import org.pockito.xcp.repository.Transaction;
 import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
 
@@ -97,16 +97,69 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			em.persist(document);
 
+			assertNotNull(document.getId());
+			addToDeleteList(new DfId(document.getId()));
+
 			Calendar today = new GregorianCalendar();
 
 			// retrieve the document object
 			IDfSysObject dmDocument = (IDfSysObject) session.getObject(new DfId(document.getId()));
-			addToDeleteList(dmDocument.getObjectId());
 			assertEquals(expectedName, dmDocument.getObjectName());
 			assertEquals("draft", dmDocument.getStatus());
 			// should be overridden by the repository
 			assertTrue(dmDocument.getCreationDate().getYear() == today.get(Calendar.YEAR));
 
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testCreateWithinTransaction() throws DfException {
+
+		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			String expectedName = "_#_" + name.getMethodName();
+			Document document = new Document();
+			document.setName(expectedName);
+			document.setStatus("draft");
+
+			Transaction tx = em.getTransaction();
+			tx.begin();
+			em.persist(document);
+
+			assertNotNull(document.getId());
+			
+			// should not be persisted yet
+			IDfPersistentObject dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ document.getId() + "'");
+			assertNull(dmsObj);
+
+			// commit now
+			tx.commit();
+			addToDeleteList(new DfId(document.getId()));
+
+			// retrieve the document object
+			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ document.getId() + "'");
+			assertNotNull(dmsObj);
+
+			// test rollback
+			document = new Document();
+			document.setName(expectedName);
+			document.setStatus("draft");
+
+			tx.begin();
+			em.persist(document);
+			assertNotNull(document.getId());
+			tx.rollback();
+			
+			// should not be persisted yet
+			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ document.getId() + "'");
+			assertNull(dmsObj);
+			
 		} finally {
 			getRepository().releaseSession(session);
 		}
@@ -128,10 +181,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			Document document = em.find(Document.class, docId);
 			assertNotNull(document);
-			
+
 			document.setStatus("approved");
 			em.persist(document);
-			
+
 			assertEquals("approved", document.getStatus());
 
 		} finally {
@@ -155,21 +208,21 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			final Document document = em.find(Document.class, docId);
 			assertNotNull(document);
-			
+
 			File tempFile = File.createTempFile(expectedName, ".expected");
 			tempFile.deleteOnExit();
 			PrintWriter writer = new PrintWriter(tempFile, "UTF-8");
 			writer.print("sample");
 			writer.close();
-			
+
 			em.addAttachment(document, tempFile.getAbsolutePath(), "text");
-			
+
 			assertTrue(document.getContentSize() > 0);
 			assertEquals("text", document.getContentType());
-			
+
 			final File actualFile = File.createTempFile(expectedName, ".actual");
 			actualFile.deleteOnExit();
-			
+
 			dmDocument.fetch(null);
 			dmDocument.getFile(actualFile.getAbsolutePath());
 			String actualContent = Files.toString(actualFile, Charsets.UTF_8);
@@ -202,12 +255,13 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertNotNull(document);
 			assertTrue(document.getContentSize() > 0);
 			assertEquals("text", document.getContentType());
-			
+
 			File tempFile = File.createTempFile(expectedName, ".expected");
 			tempFile.deleteOnExit();
-			
+
 			final String actualFilename = em.getAttachment(document, tempFile.getAbsolutePath());
-			
+			assertEquals(tempFile.getAbsolutePath(), actualFilename);
+
 			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
 			assertEquals("sample", actualContent);
 
@@ -431,10 +485,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 				dmDocument.save();
 			}
 
-			DmsQuery updateQuery = em
-					.createNativeQuery(
-							"update dm_document objects set a_status = 'approved' "
-							+ "where folder('/Temp') and object_name = '" + expectedName + "'");
+			DmsQuery updateQuery = em.createNativeQuery("update dm_document objects set a_status = 'approved' "
+					+ "where folder('/Temp') and object_name = '" + expectedName + "'");
 			int updateCount = updateQuery.executeUpdate();
 			assertEquals(count, updateCount);
 

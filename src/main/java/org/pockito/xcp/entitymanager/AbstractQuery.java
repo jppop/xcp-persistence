@@ -105,7 +105,7 @@ public abstract class AbstractQuery {
 	 * static value hardcoding date format used for conversation of Date into
 	 * String
 	 */
-	private static String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	public static String dateFormat = "yyyy-MM-dd HH:mm:ss";
 	private static SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
 
 	private String encodeDate(Date date) {

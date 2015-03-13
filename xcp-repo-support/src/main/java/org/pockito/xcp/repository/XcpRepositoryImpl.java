@@ -37,7 +37,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 	private String username;
 
 	@Inject @Named("org.pockito.xcp.repository.password")
-	private String pasword;
+	private String password;
 	
 	private XcpPersistCommandCatalog cmd = null;
 	private final List<XcpPersistCommand> commands = new ArrayList<XcpPersistCommand>();
@@ -56,7 +56,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 		this.em = emFactoryProvider.get().createDmsEntityManager();
 		this.repository = repository;
 		this.username = username;
-		this.pasword = password;
+		this.password = password;
 		this.tx = this.em.getTransaction();
 	}
 
@@ -233,13 +233,13 @@ public class XcpRepositoryImpl implements XcpRepository {
 		parentProp.setProperty(relation, this.parent);
 		childProp.setProperty(relation, this.child);
 		// queue the persist cmd for the relation
-		cmd().persistCmd(relation);
+		commands.add(cmd().persistCmd(relation));
 		return this;
 	}
 
 	@Override
 	public XcpRepository addAttachment(Object entity, String filename, String contentType) {
-		cmd().addAttachmentCmd(entity, filename, contentType);
+		commands.add(cmd().addAttachmentCmd(entity, filename, contentType));
 		return this;
 	}
 
@@ -258,6 +258,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 		try {
 			if (isTxRequested() && !isTxActive()) {
 				tx.begin();
+				txStarted = true;
 			}
 			for (XcpPersistCommand cmd : commands) {
 				logger.trace("Executing command: {}", cmd.toString());
@@ -307,8 +308,8 @@ public class XcpRepositoryImpl implements XcpRepository {
 		return username;
 	}
 
-	public String getPasword() {
-		return pasword;
+	public String getPassword() {
+		return password;
 	}
 
 	public boolean isTxRequested() {

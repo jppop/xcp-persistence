@@ -2,6 +2,8 @@ package org.pockito.xcp.entitymanager;
 
 import java.lang.reflect.Method;
 
+import org.pockito.xcp.entitymanager.api.PersistentProperty;
+
 import com.google.common.base.CaseFormat;
 
 /**

@@ -1,6 +1,6 @@
 package org.pockito.xcp.entitymanager;
 
-import org.pockito.xcp.repository.DmsEntityManagerFactory;
+import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
 
 public interface PropertyConstants {
 

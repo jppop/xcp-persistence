@@ -3,8 +3,8 @@ package org.pockito.xcp.entitymanager;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.pockito.xcp.repository.DctmDriver;
-import org.pockito.xcp.repository.DmsException;
+import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

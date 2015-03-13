@@ -18,13 +18,9 @@
 				<module>xcp-persistence</module>
 			</modules>
 		</profile>
-		<profile>
-			<id>xcp-modules</id>
-			<modules>
-				<module>xCP_BACKOFF_PI/BO_CORE</module>
-				<module>xCP_BACKOFF_PI/BODM</module>
-			</modules>
-		</profile>
 	</profiles>
 
+	<modules>
+		<module>xcp-repo-support</module>
+	</modules>
 </project>

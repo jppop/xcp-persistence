@@ -19,9 +19,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
-import org.pockito.xcp.repository.DmsQuery;
-import org.pockito.xcp.repository.DmsTypedQuery;
-import org.pockito.xcp.repository.Transaction;
+import org.pockito.xcp.entitymanager.api.DmsQuery;
+import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
+import org.pockito.xcp.entitymanager.api.Transaction;
 import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
 

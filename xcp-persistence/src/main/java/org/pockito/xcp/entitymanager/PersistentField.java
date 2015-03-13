@@ -6,6 +6,8 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 
+import org.pockito.xcp.entitymanager.api.PersistentProperty;
+
 /**
  * PersistentProperty that encapsulates access via direct Field accessor rather than getter/setter methods. Used to
  * support persistence annotations directly on fields.

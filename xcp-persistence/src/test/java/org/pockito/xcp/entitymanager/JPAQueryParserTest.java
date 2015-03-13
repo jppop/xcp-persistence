@@ -1,6 +1,8 @@
 package org.pockito.xcp.entitymanager;
 
 import org.junit.Ignore;
+import org.pockito.xcp.entitymanager.query.AbstractJPQLQuery;
+import org.pockito.xcp.entitymanager.query.JPAQueryParser;
 
 public class JPAQueryParserTest {
 

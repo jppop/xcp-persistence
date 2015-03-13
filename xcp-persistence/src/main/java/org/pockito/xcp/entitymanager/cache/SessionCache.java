@@ -2,8 +2,8 @@ package org.pockito.xcp.entitymanager.cache;
 
 import org.pockito.xcp.entitymanager.AnnotationInfo;
 import org.pockito.xcp.entitymanager.AnnotationManager;
-import org.pockito.xcp.entitymanager.PersistentProperty;
 import org.pockito.xcp.entitymanager.XcpEntityManager;
+import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +12,7 @@ import com.documentum.fc.client.IDfTypedObject;
 
 public class SessionCache implements SessionCacheWrapper {
 
-	private final Logger logger = LoggerFactory.getLogger(SessionCache.class);
+	private static final Logger logger = LoggerFactory.getLogger(SessionCache.class);
 	
 	private final XcpEntityManager em;
 	private final AnnotationManager aiMgr;

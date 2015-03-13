@@ -6,18 +6,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsEntityManager;
+import org.pockito.xcp.entitymanager.api.DmsException;
+import org.pockito.xcp.entitymanager.api.DmsQuery;
+import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
+import org.pockito.xcp.entitymanager.api.MetaData;
+import org.pockito.xcp.entitymanager.api.PersistentProperty;
+import org.pockito.xcp.entitymanager.api.Transaction;
 import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
+import org.pockito.xcp.entitymanager.query.XcpQuery;
+import org.pockito.xcp.entitymanager.query.XcpTypedQuery;
 import org.pockito.xcp.exception.XcpPersistenceException;
-import org.pockito.xcp.repository.DctmDriver;
-import org.pockito.xcp.repository.DmsEntityManager;
-import org.pockito.xcp.repository.DmsException;
-import org.pockito.xcp.repository.DmsQuery;
-import org.pockito.xcp.repository.DmsTypedQuery;
-import org.pockito.xcp.repository.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +64,11 @@ public class XcpEntityManager implements DmsEntityManager {
 			CacheWrapper<String, CacheElement> underCache = factory().getFirstLevelCache();
 			this.sessionCache = new SessionCache(this, underCache);
 		}
+	}
+
+	@Override
+	public <T> MetaData getMetaData(Class<T> entityClass) {
+		return getAnnotationInfo(entityClass);
 	}
 
 	public <T> AnnotationInfo getAnnotationInfo(Class<T> entityClass) {
@@ -547,7 +556,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	protected DctmDriver getDctmDriver() {
+	public DctmDriver getDctmDriver() {
 		return dctmDriver;
 	}
 

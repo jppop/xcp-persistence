@@ -8,13 +8,13 @@ import static org.pockito.xcp.entitymanager.PropertyConstants.Username;
 
 import java.util.Map;
 
+import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsEntityManager;
+import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
 import org.pockito.xcp.entitymanager.cache.BuiltInCache;
 import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
-import org.pockito.xcp.repository.DctmDriver;
-import org.pockito.xcp.repository.DmsEntityManager;
-import org.pockito.xcp.repository.DmsEntityManagerFactory;
 
 import com.google.common.base.Strings;
 
@@ -24,23 +24,15 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 	 * Stores annotation info about our entities for easy retrieval when needed
 	 */
 	private final AnnotationManager annotationManager;
-	@SuppressWarnings("unused")
-	private final String persistenceUnitName;
 	private final Map<String, ?> props;
 	private final boolean sessionLess;
 	private CacheWrapper<String, CacheElement> firstLevelCache = null;
 
-	public XcpEntityManagerFactory(final String persistenceUnitName) {
-		this(persistenceUnitName, null);
+	public XcpEntityManagerFactory() {
+		this(null);
 	}
 
 	public XcpEntityManagerFactory(final Map<String, ?> props) {
-		this("dctm", props);
-	}
-
-	public XcpEntityManagerFactory(final String persistenceUnitName,
-			final Map<String, ?> props) {
-		this.persistenceUnitName = persistenceUnitName;
 		this.props = props;
 		this.annotationManager = new AnnotationManager();
 		if (props.containsKey(SessionLess)) {

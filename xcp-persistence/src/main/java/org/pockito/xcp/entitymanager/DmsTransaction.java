@@ -1,7 +1,7 @@
 package org.pockito.xcp.entitymanager;
 
+import org.pockito.xcp.entitymanager.api.Transaction;
 import org.pockito.xcp.exception.XcpPersistenceException;
-import org.pockito.xcp.repository.Transaction;
 
 import com.documentum.fc.client.DfServiceException;
 import com.documentum.fc.client.IDfSessionManager;

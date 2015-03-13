@@ -8,11 +8,13 @@ import java.util.Map;
 
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.entitymanager.api.MetaData;
+import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.exception.XcpPersistenceException;
 
 import com.google.common.primitives.Primitives;
 
-public class AnnotationInfo {
+public class AnnotationInfo implements MetaData {
 
 	private String dmsType;
 	private String label;
@@ -30,6 +32,10 @@ public class AnnotationInfo {
 	public AnnotationInfo() {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getDmsType()
+	 */
+	@Override
 	public String getDmsType() {
 		return dmsType;
 	}
@@ -38,6 +44,10 @@ public class AnnotationInfo {
 		this.dmsType = dmsType;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getIdMethod()
+	 */
+	@Override
 	public PersistentProperty getIdMethod() {
 		return idMethod;
 	}
@@ -46,10 +56,18 @@ public class AnnotationInfo {
 		this.idMethod = idMethod;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getPersistentProperties()
+	 */
+	@Override
 	public Collection<PersistentProperty> getPersistentProperties() {
 		return persistentProperties.values();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getPersistentProperty(java.lang.String)
+	 */
+	@Override
 	public PersistentProperty getPersistentProperty(String property) {
 		return persistentProperties.get(property);
 	}
@@ -104,6 +122,10 @@ public class AnnotationInfo {
 		return persistentField;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getTypeCategory()
+	 */
+	@Override
 	public XcpTypeCategory getTypeCategory() {
 		return typeCategory;
 	}
@@ -112,6 +134,10 @@ public class AnnotationInfo {
 		this.typeCategory = typeCategory;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getVStampMethod()
+	 */
+	@Override
 	public PersistentProperty getVStampMethod() {
 		return vstampMethod;
 	}
@@ -120,6 +146,10 @@ public class AnnotationInfo {
 		this.vstampMethod = vstampMethod;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getParentMethod()
+	 */
+	@Override
 	public PersistentProperty getParentMethod() {
 		return parentMethod;
 	}
@@ -128,6 +158,10 @@ public class AnnotationInfo {
 		this.parentMethod = parentMethod;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getChildMethod()
+	 */
+	@Override
 	public PersistentProperty getChildMethod() {
 		return childMethod;
 	}
@@ -136,6 +170,10 @@ public class AnnotationInfo {
 		this.childMethod = childMethod;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.pockito.xcp.entitymanager.MetaData#getLabel()
+	 */
+	@Override
 	public String getLabel() {
 		return label;
 	}

@@ -27,4 +27,7 @@
 		</profile>
 	</profiles>
 
+	<modules>
+		<module>xcp-repo-support</module>
+	</modules>
 </project>

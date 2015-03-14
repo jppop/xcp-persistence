@@ -48,6 +48,8 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
 	public DmsEntityManager createDmsEntityManager(final Map<String, ?> props) {
 		try {
+			// TODO: refresh the session manager handling.  See DCTM REST: a new session manger is created
+			// for every (repo, user).
 			DctmDriver dctmDriver = (DctmDriver) props.get(DctmDriver);
 			if (dctmDriver == null) {
 				dctmDriver = getDctmDriver();
@@ -58,8 +60,8 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 			String repository = (String) props.get(Repository);
 			if (Strings.isNullOrEmpty(repository)) throw new IllegalArgumentException("property 'repository' is required");
 			
-			// set single identity for all repositories
-			dctmDriver.setCredentials(repository, username, password);
+			// create a new dctm session manager
+			dctmDriver.getSessionManager(repository, username, password);
 			return new XcpEntityManager(this, props, dctmDriver);
 			
 		} catch (Exception e) {

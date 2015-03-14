@@ -24,7 +24,7 @@ public class VStampTest extends RepositoryRequiredTest {
 	@Test
 	public void testVStamp() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object

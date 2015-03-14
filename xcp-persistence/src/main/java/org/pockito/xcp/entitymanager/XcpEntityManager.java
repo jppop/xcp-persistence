@@ -382,7 +382,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	@Override
 	public Transaction getTransaction() {
 		if (this.currentTx == null) {
-			this.currentTx = new DmsTransaction(factory().getDctmDriver().getSessionManager());
+			this.currentTx = new DmsTransaction(getDctmDriver().getSessionManager());
 		}
 		return this.currentTx;
 	}

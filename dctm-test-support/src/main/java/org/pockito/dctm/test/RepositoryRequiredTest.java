@@ -1,5 +1,7 @@
 package org.pockito.dctm.test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.junit.After;
@@ -90,7 +92,7 @@ public abstract class RepositoryRequiredTest {
 	}
 
 	public IDfSession getSession(String repository, String username, String password) throws DfException {
-		IDfSession session = Repository.getInstance().getManagedSession(repository, username, password);
+		IDfSession session = Repository.getInstance().getSession(repository, username, password);
 		return session;
 	}
 	
@@ -110,5 +112,13 @@ public abstract class RepositoryRequiredTest {
 			addToDeleteList(dmsObject.getObjectId());
 		}
 		return dmsObject;
+	}
+	
+	public void addContent(IDfSysObject dmDocument, String content, String contentType) throws DfException, IOException {
+		dmDocument.setContentType(contentType);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		stream.write(content.getBytes("UTF-8"));
+		dmDocument.setContent(stream);
+		dmDocument.save();
 	}
 }

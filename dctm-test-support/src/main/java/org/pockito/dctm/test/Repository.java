@@ -1,12 +1,10 @@
 package org.pockito.dctm.test;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.Properties;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.documentum.com.DfClientX;
 import com.documentum.com.IDfClientX;
@@ -22,39 +20,31 @@ import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
 
-public class Repository {
+public enum Repository {
 
-	static final Logger _logger = Logger.getLogger(Repository.class);
+	instance;
 
-	// hide constructor (avoid multiple instantiation).
-	private Repository() {
-		loadProperties();
-	}
+	private static final Logger logger = LoggerFactory.getLogger(Repository.class);
 
-	static class InstanceHolder {
-		static Repository instance = new Repository();
-	}
+	private static final IDfClientX clientX = new DfClientX();
+
+	private static final Map<String, IDfSessionManager> sessMgrMemoryCache = new ConcurrentHashMap<String, IDfSessionManager>();
 
 	public static Repository getInstance() {
-		return InstanceHolder.instance;
-	}
-
-	public static Repository getNewInstance() {
-		return new Repository();
+		return instance;
 	}
 
 	/**
-	 * Gets a new session. The session is not be managed.
+	 * Gets a new session. The session is not managed.
 	 * 
 	 * @param repository
 	 * @param username
 	 * @param password
 	 * @return
 	 * @throws DmsException
-	 * @throws DfException 
+	 * @throws DfException
 	 */
-	public IDfSession getSession(String repository, String username,
-			String password) throws DfException {
+	public IDfSession getPrivateSession(String repository, String username, String password) throws DfException {
 		IDfLoginInfo li = new DfLoginInfo();
 		li.setUser(username);
 		li.setPassword(password);
@@ -65,50 +55,54 @@ public class Repository {
 		dfSession = client.newSession(repository, li);
 		return dfSession;
 	}
-	
-	/**
-	 * Gets the session manager.
-	 * 
-	 * @return
-	 * @throws DfException
-	 */
-	public IDfSessionManager getSessionManager() throws DfException {
-		if (_sessMgr == null) {
-			synchronized (lockSessionMgr) {
-				if (_sessMgr == null) {
-					_sessMgr = createSessionManager();
-				}
-			}
-		}
-		return _sessMgr;
-	}
 
 	/**
 	 * Gets a session manager.
 	 * 
+	 * @param repository
+	 * @param username
+	 * @param password
 	 * @return
 	 * @throws DfException
 	 */
-	public IDfSessionManager newSessionManager() throws DfException {
-		return createSessionManager();
+	public IDfSessionManager getSessionManager(String repository, String username, String password) throws DfException {
+		final String key = repository + ":" + username;
+		IDfSessionManager sessMgr = sessMgrMemoryCache.get(key);
+		if (sessMgr == null) {
+			sessMgr = newSessionManager(repository, username, password);
+			sessMgrMemoryCache.put(key, sessMgr);
+		}
+		return sessMgr;
 	}
 
 	/**
-	 * Resolves an alias for a repository. Aliases are defined in
-	 * Repository.properties config file.
+	 * Creates a new session manager.
 	 * 
-	 * @param alias
-	 * @return - the resolved alias or the alias it self if no alias is found.
+	 * @return
+	 * @throws DfException
 	 */
-	public String resolveRepositoryAlias(String alias) {
-		String value = alias;
-		if (_reposAliases.containsKey(alias)) {
-			value = (String) _reposAliases.get(alias);
+	public IDfSessionManager newSessionManager(String repository, String username, String password) throws DfException {
+		final IDfClient localClient = DfClient.getLocalClient();
+		final IDfTypedObject clientConfig = localClient.getClientConfig();
+		String docbroker = getBroker();
+		if (docbroker != null) {
+			clientConfig.setString("primary_host", docbroker);
 		}
-		return value;
-	}
+		String port = getBrokerPort();
+		if (port != null) {
+			clientConfig.setString("primary_port", port);
+		}
+		IDfSessionManager sessMgr = localClient.newSessionManager();
 
-	private Object lockSessionMgr = new Object();
+		// set credentials
+		IDfLoginInfo li = clientX.getLoginInfo();
+		li.setUser(username);
+		li.setPassword(password);
+		li.setDomain(null);
+
+		sessMgr.setIdentity(repository, li);
+		return sessMgr;
+	}
 
 	/**
 	 * Gets a DFC session connected to <tt>repository</tt> as <tt>username</tt>.
@@ -118,164 +112,31 @@ public class Repository {
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession getManagedSession(String repository, String username,
-			String password) throws DfException {
+	public IDfSession getSession(String repository, String username, String password) throws DfException {
 
-		IDfClientX clientX = new DfClientX();
-
-		IDfClient localClient = clientX.getLocalClient();
-		IDfTypedObject clientConfig = localClient.getClientConfig();
-		String docbroker = getDocbroker();
-		if (docbroker != null) {
-			clientConfig.setString("primary_host", docbroker);
-		}
-		String port = getPort();
-		if (port != null) {
-			clientConfig.setString("primary_port", port);
-		}
-
-		IDfLoginInfo li = clientX.getLoginInfo();
-		li.setUser(username);
-		li.setPassword(password);
-		li.setDomain(null);
-
-		// WBD-308 - use aliases for repository names
-		String realRepo = resolveRepositoryAlias(repository);
-
-		IDfSessionManager sessMgr = getSessionManager();
-		IDfSession dfSession = null;
-
-		synchronized (lockSessionMgr) {
-			if (sessMgr.hasIdentity(realRepo)) {
-				sessMgr.clearIdentity(realRepo);
-			}
-			sessMgr.setIdentity(realRepo, li);
-
-			dfSession = sessMgr.getSession(realRepo);
-		}
+		IDfSessionManager sessMgr = getSessionManager(repository, username, password);
+		IDfSession dfSession = sessMgr.getSession(repository);
 
 		return dfSession;
-	}
-
-	public IDfLoginInfo setIdentity(String repository, String username,
-			String password) throws DfException {
-		IDfClientX clientX = new DfClientX();
-
-		IDfLoginInfo li = clientX.getLoginInfo();
-		li.setUser(username);
-		li.setPassword(password);
-		li.setDomain(null);
-
-		// WBD-308 - use aliases for repository names
-		String realRepo = resolveRepositoryAlias(repository);
-		
-		IDfSessionManager sessMgr = getSessionManager();
-
-		synchronized (lockSessionMgr) {
-			if (sessMgr.hasIdentity(realRepo)) {
-				sessMgr.clearIdentity(realRepo);
-			}
-			sessMgr.setIdentity(realRepo, li);
-		}
-
-		return li;
-	}
-	
-	/**
-	 * Gets a session for the repository using the current identity.
-	 * 
-	 * @param repository
-	 * @return
-	 * @throws DfException
-	 */
-	public IDfSession getSession(String repository) throws DfException {
-		return getSessionManager().getSession(repository);
 	}
 
 	/**
 	 * Gets a DFC session connected to <tt>repository</tt> as <tt>username</tt>
-	 * using login ticket.
+	 * using a login ticket.
 	 * 
 	 * @param repository
 	 * @param username
 	 * @return
 	 * @throws Exception
 	 */
-	public IDfSession getManagedSession(String repository, String username)
-			throws DfException {
+	public IDfSession getSession(String repository, String username) throws DfException {
 
 		String ticket = getLoginTicketForUser(repository, username);
-		return getManagedSession(repository, username, ticket);
+		return getSession(repository, username, ticket);
 	}
 
-	public IDfSession getManagedSessionForOperator(String repository)
-			throws DfException {
-		return getManagedSession(repository, getOperatorName(),
-				getOperatorPassword());
-	}
-
-	/**
-	 * Creates a DFC session connected to <tt>repository</tt> as
-	 * <tt>username</tt>.
-	 * 
-	 * @param repository
-	 * @param username
-	 * @return
-	 * @throws Exception
-	 */
-	public IDfSession newManagedSession(String repository, String username,
-			String password) throws DfException {
-		return newManagedSession(getSessionManager(), repository, username,
-				password);
-	}
-
-	public IDfSession newManagedSession(IDfSessionManager sessMgr,
-			String repository, String username, String password)
-			throws DfException {
-
-		IDfClientX clientX = new DfClientX();
-
-		IDfLoginInfo li = clientX.getLoginInfo();
-		li.setUser(username);
-		li.setPassword(password);
-		li.setDomain(null);
-
-		// WBD-308 - use aliases for repository names
-		String realRepo = resolveRepositoryAlias(repository);
-
-		IDfSession dfSession = null;
-
-		synchronized (lockSessionMgr) {
-			if (sessMgr.hasIdentity(realRepo)) {
-				sessMgr.clearIdentity(realRepo);
-			}
-			sessMgr.setIdentity(realRepo, li);
-
-			dfSession = sessMgr.newSession(realRepo);
-		}
-		return dfSession;
-	}
-
-	/**
-	 * Creates a DFC session connected to <tt>repository</tt> as
-	 * <tt>username</tt> using login ticket.
-	 * 
-	 * @param repository
-	 * @param username
-	 * @return
-	 * @throws Exception
-	 */
-	public IDfSession newManagedSession(String repository, String username)
-			throws DfException {
-
-		String ticket = getLoginTicketForUser(repository, username);
-		return newManagedSession(repository, username, ticket);
-	}
-
-	public IDfSession newManagedSessionForOperator(String repository)
-			throws DfException {
-		return newManagedSession(repository, getOperatorName(),
-				getOperatorPassword());
+	public IDfSession getSessionForOperator(String repository) throws DfException {
+		return getSession(repository, getOperatorName());
 	}
 
 	/**
@@ -287,15 +148,10 @@ public class Repository {
 		try {
 			if (dfSession != null) {
 				IDfSessionManager sMgr = dfSession.getSessionManager();
-				// try {
-				// sMgr.release(dfSession);
-				// } catch (Exception e) {
-				// dfSession.disconnect();
-				// }
 				sMgr.release(dfSession);
 			}
 		} catch (Exception ignore) {
-			ignore.printStackTrace();
+			logger.trace("error while releasing session {}. Error was {}", dfSession.toString(), ignore.getMessage());
 		}
 	}
 
@@ -306,19 +162,17 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public IDfSession getPrivilegedSession(String repository)
-			throws DfException {
+	public IDfSession getPrivilegedSession(String repository) throws DfException {
 		IDfSession dfSession = null;
 		try {
-			IDfClientX clientX = new DfClientX();
 
 			IDfClient localClient = clientX.getLocalClient();
 			IDfTypedObject clientConfig = localClient.getClientConfig();
-			String docbroker = getDocbroker();
+			String docbroker = getBroker();
 			if (docbroker != null) {
 				clientConfig.setString("primary_host", docbroker);
 			}
-			String port = getPort();
+			String port = getBrokerPort();
 			if (port != null) {
 				clientConfig.setString("primary_port", port);
 			}
@@ -328,21 +182,17 @@ public class Repository {
 			li.setPassword(getSuPassword());
 			li.setDomain(null);
 
-			// WBD-308 - use aliases for repository names
-			String realRepo = resolveRepositoryAlias(repository);
-
-			dfSession = clientX.getLocalClient().newSession(realRepo, li);
+			dfSession = clientX.getLocalClient().newSession(repository, li);
 		} catch (DfException e) {
 			throw e;
 		}
 		return dfSession;
 	}
 
-	public IDfSession getPrivilegedSession()
-			throws DfException {
-		return getPrivilegedSession(getDocbase());
+	public IDfSession getPrivilegedSession() throws DfException {
+		return getPrivilegedSession(getRepositoryName());
 	}
-	
+
 	/**
 	 * Releases the privileged session.
 	 * 
@@ -366,12 +216,9 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public String getLoginTicketForUser(String repository, String username)
-			throws DfException {
+	public String getLoginTicketForUser(String repository, String username) throws DfException {
 		String ticket = null;
-		// WBD-308 - use aliases for repository names
-		String realRepo = resolveRepositoryAlias(repository);
-		IDfSession dfPriviligedSession = getPrivilegedSession(realRepo);
+		IDfSession dfPriviligedSession = getPrivilegedSession(repository);
 		try {
 			ticket = dfPriviligedSession.getLoginTicketForUser(username);
 		} catch (DfException e) {
@@ -382,103 +229,40 @@ public class Repository {
 		return ticket;
 	}
 
-	/**
-	 * Creates a new session manager instance. The session manager does not have
-	 * any identities associated with it.
-	 * 
-	 * @return
-	 * 
-	 * @throws DfException
-	 */
-	private static IDfSessionManager createSessionManager() throws DfException {
-
-		IDfClientX clientX = new DfClientX();
-		IDfClient localClient = clientX.getLocalClient();
-		IDfTypedObject clientConfig = localClient.getClientConfig();
-		String docbroker = getDocbroker();
-		if (docbroker != null) {
-			clientConfig.setString("primary_host", docbroker);
+	public static String getBroker() {
+		String docbroker = RepositoryConfig.BROKER_HOST.getValue();
+		if (docbroker == null || docbroker.trim().length() == 0 || "_default_".equals(docbroker.trim())) {
+			docbroker = null;
 		}
-		String port = getPort();
-		if (port != null) {
-			clientConfig.setString("primary_port", port);
-		}
-		IDfSessionManager sessMgr = localClient.newSessionManager();
-		return sessMgr;
-	}
-
-	public static String getDocbroker() {
 		return docbroker;
 	}
 
-	public void setDocbroker(String docbroker) {
-		if (docbroker == null || docbroker.trim().length() == 0
-				|| "_default_".equals(docbroker.trim())) {
-			Repository.docbroker = null;
-		} else {
-			Repository.docbroker = docbroker;
+	public static String getBrokerPort() {
+		String docbrokerPort = RepositoryConfig.BROKER_PORT.getValue();
+		if (docbrokerPort == null || docbrokerPort.trim().length() == 0 || "_default_".equals(docbrokerPort.trim())) {
+			docbrokerPort = null;
 		}
-	}
-
-	public static String getPort() {
-		return port;
-	}
-
-	public void setPort(String port) {
-		if (port == null || port.trim().length() == 0
-				|| "_default_".equals(port.trim())) {
-			Repository.port = null;
-		} else {
-			Repository.port = port;
-		}
-	}
-
-	public String getDocbase() {
-		return repositoryName;
-	}
-
-	public void setDocbase(String docbase) {
-		this.repositoryName = docbase;
+		return docbrokerPort;
 	}
 
 	public String getSuUsername() {
-		return suUsername;
-	}
-
-	public void setSuUsername(String suUsername) {
-		this.suUsername = suUsername;
+		return RepositoryConfig.SUPERUSER_NAME.getValue();
 	}
 
 	public String getSuPassword() {
-		return suPassword;
-	}
-
-	public void setSuPassword(String suPassword) {
-		this.suPassword = suPassword;
+		return RepositoryConfig.SUPERUSER_PWD.getValue();
 	}
 
 	public String getOperatorName() {
-		return operatorName;
-	}
-
-	public void setOperatorName(String operatorName) {
-		this.operatorName = operatorName;
+		return RepositoryConfig.OPERATOR_NAME.getValue();
 	}
 
 	public String getOperatorPassword() {
-		return operatorPassword;
-	}
-
-	public void setOperatorPassword(String operatorPassword) {
-		this.operatorPassword = operatorPassword;
+		return RepositoryConfig.OPERATOR_PWD.getValue();
 	}
 
 	public String getRepositoryName() {
-		return repositoryName;
-	}
-
-	public void setRepositoryName(String repositoryName) {
-		this.repositoryName = repositoryName;
+		return RepositoryConfig.NAME.getValue();
 	}
 
 	/**
@@ -495,9 +279,7 @@ public class Repository {
 				docbaseName = getDocbaseNameFromId(objectId);
 			}
 		} catch (DfException ignore) {
-			_logger.debug(
-					"failed to retrieve the docbase name from the object id",
-					ignore);
+			logger.debug("failed to retrieve the docbase name from the object id", ignore);
 		}
 		return docbaseName;
 	}
@@ -509,25 +291,22 @@ public class Repository {
 	 * @return
 	 * @throws DfException
 	 */
-	public static String getDocbaseNameFromId(final IDfId objectId)
-			throws DfException {
+	public static String getDocbaseNameFromId(final IDfId objectId) throws DfException {
 		String retval = null;
 		if (objectId != null && objectId.isObjectId()) {
-			IDfClientX clientX = new DfClientX();
 
 			IDfClient localClient = clientX.getLocalClient();
 			IDfTypedObject clientConfig = localClient.getClientConfig();
-			String docbroker = getDocbroker();
+			String docbroker = getBroker();
 			if (docbroker != null) {
 				clientConfig.setString("primary_host", docbroker);
 			}
-			String port = getPort();
+			String port = getBrokerPort();
 			if (port != null) {
 				clientConfig.setString("primary_port", port);
 			}
 
-			final IDfDocbrokerClient docbrokerClient = clientX
-					.getDocbrokerClient();
+			final IDfDocbrokerClient docbrokerClient = clientX.getDocbrokerClient();
 			retval = docbrokerClient.getDocbaseNameFromId(objectId);
 		}
 		return retval;
@@ -542,8 +321,7 @@ public class Repository {
 	 * @param type
 	 * @return
 	 */
-	public static boolean isObjectId(final String anObjectId,
-			String repository, int type) {
+	public static boolean isObjectId(final String anObjectId, String repository, int type) {
 		Boolean isAnId = null;
 		try {
 			final IDfId objectId = new DfId(anObjectId);
@@ -566,75 +344,9 @@ public class Repository {
 				isAnId = Boolean.FALSE;
 			}
 		} catch (DfException ignore) {
-			_logger.debug(
-					"failed to retrieve the docbase name from the object id",
-					ignore);
+			logger.debug("failed to retrieve the docbase name from the object id", ignore);
 		}
 		return isAnId.booleanValue();
 	}
-
-	private Hashtable<String, String> _reposAliases = new Hashtable<String, String>();
-
-	private void loadProperties() {
-
-		Properties prop = new Properties();
-		try {
-			String configFilename = System.getProperty("Repository.config");
-			InputStream is;
-			if (configFilename == null) {
-				is = Repository.class
-						.getResourceAsStream("Repository.properties");
-				if (is == null) {
-					is = Repository.class
-							.getResourceAsStream("/Repository.properties");
-				}
-			} else {
-				is = new FileInputStream(configFilename);
-			}
-			if (is != null) {
-				prop.load(is);
-				setDocbase(prop.getProperty("repository.name"));
-				setDocbroker(prop.getProperty("repository.docbroker.host"));
-				setPort(prop.getProperty("repository.docbroker.port"));
-				setSuUsername(prop.getProperty("repository.su.username"));
-				setSuPassword(prop.getProperty("repository.su.password"));
-				setOperatorName(prop
-						.getProperty("repository.operator.username"));
-				setOperatorPassword(prop
-						.getProperty("repository.operator.password"));
-				// load repository aliases
-				try {
-					int aliasCount = Integer.parseInt(prop.getProperty(
-							"repository.alias.count", "0"));
-					for (int aliasIndex = 0; aliasIndex < aliasCount; aliasIndex++) {
-						String indexKey = Integer.toString(aliasIndex);
-						String name = prop.getProperty("repository.alias.name."
-								+ indexKey);
-						String value = prop
-								.getProperty("repository.alias.value."
-										+ indexKey);
-						if (name != null && value != null) {
-							_reposAliases.put(name, value);
-						}
-					}
-				} catch (NumberFormatException ignore) {
-					_logger.debug("invalid aliases count", ignore);
-				}
-			}
-		} catch (IOException ignore) {
-			_logger.debug("failed to load default config values", ignore);
-		}
-
-	}
-
-	private static String docbroker;
-	private static String port;
-	// private static String docbase;
-	private String suUsername;
-	private String suPassword;
-	private String operatorName;
-	private String operatorPassword;
-	private IDfSessionManager _sessMgr = null;
-	private String repositoryName;
 
 }

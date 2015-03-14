@@ -60,7 +60,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testFind() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -84,7 +84,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testCreate() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			String expectedName = "_#_" + name.getMethodName();
@@ -117,7 +117,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testCreateWithinTransaction() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			String expectedName = "_#_" + name.getMethodName();
@@ -168,7 +168,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testUpdate() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -195,7 +195,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testAddContent() throws DfException, IOException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -236,7 +236,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testGetContent() throws DfException, IOException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -273,7 +273,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testFindList() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create some document objects
@@ -314,7 +314,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testFindRelationObject() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create the parent document object
@@ -358,7 +358,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 		IDfCollection childRelatives = null;
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			String expectedName = "_#_" + name.getMethodName();
@@ -410,7 +410,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testParentFolder() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -446,7 +446,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testRemove() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object
@@ -472,7 +472,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testExecuteUpdate() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			final String expectedName = "_#_" + name.getMethodName();
@@ -504,7 +504,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	@Test
 	public void testCache() throws DfException {
 
-		IDfSession session = getRepository().getManagedSessionForOperator(getRepository().getRepositoryName());
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 
 			// create a document object

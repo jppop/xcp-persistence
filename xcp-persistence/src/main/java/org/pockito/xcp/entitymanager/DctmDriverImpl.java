@@ -9,26 +9,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.documentum.com.DfClientX;
+import com.documentum.com.IDfClientX;
+import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSessionManager;
 import com.documentum.fc.common.DfException;
+import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfAttr;
 import com.documentum.fc.common.IDfId;
+import com.documentum.fc.common.IDfLoginInfo;
 import com.google.common.base.Stopwatch;
 
 public class DctmDriverImpl implements DctmDriver {
 
 	private static final Logger logger = LoggerFactory.getLogger(DctmDriver.class);
 	
+	private static final IDfClientX CLIENTX = new DfClientX();
+	
+	private IDfSessionManager dfSessionManager = null;
+	
 	private String repository = null;
 	
 	@Override
 	public final IDfSessionManager getSessionManager() throws DmsException {
-		IDfSessionManager manager;
+		return this.dfSessionManager;
+	}
+
+	@Override
+	public final IDfSessionManager getSessionManager(final String repository, final String username,
+			final String password) throws DmsException {
+		IDfSessionManager manager = null;
 		try {
-			manager = DmsRepository.getInstance().getSessionManager();
+//			manager = DmsRepository.getInstance().getSessionManager();
+			if (this.dfSessionManager != null) {
+				this.dfSessionManager.clearIdentities();
+				this.dfSessionManager.flushSessions();
+				this.dfSessionManager = null;
+			}
+		    IDfLoginInfo login = new DfLoginInfo();
+		    login.setUser(username);
+		    login.setPassword(password);
+		    manager = DfClient.getLocalClient().newSessionManager();
+		    manager.setIdentity(repository, login);
+		    setDfSessionManager(manager);
+		    setRepository(repository);
 		} catch (DfException e) {
 			throw new DmsException("failed to get the session manager",  e);
 		}
@@ -36,35 +62,32 @@ public class DctmDriverImpl implements DctmDriver {
 	}
 
 	@Override
-	public final void setCredentials(final String repository, final String username,
-			final String password) {
-		try {
-			DmsRepository.getInstance().setIdentity(repository, username, password);
-			setRepository(repository);
-		} catch (DfException e) {
-			throw new DmsException("failed to set credentials",  e);
-		}
-	}
-
-	@Override
 	public final IDfSession getSession() {
 		IDfSession session;
+		checkSessionMgr();
 		try {
-			session = DmsRepository.getInstance().getSession(getRepository());
+			session = sessionManager().getSession(getRepository());
 		} catch (DfException e) {
-			throw new DmsException("failed to get the session manager",  e);
+			throw new DmsException("failed to get the session",  e);
 		}
 		return session;
 	}
 
 	@Override
 	public final void releaseSession(final IDfSession session) {
-		DmsRepository.getInstance().releaseSession(session);
+		try {
+			if (session != null) {
+				IDfSessionManager sMgr = session.getSessionManager();
+				sMgr.release(session);
+			}
+		} catch (Exception ignore) {
+			logger.trace("got exception while releasing session {}", ignore.getMessage());
+		}
 	}
 
 	@Override
 	public final IDfQuery createQuery() {
-		return new DfClientX().getQuery();
+		return CLIENTX.getQuery();
 	}
 
 	@Override
@@ -166,8 +189,22 @@ public class DctmDriverImpl implements DctmDriver {
 		return repository;
 	}
 
-	public final void setRepository(final String repository) {
+	private final void setRepository(final String repository) {
 		this.repository = repository;
+	}
+
+	private void checkSessionMgr() {
+		if (dfSessionManager == null) {
+			throw new DmsException("No session manager");
+		}
+	}
+
+	private IDfSessionManager sessionManager() {
+		return dfSessionManager;
+	}
+
+	private void setDfSessionManager(IDfSessionManager dfSessionManger) {
+		this.dfSessionManager = dfSessionManger;
 	}
 
 }

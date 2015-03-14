@@ -19,8 +19,8 @@ public interface DctmDriver {
 	 */
 	IDfSessionManager getSessionManager() throws DmsException;
 
-	void setCredentials(String repository, String username,
-			String password);
+	IDfSessionManager getSessionManager(String repository, String username,
+			String password) throws DmsException;
 
 	IDfSession getSession();
 

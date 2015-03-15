@@ -1,46 +1,39 @@
 package org.pockito.xcp.repository;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.pockito.xcp.annotations.XcpTypeCategory;
-import org.pockito.xcp.entitymanager.api.MetaData;
-import org.pockito.xcp.entitymanager.api.PersistentProperty;
-import org.pockito.xcp.entitymanager.api.Transaction;
-import org.pockito.xcp.repository.test.domain.Document;
+import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
+import org.pockito.xcp.repository.command.XcpRepoCommand;
+import org.pockito.xcp.repository.test.domain.EmailTemplate;
 import org.pockito.xcp.repository.test.domain.WfEmailTemplate;
 
 @RunWith(MockitoJUnitRunner.class)
 public class XcpRepositoryImplTest extends BaseMockedTest {
 
-	@Mock Transaction txMock;
-	@Mock MetaData relationMetaDataMock;
-	@Mock PersistentProperty parentProp;
-	@Mock PersistentProperty childProp;
+	@BeforeClass
+	public static void init() {
+		XcpGenericRepoImplTest.mockXcpCmd = false;
+	}
 	
 	@Test
 	public void testCreateRelation() throws Exception {
 		
-		// some stub
-		when(em.getMetaData(WfEmailTemplate.class)).thenReturn(relationMetaDataMock);
-		when(em.getTransaction()).thenReturn(txMock);
-		when(relationMetaDataMock.getTypeCategory()).thenReturn(XcpTypeCategory.RELATION);
-		when(relationMetaDataMock.getParentMethod()).thenReturn(parentProp);
-		when(relationMetaDataMock.getChildMethod()).thenReturn(childProp);
+		XcpRepoCommand cmd = XcpRepoCmdFactory.getInstance().create();
 		
-		XcpRepository repo = XcpRepositoryFactory.getInstance().create();
-		
-		Document parent = new Document();
+		EmailTemplate parent = new EmailTemplate();
 		parent.setName("parent");
-		Document child = new Document();
+		EmailTemplate child = new EmailTemplate();
 		child.setName("child");
 		
-		repo.withinTransaction()
+		cmd.withinTransaction()
 		    .create(parent)
 		    .create(child)
 		    .link(parent).to(child).with(WfEmailTemplate.class)

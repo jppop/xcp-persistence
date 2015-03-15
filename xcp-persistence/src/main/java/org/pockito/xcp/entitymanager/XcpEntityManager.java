@@ -50,12 +50,12 @@ public class XcpEntityManager implements DmsEntityManager {
 	private final SessionCacheWrapper sessionCache;
 	private Transaction currentTx = null;
 
-	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> map,
+	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> props,
 			DctmDriver dctmDriver) {
 		this.factory = dmsEntityManagerFactoryImpl;
 		this.dctmDriver = dctmDriver;
-		this.properties = map;
-		this.repository = (String) map.get(PropertyConstants.Repository);
+		this.properties = props;
+		this.repository = (String) props.get(PropertyConstants.Repository);
 
 		// create the session cache
 		if (factory().isSessionLess()) {

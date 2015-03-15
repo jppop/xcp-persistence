@@ -293,7 +293,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 							"select r_object_id from dm_document where folder(:path)"
 									+ " and subject like :subject and a_status = :status", Document.class)
 					.setParameter("path", "/Temp").setParameter("subject", "test purpose #%")
-					.setParameter("status", "draft").setMaxResults(5);
+					.setParameter("status", "draft")
+					.setMaxResults(5);
 			List<Document> docs = query.getResultList();
 			assertNotNull(docs);
 			assertEquals(5, docs.size());

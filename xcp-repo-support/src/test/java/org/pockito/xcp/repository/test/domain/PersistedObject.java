@@ -6,7 +6,7 @@ import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.VStamp;
 import org.pockito.xcp.annotations.XcpEntity;
 
-@XcpEntity(namespace = "todo")
+@XcpEntity(namespace = "dm")
 public class PersistedObject {
 
 	@Id @GeneratedValue

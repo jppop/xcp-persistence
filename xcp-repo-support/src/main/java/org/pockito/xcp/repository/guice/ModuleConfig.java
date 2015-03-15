@@ -7,9 +7,11 @@ import java.util.Properties;
 
 import org.pockito.xcp.entitymanager.XcpEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
-import org.pockito.xcp.repository.XcpRepository;
-import org.pockito.xcp.repository.XcpRepositoryFactory;
-import org.pockito.xcp.repository.XcpRepositoryImpl;
+import org.pockito.xcp.repository.XcpGenericRepo;
+import org.pockito.xcp.repository.XcpGenericRepoImpl;
+import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
+import org.pockito.xcp.repository.command.XcpRepoCmdImpl;
+import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -19,12 +21,16 @@ import com.google.inject.name.Names;
 
 public class ModuleConfig extends AbstractModule implements com.google.inject.Module {
 
+	public static final String PROPERTIES = "xcp-repository.properties";
+	public static final String OPT_CONFIG = "org.pockito.xcp.repository.guice.config";
+
 	@Override
 	protected void configure() {
 		loadProperties(binder());
-		requestStaticInjection(XcpRepositoryFactory.class);
+		requestStaticInjection(XcpRepoCmdFactory.class);
 		bind(DmsEntityManagerFactory.class).to(XcpEntityManagerFactory.class).in(Scopes.SINGLETON);
-		bind(XcpRepository.class).to(XcpRepositoryImpl.class);
+		bind(XcpRepoCommand.class).to(XcpRepoCmdImpl.class);
+		bind(XcpGenericRepo.class).to(XcpGenericRepoImpl.class);
 	}
 
 	public static void install() {
@@ -34,14 +40,14 @@ public class ModuleConfig extends AbstractModule implements com.google.inject.Mo
 	private void loadProperties(Binder binder) {
 		Properties appProperties = new Properties();
 		try {
-			String configFilename = System.getProperty("Repository.config");
+			String configFilename = System.getProperty(OPT_CONFIG);
 			InputStream is;
 			if (configFilename == null) {
 				is = ModuleConfig.class
-						.getResourceAsStream("/xcp-repository.properties");
+						.getResourceAsStream("/" + PROPERTIES);
 				if (is == null) {
 					is = ModuleConfig.class
-							.getResourceAsStream("xcp-repository.properties");
+							.getResourceAsStream(PROPERTIES);
 				}
 			} else {
 				is = new FileInputStream(configFilename);

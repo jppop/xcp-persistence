@@ -13,7 +13,7 @@ import org.pockito.xcp.annotations.XcpTypeCategory;
 
 @XcpEntity(namespace = "dm")
 @XcpType(type = XcpTypeCategory.CONTENT, name = "document")
-public class Document extends PersistedObject {
+public class EmailTemplate extends PersistedObject {
 
 	@Attribute(name = "object_name")
 	private String name;

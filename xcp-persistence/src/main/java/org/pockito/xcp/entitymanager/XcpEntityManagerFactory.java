@@ -48,8 +48,6 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
 	public DmsEntityManager createDmsEntityManager(final Map<String, ?> props) {
 		try {
-			// TODO: refresh the session manager handling.  See DCTM REST: a new session manger is created
-			// for every (repo, user).
 			DctmDriver dctmDriver = (DctmDriver) props.get(DctmDriver);
 			if (dctmDriver == null) {
 				dctmDriver = getDctmDriver();

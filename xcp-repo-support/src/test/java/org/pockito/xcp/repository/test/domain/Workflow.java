@@ -10,6 +10,7 @@ import org.pockito.xcp.annotations.ParentFolder;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.repository.PersistedObject;
 
 @XcpEntity(namespace = "dm")
 @XcpType(type = XcpTypeCategory.CONTENT, name = "document")

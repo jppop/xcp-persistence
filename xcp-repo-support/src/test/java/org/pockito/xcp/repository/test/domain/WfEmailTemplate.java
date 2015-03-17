@@ -6,6 +6,7 @@ import org.pockito.xcp.annotations.Parent;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.repository.PersistedObject;
 
 /**
  * A built-in relation type

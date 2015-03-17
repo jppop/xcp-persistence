@@ -14,8 +14,24 @@ public interface WorkflowRepo extends XcpGenericRepo<Workflow> {
 	 * @param template
 	 * @return
 	 */
-	public List<Workflow> findByTemplate(EmailTemplate template);
+	public List<Workflow> findWfUsingTemplate(EmailTemplate template);
 	
-	public void addTemplate(Workflow wf, EmailTemplate template, int order);
+	/**
+	 * Associates a template to a workflow.
+	 * 
+	 * @param wf
+	 * @param template
+	 * @param order
+	 */
+	public void useTemplate(Workflow wf, EmailTemplate template, int order);
+
+	/**
+	 * Finds workflows using a given template in a specific order
+	 * 
+	 * @param template
+	 * @param order
+	 * @return
+	 */
+	List<Workflow> findWfUsingTemplateWithOrder(EmailTemplate template, int order);
 
 }

@@ -14,6 +14,7 @@
 
 package org.pockito.xcp.entitymanager.api;
 
+
 public interface DmsEntityManager {
 
 	<T> T find(Class<T> entityClass, Object primaryKey);
@@ -37,5 +38,11 @@ public interface DmsEntityManager {
 	public <T> MetaData getMetaData(Class<T> entityClass);
 
 	void close();
+
+	<T,R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass,
+			String optionalDqlFilter);
+
+	<T,R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass,
+			String optionalDqlFilter);
 
 }

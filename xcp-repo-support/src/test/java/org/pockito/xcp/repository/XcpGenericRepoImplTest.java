@@ -54,7 +54,7 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 			template.setName("sample template #" + Integer.toString(i));
 			templateRepo.add(template);
 
-			wfRepo.addTemplate(wf, template, i);
+			wfRepo.useTemplate(wf, template, i);
 
 			someTemplates[i] = template;
 		}
@@ -106,7 +106,7 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 			template.setName("sample template #" + Integer.toString(i));
 			templateRepo.add(template);
 
-			wfRepo.addTemplate(wf, template, i);
+			wfRepo.useTemplate(wf, template, i);
 
 			someTemplates[i] = template;
 		}

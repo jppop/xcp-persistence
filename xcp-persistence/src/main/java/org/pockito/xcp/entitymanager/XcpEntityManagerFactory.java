@@ -6,6 +6,7 @@ import static org.pockito.xcp.entitymanager.PropertyConstants.Repository;
 import static org.pockito.xcp.entitymanager.PropertyConstants.SessionLess;
 import static org.pockito.xcp.entitymanager.PropertyConstants.Username;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.pockito.xcp.entitymanager.api.DctmDriver;
@@ -25,21 +26,16 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 	 */
 	private final AnnotationManager annotationManager;
 	private final Map<String, ?> props;
-	private final boolean sessionLess;
+	private boolean sessionLess = false;
 	private CacheWrapper<String, CacheElement> firstLevelCache = null;
 
 	public XcpEntityManagerFactory() {
-		this(null);
+		this(new HashMap<String, Object>());
 	}
 
 	public XcpEntityManagerFactory(final Map<String, ?> props) {
 		this.props = props;
 		this.annotationManager = new AnnotationManager();
-		if (props.containsKey(SessionLess)) {
-			this.sessionLess = Boolean.valueOf(props.containsKey(SessionLess)).booleanValue();
-		} else {
-			this.sessionLess = false;
-		}
 	}
 
 	public DmsEntityManager createDmsEntityManager() {
@@ -48,6 +44,14 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
 	public DmsEntityManager createDmsEntityManager(final Map<String, ?> props) {
 		try {
+			if (props == null ) {
+				throw new IllegalArgumentException("props cannot be null");
+			}
+			if (props.containsKey(SessionLess)) {
+				this.sessionLess = Boolean.valueOf(props.containsKey(SessionLess)).booleanValue();
+			} else {
+				this.sessionLess = false;
+			}
 			DctmDriver dctmDriver = (DctmDriver) props.get(DctmDriver);
 			if (dctmDriver == null) {
 				dctmDriver = getDctmDriver();

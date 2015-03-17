@@ -16,7 +16,7 @@ public interface XcpRepoCommand {
 	XcpRepoCommand remove(Object entity);
 
     // query
-    <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
+    <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass);
     DmsQuery createNativeQuery(String dqlString);
     
     // transaction

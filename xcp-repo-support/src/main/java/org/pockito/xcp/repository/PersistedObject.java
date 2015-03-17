@@ -1,4 +1,4 @@
-package org.pockito.xcp.repository.test.domain;
+package org.pockito.xcp.repository;
 
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.GeneratedValue;

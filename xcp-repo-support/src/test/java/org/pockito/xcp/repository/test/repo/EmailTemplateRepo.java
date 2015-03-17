@@ -14,6 +14,14 @@ public interface EmailTemplateRepo extends XcpGenericRepo<EmailTemplate> {
 	 * @param wf
 	 * @return
 	 */
-	List<EmailTemplate> findByWorkflow(Workflow wf);
+	List<EmailTemplate> findWfTemplates(Workflow wf);
+	
+	/**
+	 * Finds the default template of a workflow.
+	 * 
+	 * @param wf
+	 * @return
+	 */
+	EmailTemplate findWfDefaultTemplate(Workflow wf);
 
 }

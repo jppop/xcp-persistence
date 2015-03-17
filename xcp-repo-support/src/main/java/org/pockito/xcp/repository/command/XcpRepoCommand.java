@@ -16,8 +16,10 @@ public interface XcpRepoCommand {
 	XcpRepoCommand remove(Object entity);
 
     // query
-    <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
+    <T> DmsTypedQuery<T> createNativeQuery(String dqlString, Class<T> entityClass);
     DmsQuery createNativeQuery(String dqlString);
+	<T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass, String optionalDqlFilter);
+	<T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass, String optionalDqlFilter);
     
     // transaction
     XcpRepoCommand withoutTransaction();
@@ -33,13 +35,14 @@ public interface XcpRepoCommand {
     // relation
     XcpRepoCommand link(Object parent);
     XcpRepoCommand to(Object child);
-    <T> XcpRepoCommand with(Class<T> relationType) throws Exception;
-    <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes) throws Exception;
+    <T> XcpRepoCommand with(Class<T> relationType);
+    <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes);
     XcpRepoCommand with(Object relation);
     
     // content related
     XcpRepoCommand addAttachment(Object entity, String filename, String contentType);
     String getAttachment(Object entity, String filename);
+    XcpRepoCommand removeAttachment(Object entity);
 
     // helper methods
     DmsEntityManager getEntityManager();

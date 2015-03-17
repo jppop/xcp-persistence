@@ -30,7 +30,7 @@ public class XcpRepositoryFactoryTest extends BaseMockedTest {
 		XcpRepoCommand cmd = XcpRepoCmdFactory.getInstance().create();
 		assertNotNull(cmd);
 
-		cmd.withinTransaction().rollback(); // force the entity manager creation
+//		cmd.withinTransaction().rollback(); // force the entity manager creation
 		DmsEntityManager emActual = cmd.getEntityManager();
 		assertEquals(em, emActual);
 

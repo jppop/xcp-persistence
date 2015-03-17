@@ -17,11 +17,11 @@ public class TaskPerson extends PersistedObject {
 	@Attribute(name = "order_no")
 	int order;
 	
-	@Child
-	Person person; 
-
 	@Parent
 	Task task;
+
+	@Child
+	Person person; 
 
 	public Person getPerson() {
 		return person;

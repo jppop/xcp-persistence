@@ -48,13 +48,14 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 	@BeforeClass
 	public static void initResource() {
+		XcpEntityManagerFactory dmsEmFactory = new XcpEntityManagerFactory();
+
 		HashMap<String, Object> props = new HashMap<String, Object>();
 		props.put(PropertyConstants.Repository, getRepository().getRepositoryName());
 		props.put(PropertyConstants.Username, getRepository().getOperatorName());
 		props.put(PropertyConstants.Password, getRepository().getOperatorPassword());
-		XcpEntityManagerFactory dmsEmFactory = new XcpEntityManagerFactory(props);
 
-		em = (XcpEntityManager) dmsEmFactory.createDmsEntityManager();
+		em = (XcpEntityManager) dmsEmFactory.createDmsEntityManager(props);
 	}
 
 	@Test
@@ -130,7 +131,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			em.persist(document);
 
 			assertNotNull(document.getId());
-			
+
 			// should not be persisted yet
 			IDfPersistentObject dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
 					+ document.getId() + "'");
@@ -141,8 +142,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			addToDeleteList(new DfId(document.getId()));
 
 			// retrieve the document object
-			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
-					+ document.getId() + "'");
+			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '" + document.getId() + "'");
 			assertNotNull(dmsObj);
 
 			// test rollback
@@ -154,12 +154,11 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			em.persist(document);
 			assertNotNull(document.getId());
 			tx.rollback();
-			
+
 			// should not be persisted yet
-			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '"
-					+ document.getId() + "'");
+			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '" + document.getId() + "'");
 			assertNull(dmsObj);
-			
+
 		} finally {
 			getRepository().releaseSession(session);
 		}
@@ -293,8 +292,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 							"select r_object_id from dm_document where folder(:path)"
 									+ " and subject like :subject and a_status = :status", Document.class)
 					.setParameter("path", "/Temp").setParameter("subject", "test purpose #%")
-					.setParameter("status", "draft")
-					.setMaxResults(5);
+					.setParameter("status", "draft").setMaxResults(5);
 			List<Document> docs = query.getResultList();
 			assertNotNull(docs);
 			assertEquals(5, docs.size());
@@ -345,9 +343,77 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			DmsTypedQuery<WfEmailTemplate> query = em.createNativeQuery(
 					"select r_object_id from dm_relation where relation_name = 'dm_wf_email_template'"
 							+ " and parent_id = :wfId", WfEmailTemplate.class).setParameter("wfId", wf.getId());
-			List<WfEmailTemplate> emailTemplates = query.getResultList();
+			List<WfEmailTemplate> wfEemailTemplates = query.getResultList();
+			assertNotNull(wfEemailTemplates);
+			assertEquals(2, wfEemailTemplates.size());
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testFindChildRelatives() throws DfException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create the parent document object
+			String expectedName = "_#_" + name.getMethodName();
+			IDfSysObject dmWfDoc = createObject(session, "dm_document", expectedName);
+			dmWfDoc.setString("subject", "test purpose -- parent");
+			dmWfDoc.setString("a_status", "draft");
+			dmWfDoc.save();
+			String parentId = dmWfDoc.getObjectId().toString();
+
+			final int childCount = 2;
+			String childs[] = new String[childCount];
+			for (int i = 0; i < childCount; i++) {
+				expectedName = "_#_" + name.getMethodName();
+				IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+				dmDocument.setString("subject", "test purpose -- child #" + Integer.toString(i));
+				dmDocument.setString("a_status", "draft");
+				dmDocument.save();
+				childs[i] = dmDocument.getObjectId().getId();
+
+				// link to the parent object
+				dmDocument.addParentRelative("dm_wf_email_template", dmWfDoc.getObjectId(), null, true, "test purpose");
+				dmDocument.save();
+			}
+
+			Document wf = em.find(Document.class, parentId);
+			assertNotNull(wf);
+
+			// find child relatives using a custom query
+			DmsTypedQuery<Document> query = em.createNativeQuery(
+					"select t.r_object_id from dm_relation r, dm_document t"
+							+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = :wfId"
+							+ " and r.child_id = t.r_object_id order by 1", Document.class)
+					.setParameter("wfId", wf.getId());
+
+			List<Document> emailTemplates = query.getResultList();
+
 			assertNotNull(emailTemplates);
 			assertEquals(2, emailTemplates.size());
+			int i = 0;
+			for (Document template : emailTemplates) {
+				assertEquals(childs[i], template.getId());
+				i++;
+			}
+
+			// find child relatives using an assisted query
+			DmsTypedQuery<Document> assistedQuery = em.createChildRelativesQuery(wf, WfEmailTemplate.class,
+					Document.class, null);
+
+			emailTemplates = assistedQuery.getResultList();
+
+			assertNotNull(emailTemplates);
+			assertEquals(2, emailTemplates.size());
+			i = 0;
+			for (Document template : emailTemplates) {
+				assertEquals(childs[i], template.getId());
+				i++;
+			}
 
 		} finally {
 			getRepository().releaseSession(session);

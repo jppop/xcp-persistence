@@ -10,6 +10,7 @@ import org.pockito.xcp.annotations.ParentFolder;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.repository.PersistedObject;
 
 @XcpEntity(namespace = "dm")
 @XcpType(type = XcpTypeCategory.CONTENT, name = "document")
@@ -129,7 +130,7 @@ public class Workflow extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
+				"Workflow[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
 				getId(), name, Arrays.toString(versionLabels.toArray()),
 				creationDate, contentSize, getParentFolder(), getvStamp()
 				);

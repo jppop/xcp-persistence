@@ -1,7 +1,6 @@
 package org.pockito.xcp.repository;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -9,12 +8,11 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.inject.Provider;
-
 import org.junit.Before;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.MetaData;
@@ -37,7 +35,7 @@ public class BaseMockedTest {
 	@Mock
 	protected DmsEntityManagerFactory emFactory;
 	@Mock
-	protected DmsEntityManager em;
+	protected XcpEntityManager em;
 	@Mock
 	protected Transaction txMock;
 
@@ -55,23 +53,23 @@ public class BaseMockedTest {
 		super();
 	}
 
-	public static class XcpCommandProvider implements Provider<XcpRepoCommand> {
-
-		@Override
-		public XcpRepoCommand get() {
-			XcpRepoCommand mockCmd = mock(XcpRepoCommand.class);
-			when(mockCmd.withinTransaction()).thenReturn(mockCmd);
-			when(mockCmd.create(any())).thenReturn(mockCmd);
-			when(mockCmd.update(any())).thenReturn(mockCmd);
-			when(mockCmd.remove(any())).thenReturn(mockCmd);
-			when(mockCmd.link(any())).thenReturn(mockCmd);
-			when(mockCmd.to(any())).thenReturn(mockCmd);
-			when(mockCmd.with(any())).thenReturn(mockCmd);
-			return mockCmd;
-		}
-		
-	}
-	
+//	public static class XcpCommandProvider implements Provider<XcpRepoCommand> {
+//
+//		@Override
+//		public XcpRepoCommand get() {
+//			XcpRepoCommand mockCmd = mock(XcpRepoCommand.class);
+//			when(mockCmd.withinTransaction()).thenReturn(mockCmd);
+//			when(mockCmd.create(any())).thenReturn(mockCmd);
+//			when(mockCmd.update(any())).thenReturn(mockCmd);
+//			when(mockCmd.remove(any())).thenReturn(mockCmd);
+//			when(mockCmd.link(any())).thenReturn(mockCmd);
+//			when(mockCmd.to(any())).thenReturn(mockCmd);
+//			when(mockCmd.with(any())).thenReturn(mockCmd);
+//			return mockCmd;
+//		}
+//		
+//	}
+//	
 	@Before
 	public void initMock() {
 		
@@ -83,8 +81,8 @@ public class BaseMockedTest {
 				requestStaticInjection(XcpRepoCmdFactory.class);
 				bind(DmsEntityManagerFactory.class).toInstance(emFactory);
 				if (mockXcpCmd) {
-//					bind(XcpRepoCommand.class).toInstance(mockCmd);
-					bind(XcpRepoCommand.class).toProvider(XcpCommandProvider.class);
+					bind(XcpRepoCommand.class).toInstance(mockCmd);
+//					bind(XcpRepoCommand.class).toProvider(XcpCommandProvider.class);
 				} else {
 					bind(XcpRepoCommand.class).to(XcpRepoCmdImpl.class);
 				}
@@ -102,6 +100,7 @@ public class BaseMockedTest {
 				when(mockCmd.link(any())).thenReturn(mockCmd);
 				when(mockCmd.to(any())).thenReturn(mockCmd);
 				when(mockCmd.with(any())).thenReturn(mockCmd);
+				when(mockCmd.getEntityManager()).thenReturn(em);
 				
 				// relation stubs
 				when(em.getMetaData(WfEmailTemplate.class)).thenReturn(relationMetaDataMock);
@@ -110,8 +109,6 @@ public class BaseMockedTest {
 				when(relationMetaDataMock.getChildMethod()).thenReturn(childProp);
 				
 			}
-	
-			
 			
 			private void loadProperties(Binder binder) {
 				InputStream stream = XcpRepositoryFactoryTest.class.getResourceAsStream("/repository.properties");

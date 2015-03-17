@@ -387,8 +387,9 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// find child relatives using a custom query
 			DmsTypedQuery<Document> query = em.createNativeQuery(
 					"select t.r_object_id from dm_relation r, dm_document t"
-							+ " where r.relation_name = 'dm_wf_email_template'" + " and r.parent_id = :wfId"
-							+ " and r.child_id = t.r_object_id", Document.class).setParameter("wfId", wf.getId());
+							+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = :wfId"
+							+ " and r.child_id = t.r_object_id order by 1", Document.class)
+					.setParameter("wfId", wf.getId());
 
 			List<Document> emailTemplates = query.getResultList();
 

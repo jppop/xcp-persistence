@@ -9,6 +9,10 @@ import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
+	@SuppressWarnings("unchecked")
+	private final Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
+			.getActualTypeArguments()[0];
+	
 	private XcpRepoCommand xcpCmd = null;
 
 	protected boolean autoCommit;
@@ -61,19 +65,20 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	@Override
+	public T find(Object primaryKey) {
+		return find(entityClass, primaryKey);
+	}
+
+	@Override
 	public <R> List<T> findChildren(Object parent, Class<R> relationClass, String optionalDqlFilter) {
-		@SuppressWarnings("unchecked")
-		Class<T> cls = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		DmsTypedQuery<T> query = cmd().getEntityManager().createChildRelativesQuery(parent, relationClass, cls,
+		DmsTypedQuery<T> query = cmd().createChildRelativesQuery(parent, relationClass, entityClass,
 				optionalDqlFilter);
 		return query.getResultList();
 	}
 
 	@Override
 	public <R> List<T> findParents(Object child, Class<R> relationClass, String optionalDqlFilter) {
-		@SuppressWarnings("unchecked")
-		Class<T> cls = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-		DmsTypedQuery<T> query = cmd().getEntityManager().createParentRelativesQuery(child, relationClass, cls,
+		DmsTypedQuery<T> query = cmd().createParentRelativesQuery(child, relationClass, entityClass,
 				optionalDqlFilter);
 		return query.getResultList();
 	}

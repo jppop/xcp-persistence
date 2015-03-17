@@ -500,7 +500,8 @@ public class XcpEntityManager implements DmsEntityManager {
 			return null;
 		}
 		if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
-			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
+//			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
+			return getDmsObj(dfSession, DMS_RELATION_TYPE, PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
 		} else {
 			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
 		}
@@ -521,25 +522,6 @@ public class XcpEntityManager implements DmsEntityManager {
 			logger.debug("find by qualification: {}", buffer.toString());
 		}
 		IDfPersistentObject dmsObj = dfSession.getObjectByQualification(buffer.toString());
-		return dmsObj;
-	}
-
-	private IDfRelation getDmsRelationObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp)
-			throws DfException {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(DMS_RELATION_TYPE);
-		buffer.append(" where ");
-		buffer.append("relation_name = '").append(ai.getDmsType()).append("'");
-		buffer.append(" and r_object_id = '").append(objectId.toString()).append("'");
-		if (vstamp >= 0) {
-			buffer.append(" and i_vstamp = ").append(vstamp);
-		}
-
-		// retrieve the persisted object
-		if (logger.isDebugEnabled()) {
-			logger.debug("find by qualification: {}", buffer.toString());
-		}
-		IDfRelation dmsObj = (IDfRelation) dfSession.getObjectByQualification(buffer.toString());
 		return dmsObj;
 	}
 
@@ -587,32 +569,32 @@ public class XcpEntityManager implements DmsEntityManager {
 	@Override
 	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass,
 			Class<T> childClass, String optionalDqlFilter) {
-		final String dqlQuery = buildChildRelative(parent, relationClass, childClass, Optional.fromNullable(optionalDqlFilter));
+		final String dqlQuery = buildChildRelative(parent, relationClass, childClass,
+				Optional.fromNullable(optionalDqlFilter));
 		return new XcpTypedQuery<T>(this, dqlQuery, childClass, true);
 	}
 
 	@Override
 	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass,
 			Class<T> parentClass, String optionalDqlFilter) {
-		final String dqlQuery = buildParentRelative(child, relationClass, parentClass, Optional.fromNullable(optionalDqlFilter));
+		final String dqlQuery = buildParentRelative(child, relationClass, parentClass,
+				Optional.fromNullable(optionalDqlFilter));
 		return new XcpTypedQuery<T>(this, dqlQuery, parentClass, true);
 	}
 
 	private <T, R> String buildChildRelative(Object parent, Class<R> relationClass, Class<T> childClass,
 			Optional<String> dqlFilter) {
-		
+
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo parentAi = getAnnotationInfo(parent.getClass());
 		final AnnotationInfo childAi = getAnnotationInfo(childClass);
 		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parent);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select c.r_object_id")
-			  .append(" from dm_relation r, ").append(childAi.getDmsType()).append(" c")
-			  .append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
-			  .append(" and r.parent_id = '").append(parentObjectId).append("'")
-			  .append(" and r.child_id = c.r_object_id")
-			  ;
+		buffer.append("select c.r_object_id").append(" from dm_relation r, ").append(childAi.getDmsType()).append(" c")
+				.append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+				.append(" and r.parent_id = '").append(parentObjectId).append("'")
+				.append(" and r.child_id = c.r_object_id");
 		if (dqlFilter.isPresent()) {
 			buffer.append(" ").append(dqlFilter.get());
 		}
@@ -621,19 +603,17 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	private <T, R> String buildParentRelative(Object child, Class<R> relationClass, Class<T> parentClass,
 			Optional<String> dqlFilter) {
-		
+
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo childAi = getAnnotationInfo(child.getClass());
 		final AnnotationInfo parentAi = getAnnotationInfo(parentClass);
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(child);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select p.r_object_id")
-			  .append(" from dm_relation r, ").append(parentAi.getDmsType()).append(" p")
-			  .append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
-			  .append(" and r.child_id = '").append(childObjectId).append("'")
-			  .append(" and r.parent_id = p.r_object_id")
-			  ;
+		buffer.append("select p.r_object_id").append(" from dm_relation r, ").append(parentAi.getDmsType())
+				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+				.append(" and r.child_id = '").append(childObjectId).append("'")
+				.append(" and r.parent_id = p.r_object_id");
 		if (dqlFilter.isPresent()) {
 			buffer.append(" ").append(dqlFilter.get());
 		}

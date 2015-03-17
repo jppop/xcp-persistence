@@ -130,7 +130,7 @@ public class EmailTemplate extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
+				"EmailTemplate[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
 				getId(), name, Arrays.toString(versionLabels.toArray()),
 				creationDate, contentSize, getParentFolder(), getvStamp()
 				);

@@ -12,16 +12,16 @@ public class EmailTemplateRepoImpl extends XcpGenericRepoImpl<EmailTemplate> imp
 
 	@Override
 	public List<EmailTemplate> findWfTemplates(Workflow wf) {
-		DmsTypedQuery<EmailTemplate> query = cmd().getEntityManager().createChildRelativesQuery(wf,
-				WfEmailTemplate.class, EmailTemplate.class, null);
+		DmsTypedQuery<EmailTemplate> query = cmd().createChildRelativesQuery(wf, WfEmailTemplate.class,
+				EmailTemplate.class, null);
 		return query.getResultList();
 	}
 
 	@Override
 	public EmailTemplate findWfDefaultTemplate(Workflow wf) {
 		EmailTemplate template = null;
-		DmsTypedQuery<EmailTemplate> query = cmd().getEntityManager().createChildRelativesQuery(wf,
-				WfEmailTemplate.class, EmailTemplate.class, "order_no = -1");
+		DmsTypedQuery<EmailTemplate> query = cmd().createChildRelativesQuery(wf, WfEmailTemplate.class,
+				EmailTemplate.class, "order_no = -1");
 		List<EmailTemplate> templates = query.getResultList();
 		if (templates.size() == 1) {
 			template = templates.get(0);

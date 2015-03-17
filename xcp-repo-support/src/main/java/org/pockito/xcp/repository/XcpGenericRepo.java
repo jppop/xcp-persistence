@@ -57,6 +57,14 @@ public interface XcpGenericRepo<T> {
 	T find(Class<T> entityClass, Object primaryKey);
 
 	/**
+	 * Finds an object by its primary key (repository system id).
+	 * 
+	 * @param primaryKey
+	 * @return
+	 */
+	T find(Object primaryKey);
+
+	/**
 	 * Finds the child relative objects of a given parent.
 	 * 
 	 * Ie, finds all objects involved in a relation as a child.
@@ -87,4 +95,5 @@ public interface XcpGenericRepo<T> {
 	void commitSharedCmd();
 
 	void rollbackSharedCmd();
+
 }

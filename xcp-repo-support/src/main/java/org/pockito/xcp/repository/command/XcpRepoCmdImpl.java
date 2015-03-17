@@ -19,6 +19,7 @@ import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.entitymanager.api.Transaction;
+import org.pockito.xcp.repository.NotYetImplemented;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	private Logger logger = LoggerFactory.getLogger(XcpRepoCmdImpl.class);
 	
 	private final Provider<DmsEntityManagerFactory> emFactoryProvider;
-	private DmsEntityManager em = null;
+	private final DmsEntityManager em;
 	private Transaction tx = null;
 
 	@Inject @Named("org.pockito.xcp.repository.name")
@@ -57,16 +58,21 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		this.repository = repository;
 		this.username = username;
 		this.password = password;
+		HashMap<String, Object> props = new HashMap<String, Object>();
+		props.put(PropertyConstants.Repository, repository);
+		props.put(PropertyConstants.Username, username);
+		props.put(PropertyConstants.Password, password);
+		this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
 	}
 
 	private DmsEntityManager em() {
-		if (em == null) {
-			HashMap<String, Object> props = new HashMap<String, Object>();
-			props.put(PropertyConstants.Repository, repository);
-			props.put(PropertyConstants.Username, username);
-			props.put(PropertyConstants.Password, password);
-			this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
-		}
+//		if (em == null) {
+//			HashMap<String, Object> props = new HashMap<String, Object>();
+//			props.put(PropertyConstants.Repository, repository);
+//			props.put(PropertyConstants.Username, username);
+//			props.put(PropertyConstants.Password, password);
+//			this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
+//		}
 		return em;
 	}
 	
@@ -117,6 +123,18 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public DmsQuery createNativeQuery(String dqlString) {
 		return em().createNativeQuery(dqlString);
+	}
+
+	@Override
+	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass,
+			String optionalDqlFilter) {
+		return em().createChildRelativesQuery(parent, relationClass, childClass, optionalDqlFilter);
+	}
+
+	@Override
+	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass,
+			String optionalDqlFilter) {
+		return em().createParentRelativesQuery(child, relationClass, parentClass, optionalDqlFilter);
 	}
 
 	@Override
@@ -198,20 +216,26 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	}
 
 	@Override
-	public <T> XcpRepoCommand with(Class<T> relationType) throws Exception {
+	public <T> XcpRepoCommand with(Class<T> relationType) {
 		return with(relationType, null);
 			
 	}
 
 	@Override
-	public <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes) throws Exception {
+	public <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes) {
 		if (this.parent == null) {
 			throw new IllegalStateException("No parent given");
 		}
 		if (this.child == null) {
 			throw new IllegalStateException("No child given");
 		}
-		T instance = relationType.newInstance();
+		T instance;
+		try {
+			instance = relationType.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO: exception
+			throw new RuntimeException("failed to create the relation object");
+		}
 		if (extraAttributes != null) {
 			MetaData metaData = em().getMetaData(relationType);
 			for (Entry<String, Object> entry : extraAttributes.entrySet()) {
@@ -360,18 +384,17 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		this.txRequested = txRequested;
 	}
 
-	public class NotYetImplemented extends RuntimeException {
-
-		private static final long serialVersionUID = 1L;
-		
-	}
-	
 	private void rememberParent(Object parent) {
 		this.parent = parent;
 	}
 
 	private void rememberChild(Object child) {
 		this.child = child;
+	}
+
+	@Override
+	public XcpRepoCommand removeAttachment(Object entity) {
+		throw new NotYetImplemented();
 	}
 
 }

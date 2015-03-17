@@ -1,6 +1,7 @@
-package org.pockito.xcp.repository;
+package org.pockito.xcp.repository.command;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +11,7 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
+import org.pockito.xcp.entitymanager.PropertyConstants;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
@@ -17,18 +19,17 @@ import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.entitymanager.api.Transaction;
-import org.pockito.xcp.repository.command.XcpPersistCommand;
-import org.pockito.xcp.repository.command.XcpPersistCommandCatalog;
+import org.pockito.xcp.repository.NotYetImplemented;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XcpRepositoryImpl implements XcpRepository {
+public class XcpRepoCmdImpl implements XcpRepoCommand {
 
-	private Logger logger = LoggerFactory.getLogger(XcpRepositoryImpl.class);
+	private Logger logger = LoggerFactory.getLogger(XcpRepoCmdImpl.class);
 	
-	@SuppressWarnings("unused")
 	private final Provider<DmsEntityManagerFactory> emFactoryProvider;
 	private final DmsEntityManager em;
+	private Transaction tx = null;
 
 	@Inject @Named("org.pockito.xcp.repository.name")
 	private String repository;
@@ -41,31 +42,49 @@ public class XcpRepositoryImpl implements XcpRepository {
 	
 	private XcpPersistCommandCatalog cmd = null;
 	private final List<XcpPersistCommand> commands = new ArrayList<XcpPersistCommand>();
-	private final Transaction tx;
 
 	private boolean txRequested = false;
 	private Object parent;
 	private Object child;
 
-	private boolean commandInProgress;
+	private boolean commandInProgress = false;
+
+	private Object owner;
 	
 	@Inject
-	XcpRepositoryImpl(Provider<DmsEntityManagerFactory> emFactoryProvider, String repository, String username,
+	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider, String repository, String username,
 			String password) {
 		this.emFactoryProvider = emFactoryProvider;
-		this.em = emFactoryProvider.get().createDmsEntityManager();
 		this.repository = repository;
 		this.username = username;
 		this.password = password;
-		this.tx = this.em.getTransaction();
+		HashMap<String, Object> props = new HashMap<String, Object>();
+		props.put(PropertyConstants.Repository, repository);
+		props.put(PropertyConstants.Username, username);
+		props.put(PropertyConstants.Password, password);
+		this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
 	}
 
 	private DmsEntityManager em() {
+//		if (em == null) {
+//			HashMap<String, Object> props = new HashMap<String, Object>();
+//			props.put(PropertyConstants.Repository, repository);
+//			props.put(PropertyConstants.Username, username);
+//			props.put(PropertyConstants.Password, password);
+//			this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
+//		}
 		return em;
 	}
 	
+	private Transaction tx() {
+		if (tx == null) {
+			tx = em().getTransaction();
+		}
+		return tx;
+	}
+	
 	@Override
-	public XcpRepository create(Object entity) {
+	public XcpRepoCommand create(Object entity) {
 		if (!hasCmdStarted()) {
 			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
 		}
@@ -74,12 +93,12 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public <T> T find(Class<T> entityClass, SystemId primaryKey) {
+	public <T> T find(Class<T> entityClass, Object primaryKey) {
 		return em().find(entityClass, primaryKey);
 	}
 
 	@Override
-	public XcpRepository update(Object entity) {
+	public XcpRepoCommand update(Object entity) {
 		if (!hasCmdStarted()) {
 			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
 		}
@@ -88,7 +107,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public XcpRepository remove(Object entity) {
+	public XcpRepoCommand remove(Object entity) {
 		if (!hasCmdStarted()) {
 			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
 		}
@@ -98,7 +117,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 
 	@Override
 	public <T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass) {
-		return em.createNativeQuery(qlString, entityClass);
+		return em().createNativeQuery(qlString, entityClass);
 	}
 
 	@Override
@@ -107,8 +126,22 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public XcpRepository withinTransaction() {
-		startNewCommand();
+	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass,
+			String optionalDqlFilter) {
+		return em().createChildRelativesQuery(parent, relationClass, childClass, optionalDqlFilter);
+	}
+
+	@Override
+	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass,
+			String optionalDqlFilter) {
+		return em().createParentRelativesQuery(child, relationClass, parentClass, optionalDqlFilter);
+	}
+
+	@Override
+	public XcpRepoCommand withinTransaction() {
+		if (!hasCmdStarted()) {
+			startNewCommand();
+		}
 		setTxRequested(true);
 		return this;
 	}
@@ -127,13 +160,15 @@ public class XcpRepositoryImpl implements XcpRepository {
 			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
 		}
 		if (isTxActive()) {
-			this.tx.rollback();
+			this.tx().rollback();
 		}
 	}
 
 	@Override
-	public XcpRepository withoutTransaction() {
-		startNewCommand();
+	public XcpRepoCommand withoutTransaction() {
+		if (!hasCmdStarted()) {
+			startNewCommand();
+		}
 		setTxRequested(false);
 		return this;
 	}
@@ -156,7 +191,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 	
 	@Override
-	public XcpRepository rollbackOn(Class<? extends Exception> e) {
+	public XcpRepoCommand rollbackOn(Class<? extends Exception> e) {
 		throw new NotYetImplemented();
 	}
 
@@ -166,13 +201,13 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public XcpRepository link(Object parent) {
+	public XcpRepoCommand link(Object parent) {
 		rememberParent(parent);
 		return this;
 	}
 
 	@Override
-	public XcpRepository to(Object child) {
+	public XcpRepoCommand to(Object child) {
 		if (this.parent == null) {
 			throw new IllegalStateException("No parent given");
 		}
@@ -181,20 +216,26 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public <T> XcpRepository with(Class<T> relationType) throws Exception {
+	public <T> XcpRepoCommand with(Class<T> relationType) {
 		return with(relationType, null);
 			
 	}
 
 	@Override
-	public <T> XcpRepository with(Class<T> relationType, Map<String, Object> extraAttributes) throws Exception {
+	public <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes) {
 		if (this.parent == null) {
 			throw new IllegalStateException("No parent given");
 		}
 		if (this.child == null) {
 			throw new IllegalStateException("No child given");
 		}
-		T instance = relationType.newInstance();
+		T instance;
+		try {
+			instance = relationType.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO: exception
+			throw new RuntimeException("failed to create the relation object");
+		}
 		if (extraAttributes != null) {
 			MetaData metaData = em().getMetaData(relationType);
 			for (Entry<String, Object> entry : extraAttributes.entrySet()) {
@@ -208,7 +249,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public XcpRepository with(Object relation) {
+	public XcpRepoCommand with(Object relation) {
 		if (this.parent == null) {
 			throw new IllegalStateException("No parent given");
 		}
@@ -238,7 +279,7 @@ public class XcpRepositoryImpl implements XcpRepository {
 	}
 
 	@Override
-	public XcpRepository addAttachment(Object entity, String filename, String contentType) {
+	public XcpRepoCommand addAttachment(Object entity, String filename, String contentType) {
 		commands.add(cmd().addAttachmentCmd(entity, filename, contentType));
 		return this;
 	}
@@ -253,11 +294,31 @@ public class XcpRepositoryImpl implements XcpRepository {
 		return this.em;
 	}
 
+	@Override
+	public void setOwner(Object owner) {
+		this.owner = owner;
+	}
+
+	@Override
+	public Object getOwner() {
+		return this.owner;
+	}
+
+	@Override
+	public boolean isOwner(Object owner) {
+		return this.owner != null && this.owner == owner;
+	}
+
+	@Override
+	public int size() {
+		return commands.size();
+	}
+
 	private void executeCommand() {
 		boolean txStarted = false;
 		try {
 			if (isTxRequested() && !isTxActive()) {
-				tx.begin();
+				tx().begin();
 				txStarted = true;
 			}
 			for (XcpPersistCommand cmd : commands) {
@@ -265,20 +326,23 @@ public class XcpRepositoryImpl implements XcpRepository {
 				cmd.execute();
 			}
 		} catch (Exception e) {
+			logger.trace("rolling back", e);
+//			logger.trace("Commands: {}", commands.toString());
 			if (txStarted) {
-				tx.rollback();
+				tx().rollback();
 			}
 			throw e;
 		} finally {
 			if (txStarted) {
-				tx.commit();
+				tx().commit();
 			}
 			this.commandInProgress = false;
+			commands.clear();
 		}
 	}
 	
 	private boolean isTxActive() {
-		return this.tx.isActive();
+		return this.tx().isActive();
 	}
 
 	private boolean hasCmdStarted() {
@@ -320,18 +384,17 @@ public class XcpRepositoryImpl implements XcpRepository {
 		this.txRequested = txRequested;
 	}
 
-	public class NotYetImplemented extends RuntimeException {
-
-		private static final long serialVersionUID = 1L;
-		
-	}
-	
 	private void rememberParent(Object parent) {
 		this.parent = parent;
 	}
 
 	private void rememberChild(Object child) {
 		this.child = child;
+	}
+
+	@Override
+	public XcpRepoCommand removeAttachment(Object entity) {
+		throw new NotYetImplemented();
 	}
 
 }

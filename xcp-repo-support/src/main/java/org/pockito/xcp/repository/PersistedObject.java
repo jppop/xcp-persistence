@@ -1,4 +1,4 @@
-package org.pockito.xcp.repository.test.domain;
+package org.pockito.xcp.repository;
 
 import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.GeneratedValue;
@@ -6,7 +6,7 @@ import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.VStamp;
 import org.pockito.xcp.annotations.XcpEntity;
 
-@XcpEntity(namespace = "todo")
+@XcpEntity(namespace = "dm")
 public class PersistedObject {
 
 	@Id @GeneratedValue

@@ -1,5 +1,6 @@
 package org.pockito.xcp.test.domain;
 
+import org.pockito.xcp.annotations.Attribute;
 import org.pockito.xcp.annotations.Child;
 import org.pockito.xcp.annotations.Parent;
 import org.pockito.xcp.annotations.XcpEntity;
@@ -16,11 +17,14 @@ import org.pockito.xcp.annotations.XcpTypeCategory;
 public class WfEmailTemplate extends PersistedObject {
 
 	@Parent
-	Document wf; 
+	private Document wf; 
 
 	@Child
-	Document template;
+	private Document template;
 
+	@Attribute(name = "order_no")
+	private int order;
+	
 	public Document getWf() {
 		return wf;
 	}
@@ -37,12 +41,20 @@ public class WfEmailTemplate extends PersistedObject {
 		this.template = template;
 	}
 
+	public int getOrder() {
+		return order;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
 	@Override
 	public String toString() {
 		return String.format(
-				"WfEmailTemplate[id=%s, wf=%s, template=%s, vstamp=%d]",
+				"WfEmailTemplate[id=%s, wf=%s, template=%s, order=%d, vstamp=%d]",
 				getId(), 
-				getWf(), getTemplate(),
+				getWf(), getTemplate(), getOrder(),
 				getvStamp()
 				);
 	}

@@ -28,6 +28,7 @@ import com.google.common.base.Strings;
  */
 public abstract class PersistentProperty {
 	
+	public static final String DMS_ATTR_OBJECT_ID = "r_object_id";
 	public static final String DMS_ATTR_PARENT_ID = "parent_id";
 	public static final String DMS_ATTR_CHILD_ID = "child_id";
 	public static final String DMS_ATTR_FOLDER_ID = "i_folder_id";

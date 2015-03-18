@@ -30,6 +30,7 @@ import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfQuery;
+import com.documentum.fc.client.IDfRelation;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
@@ -446,6 +447,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			WfEmailTemplate wfEmailTemplate = new WfEmailTemplate();
 			wfEmailTemplate.setWf(parent);
 			wfEmailTemplate.setTemplate(template);
+			wfEmailTemplate.setOrder(2);
 			em.persist(wfEmailTemplate);
 
 			// retrieve the relation object using DFC
@@ -462,6 +464,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(template.getId(), childId.toString());
 			// no more child
 			assertTrue(childRelatives.next() == false);
+			
+			// check extra relation attributes
+			final IDfRelation relDmsObj = (IDfRelation) session.getObject(relId);
+			assertEquals(2, relDmsObj.getInt("order_no"));
 
 		} finally {
 			if (childRelatives != null) {

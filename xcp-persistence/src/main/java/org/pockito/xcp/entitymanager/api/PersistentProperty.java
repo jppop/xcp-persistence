@@ -83,6 +83,7 @@ public abstract class PersistentProperty {
 		}
 	}
 	
+	// TODO: what about Enum ?
 	public Object dfValueToObject(final IDfValue value) {
 		Class<?> rawClass = getPropertyClass();
 		Object obj = null;

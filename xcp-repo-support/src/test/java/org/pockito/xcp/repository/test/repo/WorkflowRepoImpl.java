@@ -53,8 +53,9 @@ public class WorkflowRepoImpl extends XcpGenericRepoImpl<Workflow> implements Wo
 		relation.setOrder(order);
 
 		// link the template
+		// FIXME: should use command pattern!
 		cmd().withinTransaction().link(wf).to(template).with(relation);
-
+		commit();
 	}
 
 }

@@ -13,7 +13,7 @@ public class WorkflowRepoImpl extends XcpGenericRepoImpl<Workflow> implements Wo
 
 	@Override
 	public List<Workflow> findWfUsingTemplate(EmailTemplate template) {
-		return findParents(template, WfEmailTemplate.class, null);
+		return findByChild(template, WfEmailTemplate.class, null);
 	}
 
 	public List<Workflow> findByTemplate2(EmailTemplate template) {

@@ -15,15 +15,19 @@ public abstract class AbstractQuery {
 
 	protected final XcpEntityManager em;
 	protected final DctmDriver dctmDriver;
-	protected final String dqlString;
-	protected final boolean nativeQuery;
+	protected String qlString;
+	protected boolean nativeQuery;
 	protected final Map<String, Object> parameters = new HashMap<String, Object>();
 	protected final Map<String, Object> hints = new HashMap<String, Object>();
 
-	public AbstractQuery(XcpEntityManager em, String qlString, boolean nativeQuery) {
+	public AbstractQuery(XcpEntityManager em) {
 		this.em = em;
-		this.dqlString = qlString;
 		this.dctmDriver = em.getDctmDriver();
+	}
+	
+	public AbstractQuery(XcpEntityManager em, String qlString, boolean nativeQuery) {
+		this(em);
+		this.qlString = qlString;
 		this.nativeQuery = nativeQuery;
 	}
 
@@ -35,19 +39,27 @@ public abstract class AbstractQuery {
 		return dctmDriver;
 	}
 
-	public String getDqlString() {
-		return dqlString;
+	public String getQuery() {
+		return qlString;
+	}
+
+	public void setQuery(String qlQuery) {
+		this.qlString = qlQuery;
 	}
 
 	public boolean isNativeQuery() {
 		return nativeQuery;
 	}
 
+	public void setIsNativeQuery(boolean isNative) {
+		this.nativeQuery = isNative;
+	}
+
 	public int executeUpdate() {
 		final int count;
 		IDfSession session = dctmDriver().getSession();
 		try {
-			count = dctmDriver().executeQuery(session, getDqlString());
+			count = dctmDriver().executeQuery(session, getQuery());
 		} finally {
 			dctmDriver().releaseSession(session);
 		}

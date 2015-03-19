@@ -74,7 +74,7 @@ public interface XcpGenericRepo<T> {
 	 * @param optionalDqlFilter
 	 * @return
 	 */
-	<R> List<T> findChildren(Object parent, Class<R> relationClass, String optionalDqlFilter);
+	<R> List<T> findByParent(Object parent, Class<R> relationClass, String optionalDqlFilter);
 
 	/**
 	 * Finds the parent relative objects of a given parent.
@@ -86,7 +86,7 @@ public interface XcpGenericRepo<T> {
 	 * @param optionalDqlFilter
 	 * @return
 	 */
-	<R> List<T> findParents(Object child, Class<R> relationClass, String optionalDqlFilter);
+	<R> List<T> findByChild(Object child, Class<R> relationClass, String optionalDqlFilter);
 
 	XcpRepoCommand createSharedCmd();
 

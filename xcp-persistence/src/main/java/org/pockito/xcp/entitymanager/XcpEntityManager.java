@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsException;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
@@ -19,6 +20,7 @@ import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
+import org.pockito.xcp.entitymanager.query.XcpBeanQuery;
 import org.pockito.xcp.entitymanager.query.XcpQuery;
 import org.pockito.xcp.entitymanager.query.XcpTypedQuery;
 import org.pockito.xcp.exception.XcpPersistenceException;
@@ -563,15 +565,19 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	@Override
 	public <T> DmsTypedQuery<T> createNativeQuery(String dqlQuery, Class<T> entityClass) {
-		return new XcpTypedQuery<T>(this, dqlQuery, entityClass, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, true);
 	}
 
+	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
+		return new XcpBeanQuery<T>(this, entityClass);
+	}
+	
 	@Override
 	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass,
 			Class<T> childClass, String optionalDqlFilter) {
 		final String dqlQuery = buildChildRelative(parent, relationClass, childClass,
 				Optional.fromNullable(optionalDqlFilter));
-		return new XcpTypedQuery<T>(this, dqlQuery, childClass, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, true);
 	}
 
 	@Override
@@ -579,7 +585,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			Class<T> parentClass, String optionalDqlFilter) {
 		final String dqlQuery = buildParentRelative(child, relationClass, parentClass,
 				Optional.fromNullable(optionalDqlFilter));
-		return new XcpTypedQuery<T>(this, dqlQuery, parentClass, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, true);
 	}
 
 	private <T, R> String buildChildRelative(Object parent, Class<R> relationClass, Class<T> childClass,

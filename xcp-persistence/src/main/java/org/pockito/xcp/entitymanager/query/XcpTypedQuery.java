@@ -14,15 +14,11 @@ public class XcpTypedQuery<T> extends AbstractTypedQuery<T> implements DmsTypedQ
 	static final Logger logger = LoggerFactory.getLogger(XcpTypedQuery.class);
 	
 	public XcpTypedQuery(XcpEntityManager em, String qlString) {
-		this(em, qlString, null, false);
+		this(em, qlString, false);
 	}
 
-	public XcpTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass) {
-		this(em, qlString, entityClass, false);
-	}
-
-	public XcpTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass, boolean nativeQuery) {
-		super(em, qlString, entityClass, nativeQuery);
+	public XcpTypedQuery(XcpEntityManager em, String qlString, boolean nativeQuery) {
+		super(em, qlString, nativeQuery);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -34,7 +30,7 @@ public class XcpTypedQuery<T> extends AbstractTypedQuery<T> implements DmsTypedQ
 				throw new DmsException("must provide an entity class");
 			}
 			logger.debug("XcpQuery: querying with a native DQL query");
-			resultList = (List<T>) executeNativeQuery(getEntityClass(), getDqlString());
+			resultList = (List<T>) executeNativeQuery(getEntityClass(), getQuery());
 			logger.debug("XcpQuery: done");
 		} else {
 			throw new NotYetImplemented();

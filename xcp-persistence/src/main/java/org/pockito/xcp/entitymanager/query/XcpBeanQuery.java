@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.pockito.xcp.entitymanager.NotYetImplemented;
 import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
@@ -16,6 +17,8 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	private final MetaData meta;
 
 	private final Map<String, Expression<?>> expressions = new LinkedHashMap<String, Expression<?>>();
+
+	private QueryType queryType = QueryType.select;
 
 	public XcpBeanQuery(XcpEntityManager em, Class<T> entityClass) {
 		super(em, entityClass);
@@ -34,9 +37,17 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 
 	@Override
 	public List<T> getResultList() {
+		if (getQueryType() != QueryType.select) {
+			throw new XcpPersistenceException("Not a select query");
+		}
 		@SuppressWarnings("unchecked")
 		final List<T> resultList = (List<T>) executeNativeQuery(getEntityClass(), asDql());
 		return resultList;
+	}
+
+	@Override
+	public void setQueryType(QueryType queryType) {
+		this.queryType = queryType;
 	}
 
 	@Override
@@ -46,11 +57,18 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 
 		MetaData meta = em.getMetaData(entityClass);
 
-		buffer.append("select r_object_id from ").append(meta.getDmsType());
-		if (this.expressions.size() > 0) {
-			buffer.append(" where");
+		if (getQueryType() == QueryType.select) {
+			buffer.append("select r_object_id from ").append(meta.getDmsType());
+		} else if (getQueryType() == QueryType.delete) {
+			buffer.append("delete ").append(meta.getDmsType()).append(" objects");
+		} else {
+			throw new NotYetImplemented();
+		}
+		if (this.expressions.isEmpty()) {
+			return buffer.toString();
 		}
 
+		buffer.append(" where");
 		String andOp = "";
 
 		for (Entry<String, Expression<?>> exprEntry : this.expressions.entrySet()) {
@@ -62,6 +80,24 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 			andOp = " and";
 		}
 		return buffer.toString();
+	}
+	
+	@Override
+	public int executeUpdate() {
+		if (getQueryType() == QueryType.update) {
+			throw new NotYetImplemented();
+		}
+		if ((getQueryType() != QueryType.select) && this.expressions.isEmpty()) {
+			throw new XcpPersistenceException("Please confirm you really want to delete all objects");
+		}
+		setQuery(asDql());
+		return super.executeUpdate();
+	}
+
+	@Override
+	public int executeUpdate(boolean yesIReallyWantDeleteAll) {
+		setQuery(asDql());
+		return super.executeUpdate();
 	}
 
 	private void valueAsDql(StringBuffer buffer, Expression<?> expr) {
@@ -86,4 +122,9 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	private <B> void remember(Expression<B> expr) {
 		expressions.put(expr.prop.getFieldName(), expr);
 	}
+
+	public QueryType getQueryType() {
+		return queryType;
+	}
+
 }

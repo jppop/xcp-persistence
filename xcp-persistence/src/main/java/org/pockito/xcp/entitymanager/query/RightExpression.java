@@ -52,6 +52,7 @@ public class RightExpression<B>  {
 	public static <B> RightExpression<B> gt(B value) {
 		return new RightExpression<B>(Operator.gt, value);
 	}
+	@SafeVarargs
 	public static <B> RightExpression<B> in(B... values) {
 		return new RightExpression<B>(Operator.in, values);
 	}

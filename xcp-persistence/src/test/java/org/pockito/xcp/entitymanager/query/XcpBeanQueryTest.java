@@ -1,6 +1,6 @@
 package org.pockito.xcp.entitymanager.query;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.pockito.xcp.entitymanager.query.RightExpression.*;
 
@@ -12,11 +12,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.pockito.xcp.entitymanager.NotYetImplemented;
 import org.pockito.xcp.entitymanager.PropertyConstants;
 import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.XcpEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery.QueryType;
+import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.test.domain.Person;
 import org.pockito.xcp.test.domain.Task;
 
@@ -58,17 +61,52 @@ public class XcpBeanQueryTest {
 		c.set(1965, 2 - 1, 28, 9, 15, 25);
 		queryTask.setParameter("priority", eq("medium"));
 		queryTask.setParameter("creationDate", gt(c.getTime()));
-		assertEquals(
-				"select r_object_id from todo_task where priority = 'medium' "
-				+ "and r_creation_date > DATE('1965/02/28 09:15:25', 'yyyy/mm/dd hh:mi:ss')",
-				queryTask.asDql());
+		assertEquals("select r_object_id from todo_task where priority = 'medium' "
+				+ "and r_creation_date > DATE('1965/02/28 09:15:25', 'yyyy/mm/dd hh:mi:ss')", queryTask.asDql());
 
 		DmsBeanQuery<Task> queryTask2 = em.createBeanQuery(Task.class);
 		queryTask2.setParameter("priority", in("high", "urgent"));
-		assertEquals(
-				"select r_object_id from todo_task where priority in ( 'high', 'urgent' )",
-				queryTask2.asDql());
+		assertEquals("select r_object_id from todo_task where priority in ( 'high', 'urgent' )", queryTask2.asDql());
 
+	}
+
+	@Test
+	public void testDeletePerson() {
+
+		DmsBeanQuery<Person> queryPerson = em.createBeanQuery(Person.class);
+
+		// Kill the Does (all person named "Doe")
+		queryPerson.setQueryType(QueryType.delete);
+		queryPerson.setParameter("lastName", eq("Doe"));
+
+		assertEquals("delete todo_person objects where last_name = 'Doe'", queryPerson.asDql());
+
+		DmsBeanQuery<Task> queryTask = em.createBeanQuery(Task.class);
+		queryTask.setQueryType(QueryType.delete);
+
+		assertEquals("delete todo_task objects", queryTask.asDql());
+		try {
+			queryTask.executeUpdate();
+			fail("should raise an exception");
+		} catch(XcpPersistenceException e) {
+			assertEquals("Please confirm you really want to delete all objects", e.getMessage());
+		}
+		try {
+			queryTask.getResultList();
+			fail("should raise an exception");
+		} catch(XcpPersistenceException e) {
+			assertEquals("Not a select query", e.getMessage());
+		}
+
+		queryTask.executeUpdate(true); // should not raise an exception
+		
+		DmsBeanQuery<Person> updateQuery = em.createBeanQuery(Person.class);
+		updateQuery.setQueryType(QueryType.update);
+		try {
+			updateQuery.executeUpdate();
+			fail("should raise an exception");
+		} catch(NotYetImplemented e) {
+		}
 	}
 
 }

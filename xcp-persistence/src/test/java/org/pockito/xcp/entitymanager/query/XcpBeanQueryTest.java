@@ -2,14 +2,11 @@ package org.pockito.xcp.entitymanager.query;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.pockito.xcp.entitymanager.query.RightExpression.eq;
-import static org.pockito.xcp.entitymanager.query.RightExpression.gt;
+import static org.pockito.xcp.entitymanager.query.RightExpression.*;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,7 +43,7 @@ public class XcpBeanQueryTest {
 	}
 
 	@Test
-	public void test() {
+	public void testQueryPerson() {
 
 		DmsBeanQuery<Person> queryPerson = em.createBeanQuery(Person.class);
 
@@ -55,19 +52,23 @@ public class XcpBeanQueryTest {
 
 		assertEquals("select r_object_id from todo_person where last_name = 'Doe'", queryPerson.asDql());
 
-		List<Person> persons = queryPerson.getResultList();
-
 		DmsBeanQuery<Task> queryTask = em.createBeanQuery(Task.class);
 
 		Calendar c = new GregorianCalendar();
-		c.set(1965, 2, 28, 9, 15, 25);
+		c.set(1965, 2 - 1, 28, 9, 15, 25);
 		queryTask.setParameter("priority", eq("medium"));
 		queryTask.setParameter("creationDate", gt(c.getTime()));
 		assertEquals(
 				"select r_object_id from todo_task where priority = 'medium' "
-				+ "and r_creation_date > DATE('1965/02/28 09:15:25', 'yyyy/dd/mm hh:mi:ss')",
+				+ "and r_creation_date > DATE('1965/02/28 09:15:25', 'yyyy/mm/dd hh:mi:ss')",
 				queryTask.asDql());
-		List<Task> result = queryTask.getResultList();
+
+		DmsBeanQuery<Task> queryTask2 = em.createBeanQuery(Task.class);
+		queryTask2.setParameter("priority", in("high", "urgent"));
+		assertEquals(
+				"select r_object_id from todo_task where priority in ( 'high', 'urgent' )",
+				queryTask2.asDql());
+
 	}
 
 }

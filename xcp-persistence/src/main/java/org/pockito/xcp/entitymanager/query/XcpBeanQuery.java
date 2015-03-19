@@ -58,20 +58,29 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 			final Expression<?> expr = exprEntry.getValue();
 
 			buffer.append(andOp);
-			if (expr.rightOpt.isMultipleValue()) {
-
-			} else {
-				valueAsDql(buffer, expr);
-			}
+			valueAsDql(buffer, expr);
 			andOp = " and";
 		}
 		return buffer.toString();
 	}
 
 	private void valueAsDql(StringBuffer buffer, Expression<?> expr) {
-		String attributeValue = PersistentProperty.asDqlValue(expr.rightOpt.value());
-		buffer.append(" ").append(expr.prop.getAttributeName()).append(" ")
-				.append(expr.rightOpt.op().dqlOperator()).append(" ").append(attributeValue);
+		if (expr.rightOpt.op() == Operator.in) {
+			buffer.append(" ").append(expr.prop.getAttributeName()).append(" in (");
+			List<?> values = expr.rightOpt.values();
+			String comma = " ";
+			for (Object value : values) {
+				buffer.append(comma);
+				String attributeValue = PersistentProperty.asDqlValue(value);
+				buffer.append(attributeValue);
+				comma = ", ";
+			}
+			buffer.append(" )");
+		} else {
+			String attributeValue = PersistentProperty.asDqlValue(expr.rightOpt.value());
+			buffer.append(" ").append(expr.prop.getAttributeName()).append(" ")
+					.append(expr.rightOpt.op().dqlOperator()).append(" ").append(attributeValue);
+		}
 	}
 
 	private <B> void remember(Expression<B> expr) {

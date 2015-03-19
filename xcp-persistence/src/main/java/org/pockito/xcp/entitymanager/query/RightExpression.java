@@ -11,7 +11,7 @@ public class RightExpression<B>  {
 
 	public final Operator operator;
 
-	public RightExpression(Operator op, B value) {
+	private RightExpression(Operator op, B value) {
 		this.operator = op;
 		this.value = value;
 		this.values = null;
@@ -19,7 +19,7 @@ public class RightExpression<B>  {
 	}
 
 	@SafeVarargs
-	public RightExpression(Operator op, B... values) {
+	private RightExpression(Operator op, B... values) {
 		this.operator = op; // force IN op ?
 		this.value = null;
 		List<B> valueList = new ArrayList<B>();
@@ -51,6 +51,9 @@ public class RightExpression<B>  {
 	}
 	public static <B> RightExpression<B> gt(B value) {
 		return new RightExpression<B>(Operator.gt, value);
+	}
+	public static <B> RightExpression<B> in(B... values) {
+		return new RightExpression<B>(Operator.in, values);
 	}
 
 }

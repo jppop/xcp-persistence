@@ -565,7 +565,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	@Override
 	public <T> DmsTypedQuery<T> createNativeQuery(String dqlQuery, Class<T> entityClass) {
-		return new XcpTypedQuery<T>(this, dqlQuery, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, entityClass, true);
 	}
 
 	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
@@ -577,7 +577,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			Class<T> childClass, String optionalDqlFilter) {
 		final String dqlQuery = buildChildRelative(parent, relationClass, childClass,
 				Optional.fromNullable(optionalDqlFilter));
-		return new XcpTypedQuery<T>(this, dqlQuery, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, childClass, true);
 	}
 
 	@Override
@@ -585,7 +585,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			Class<T> parentClass, String optionalDqlFilter) {
 		final String dqlQuery = buildParentRelative(child, relationClass, parentClass,
 				Optional.fromNullable(optionalDqlFilter));
-		return new XcpTypedQuery<T>(this, dqlQuery, true);
+		return new XcpTypedQuery<T>(this, dqlQuery, parentClass, true);
 	}
 
 	private <T, R> String buildChildRelative(Object parent, Class<R> relationClass, Class<T> childClass,

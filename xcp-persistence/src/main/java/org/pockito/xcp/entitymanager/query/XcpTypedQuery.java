@@ -21,6 +21,10 @@ public class XcpTypedQuery<T> extends AbstractTypedQuery<T> implements DmsTypedQ
 		super(em, qlString, nativeQuery);
 	}
 
+	public XcpTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass, boolean nativeQuery) {
+		super(em, qlString, entityClass, nativeQuery);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> getResultList() {

@@ -4,6 +4,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
@@ -18,7 +19,10 @@ import org.pockito.xcp.annotations.VStamp;
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
 import com.documentum.fc.common.IDfValue;
+import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
+import com.google.common.escape.CharEscaperBuilder;
+import com.google.common.escape.Escaper;
 
 /**
  * from SimpleJPA https://github.com/appoxy/simplejpa (Kerry Wright)
@@ -127,6 +131,38 @@ public abstract class PersistentProperty {
 			throw new IllegalStateException(e);
 		}
 		return dfValue;
+	}
+
+	private static final CharEscaperBuilder dqlEscaperBuilder = new CharEscaperBuilder().addEscape('\'', "''");
+	private static final Escaper dqlEscaper = dqlEscaperBuilder.toEscaper();
+	private static final SimpleDateFormat dqlDateFmt = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	
+	public static String asDqlValue(Object value) {
+		String dqlValue = null;
+		try {
+			Class<?> rawClass = value.getClass();
+			if (Collection.class.isAssignableFrom(rawClass)) {
+				throw new IllegalAccessException("property is a collection");
+			}
+			if (value != null) {
+				if (rawClass.isAssignableFrom(boolean.class)) {
+					dqlValue = Boolean.class.cast(value).booleanValue() ? "T" : "F";
+				} else if (rawClass.isAssignableFrom(int.class)) {
+					dqlValue = Integer.class.cast(value).toString();
+				} else if (rawClass.isAssignableFrom(double.class)) {
+					dqlValue = Double.class.cast(value).toString();
+				} else if (rawClass.isAssignableFrom(Date.class)) {
+					String stringDate = dqlDateFmt.format(Date.class.cast(value));
+					dqlValue = "DATE('" + stringDate + "', 'yyyy/mm/dd hh:mi:ss')";
+				} else {
+					dqlValue = "'" + dqlEscaper.escape(String.class.cast(value).toString()) + "'";
+				}
+			}
+//		} catch (ClassCastException e) {
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		}
+		return dqlValue;
 	}
 
 	public Class<?> getPropertyClass() {
@@ -247,6 +283,14 @@ public abstract class PersistentProperty {
 //			attributeName = "i_folder_id";
 //		}
 		return attributeName;
+	}
+	
+	public static String getFieldName(String methodName) {
+		String prefix = "get";
+		if (methodName.startsWith("set")) {
+			prefix = "set";
+		}
+		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, methodName.replaceFirst(prefix, ""));
 	}
 
 	@Override

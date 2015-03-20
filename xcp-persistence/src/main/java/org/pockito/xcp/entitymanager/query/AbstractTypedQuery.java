@@ -26,7 +26,11 @@ public abstract class AbstractTypedQuery<T> extends AbstractQuery implements Dms
 	protected final Class<T> entityClass;
 
 	public AbstractTypedQuery(XcpEntityManager em, String qlString) {
-		this(em, qlString, null, false);
+		this(em, qlString, null, true);
+	}
+
+	public AbstractTypedQuery(XcpEntityManager em, Class<T> entityClass) {
+		this(em, null, entityClass, true);
 	}
 
 	public AbstractTypedQuery(XcpEntityManager em, String qlString, Class<T> entityClass, boolean nativeQuery) {
@@ -67,7 +71,7 @@ public abstract class AbstractTypedQuery<T> extends AbstractQuery implements Dms
 	}
 
 	protected List<?> executeNativeQuery(Class<?> beanClass, String dqlString) {
-		logger.debug("executeNativeQuery: {}", getDqlString());
+		logger.debug("executeNativeQuery: {}", getQuery());
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		final List<IDfId> rawResultList;
 		final List<T> resultList = new ArrayList<T>();

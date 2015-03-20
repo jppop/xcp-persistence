@@ -74,7 +74,7 @@ public interface XcpGenericRepo<T> {
 	 * @param optionalDqlFilter
 	 * @return
 	 */
-	<R> List<T> findChildren(Object parent, Class<R> relationClass, String optionalDqlFilter);
+	<R> List<T> findByParent(Object parent, Class<R> relationClass, String optionalDqlFilter);
 
 	/**
 	 * Finds the parent relative objects of a given parent.
@@ -86,12 +86,23 @@ public interface XcpGenericRepo<T> {
 	 * @param optionalDqlFilter
 	 * @return
 	 */
-	<R> List<T> findParents(Object child, Class<R> relationClass, String optionalDqlFilter);
+	<R> List<T> findByChild(Object child, Class<R> relationClass, String optionalDqlFilter);
 
+	/**
+	 * Creates a command shared with all repositories.
+	 * 
+	 * The repository that creates the shared command is responsible for commit.
+	 * 
+	 * @return
+	 */
 	XcpRepoCommand createSharedCmd();
 
 	XcpRepoCommand getCmd();
 
+	/**
+	 * Commits the shared command.
+	 * 
+	 */
 	void commitSharedCmd();
 
 	void rollbackSharedCmd();

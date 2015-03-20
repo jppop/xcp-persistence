@@ -15,7 +15,7 @@ public class Task extends PersistedObject {
 	private String what;
 	
 	@Attribute
-	private String priority;
+	private String priority; // priority is bound to the attribute 'priority'
 	
 	@Attribute(name = "due_date")
 	private Date dueDate;

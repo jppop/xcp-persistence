@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsException;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
@@ -19,6 +20,7 @@ import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.entitymanager.cache.NoopSessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCache;
 import org.pockito.xcp.entitymanager.cache.SessionCacheWrapper;
+import org.pockito.xcp.entitymanager.query.XcpBeanQuery;
 import org.pockito.xcp.entitymanager.query.XcpQuery;
 import org.pockito.xcp.entitymanager.query.XcpTypedQuery;
 import org.pockito.xcp.exception.XcpPersistenceException;
@@ -566,6 +568,11 @@ public class XcpEntityManager implements DmsEntityManager {
 		return new XcpTypedQuery<T>(this, dqlQuery, entityClass, true);
 	}
 
+	@Override
+	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
+		return new XcpBeanQuery<T>(this, entityClass);
+	}
+	
 	@Override
 	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass,
 			Class<T> childClass, String optionalDqlFilter) {

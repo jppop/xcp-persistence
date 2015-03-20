@@ -3,7 +3,9 @@ package org.pockito.xcp.repository.test.repo;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
+import static org.pockito.xcp.entitymanager.query.RightExpression.*;
 import org.pockito.xcp.repository.XcpGenericRepoImpl;
 import org.pockito.xcp.repository.test.domain.EmailTemplate;
 import org.pockito.xcp.repository.test.domain.WfEmailTemplate;
@@ -13,10 +15,10 @@ public class WorkflowRepoImpl extends XcpGenericRepoImpl<Workflow> implements Wo
 
 	@Override
 	public List<Workflow> findWfUsingTemplate(EmailTemplate template) {
-		return findParents(template, WfEmailTemplate.class, null);
+		return findByChild(template, WfEmailTemplate.class, null);
 	}
 
-	public List<Workflow> findByTemplate2(EmailTemplate template) {
+	public List<Workflow> findWfUsingTemplate2(EmailTemplate template) {
 		DmsTypedQuery<Workflow> query = cmd().getEntityManager().createParentRelativesQuery(template,
 				WfEmailTemplate.class, Workflow.class, null);
 		return query.getResultList();
@@ -30,15 +32,28 @@ public class WorkflowRepoImpl extends XcpGenericRepoImpl<Workflow> implements Wo
 		return query.getResultList();
 	}
 
-	public List<Workflow> findByTemplate(EmailTemplate template, int order) {
+	public List<Workflow> findWfUsingTemplateWithOrder2(EmailTemplate template, int order) {
+		final DmsBeanQuery<WfEmailTemplate> query = cmd().createBeanQuery(WfEmailTemplate.class);
+		query.setParameter("template", eq(template.getId()));
+		query.setParameter("order", eq(order));
+		
+		final List<WfEmailTemplate> emailTemplates = query.getResultList();
+		final List<Workflow> workflows = new ArrayList<Workflow>();
+		for (WfEmailTemplate wfEmailTemplate : emailTemplates) {
+			workflows.add(wfEmailTemplate.getWf());
+		}
+		return workflows;
+	}
+
+	public List<Workflow> findWfUsingTemplateWithOrder4(EmailTemplate template, int order) {
 		DmsTypedQuery<WfEmailTemplate> query = cmd()
 				.createNativeQuery(
 						"select r_object_id from dm_relation where relation_name = 'dm_wf_email_template'"
 								+ " and child_id = :templateId and order_no = :order", WfEmailTemplate.class)
 				.setParameter("templateId", template.getId()).setParameter("order", order);
 
-		List<WfEmailTemplate> emailTemplates = query.getResultList();
-		List<Workflow> workflows = new ArrayList<Workflow>();
+		final List<WfEmailTemplate> emailTemplates = query.getResultList();
+		final List<Workflow> workflows = new ArrayList<Workflow>();
 		for (WfEmailTemplate wfEmailTemplate : emailTemplates) {
 			workflows.add(wfEmailTemplate.getWf());
 		}

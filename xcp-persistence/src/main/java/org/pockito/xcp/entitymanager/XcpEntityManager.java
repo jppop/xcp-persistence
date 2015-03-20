@@ -568,6 +568,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return new XcpTypedQuery<T>(this, dqlQuery, entityClass, true);
 	}
 
+	@Override
 	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
 		return new XcpBeanQuery<T>(this, entityClass);
 	}

@@ -11,9 +11,9 @@ import org.pockito.xcp.annotations.XcpTypeCategory;
 @XcpType(type = XcpTypeCategory.RELATION, name = "task_person")
 public class TaskPerson extends PersistedObject {
 
-//	@Attribute
-//	String role;
-//
+	@Attribute
+	String role;
+
 	@Attribute(name = "order_no")
 	int order;
 	
@@ -47,12 +47,20 @@ public class TaskPerson extends PersistedObject {
 		this.order = order;
 	}
 
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	@Override
 	public String toString() {
 		return String.format(
-				"TaskPerson[id=%s, task=%s, person=%s, vstamp=%d, oder=%d]",
+				"TaskPerson[id=%s, task=%s, person=%s, role=%s, vstamp=%d, oder=%d]",
 				getId(), 
-				getTask(), getPerson(),
+				getTask(), getPerson(), getRole(),
 				getvStamp(), getOrder()
 				);
 	}

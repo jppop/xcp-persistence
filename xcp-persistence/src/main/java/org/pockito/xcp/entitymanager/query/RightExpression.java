@@ -49,8 +49,20 @@ public class RightExpression<B>  {
 	public static <B> RightExpression<B> eq(B value) {
 		return new RightExpression<B>(Operator.eq, value);
 	}
+	public static <B> RightExpression<B> ne(B value) {
+		return new RightExpression<B>(Operator.ne, value);
+	}
 	public static <B> RightExpression<B> gt(B value) {
 		return new RightExpression<B>(Operator.gt, value);
+	}
+	public static <B> RightExpression<B> ge(B value) {
+		return new RightExpression<B>(Operator.ge, value);
+	}
+	public static <B> RightExpression<B> lt(B value) {
+		return new RightExpression<B>(Operator.lt, value);
+	}
+	public static <B> RightExpression<B> le(B value) {
+		return new RightExpression<B>(Operator.le, value);
 	}
 	@SafeVarargs
 	public static <B> RightExpression<B> in(B... values) {

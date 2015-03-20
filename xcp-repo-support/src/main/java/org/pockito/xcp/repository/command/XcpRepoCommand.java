@@ -2,6 +2,7 @@ package org.pockito.xcp.repository.command;
 
 import java.util.Map;
 
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
@@ -20,6 +21,7 @@ public interface XcpRepoCommand {
     DmsQuery createNativeQuery(String dqlString);
 	<T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass, String optionalDqlFilter);
 	<T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass, String optionalDqlFilter);
+	<T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass);
     
     // transaction
     XcpRepoCommand withoutTransaction();

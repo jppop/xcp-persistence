@@ -88,10 +88,21 @@ public interface XcpGenericRepo<T> {
 	 */
 	<R> List<T> findByChild(Object child, Class<R> relationClass, String optionalDqlFilter);
 
+	/**
+	 * Creates a command shared with all repositories.
+	 * 
+	 * The repository that creates the shared command is responsible for commit.
+	 * 
+	 * @return
+	 */
 	XcpRepoCommand createSharedCmd();
 
 	XcpRepoCommand getCmd();
 
+	/**
+	 * Commits the shared command.
+	 * 
+	 */
 	void commitSharedCmd();
 
 	void rollbackSharedCmd();

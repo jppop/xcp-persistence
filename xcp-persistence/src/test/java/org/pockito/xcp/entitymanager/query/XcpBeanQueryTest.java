@@ -22,6 +22,7 @@ import org.pockito.xcp.entitymanager.api.DmsBeanQuery.QueryType;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.test.domain.Person;
 import org.pockito.xcp.test.domain.Task;
+import org.pockito.xcp.test.domain.TaskPerson;
 
 @RunWith(MockitoJUnitRunner.class)
 public class XcpBeanQueryTest {
@@ -107,6 +108,24 @@ public class XcpBeanQueryTest {
 			fail("should raise an exception");
 		} catch(NotYetImplemented e) {
 		}
+	}
+	
+	@Test
+	public void testRelationBeanQuery() {
+		
+		// get all TaskPerson relation objects where a give person is involved as a supervisor
+		DmsBeanQuery<TaskPerson> query = em.createBeanQuery(TaskPerson.class);
+		
+		// assume we have found a person using em.find()
+		Person supervisor = new Person();
+		supervisor.setId("supervisor id");
+		
+		query.setParameter("role", eq("supervisor"));
+		query.setParameter("person", eq(supervisor.getId()));
+
+		assertEquals("select r_object_id from todo_task_person"
+				+ " where role = 'supervisor' and child_id = 'supervisor id'", query.asDql());
+		
 	}
 
 }

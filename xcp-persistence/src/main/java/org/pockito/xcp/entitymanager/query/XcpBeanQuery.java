@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import org.pockito.xcp.entitymanager.NotYetImplemented;
 import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
+import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.exception.XcpPersistenceException;
@@ -100,6 +101,16 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 		return super.executeUpdate();
 	}
 
+	@Override
+	public DmsTypedQuery<T> setParameter(int position, Object value) {
+		throw new IllegalAccessError("Not supported");
+	}
+	
+	@Override
+	public DmsTypedQuery<T> setParameter(String name, Object value) {
+		throw new IllegalAccessError("Not supported");
+	}
+	
 	private void valueAsDql(StringBuffer buffer, Expression<?> expr) {
 		if (expr.rightOpt.op() == Operator.in) {
 			buffer.append(" ").append(expr.prop.getAttributeName()).append(" in (");

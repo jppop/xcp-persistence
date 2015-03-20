@@ -21,7 +21,7 @@ public class XcpQuery extends AbstractQuery implements DmsQuery {
 		final List resultList;
 		IDfSession session = dctmDriver().getSession();
 		try {
-			resultList = dctmDriver().getObjectsByQuery(session, getDqlString());
+			resultList = dctmDriver().getObjectsByQuery(session, getQuery());
 		} finally {
 			dctmDriver().releaseSession(session);
 		}

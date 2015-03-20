@@ -12,6 +12,7 @@ import javax.inject.Provider;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.PropertyConstants;
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
@@ -314,6 +315,16 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		return commands.size();
 	}
 
+	@Override
+	public XcpRepoCommand removeAttachment(Object entity) {
+		throw new NotYetImplemented();
+	}
+
+	@Override
+	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
+		return em().createBeanQuery(entityClass);
+	}
+
 	private void executeCommand() {
 		boolean txStarted = false;
 		try {
@@ -390,11 +401,6 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private void rememberChild(Object child) {
 		this.child = child;
-	}
-
-	@Override
-	public XcpRepoCommand removeAttachment(Object entity) {
-		throw new NotYetImplemented();
 	}
 
 }

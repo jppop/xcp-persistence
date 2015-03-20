@@ -4,8 +4,6 @@ import java.lang.reflect.Method;
 
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 
-import com.google.common.base.CaseFormat;
-
 /**
  * PersistentProperty that supports access to data through getter/setter pair.
  * Used to support persistence annotations on methods
@@ -41,7 +39,8 @@ public class PersistentMethod extends PersistentProperty {
 	}
 
 	public String getFieldName() {
-		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getGetter().getName().replaceFirst("get", ""));
+//		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, getGetter().getName().replaceFirst("get", ""));
+		return PersistentProperty.getFieldName(getGetter().getName());
 	}
 
 }

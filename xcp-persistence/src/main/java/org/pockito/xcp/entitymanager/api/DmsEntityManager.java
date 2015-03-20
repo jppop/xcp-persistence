@@ -39,10 +39,30 @@ public interface DmsEntityManager {
 
 	void close();
 
+	/**
+	 * Creates a query to find children of a given parent.
+	 * 
+	 * @param parent
+	 * @param relationClass
+	 * @param childClass
+	 * @param optionalDqlFilter
+	 * @return
+	 */
 	<T,R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass,
 			String optionalDqlFilter);
 
+	/**
+	 * Creates a query to find parents of a given child.
+	 * 
+	 * @param child
+	 * @param relationClass
+	 * @param parentClass
+	 * @param optionalDqlFilter
+	 * @return
+	 */
 	<T,R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass,
 			String optionalDqlFilter);
+
+	<T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass);
 
 }

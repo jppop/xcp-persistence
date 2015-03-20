@@ -70,14 +70,14 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	@Override
-	public <R> List<T> findChildren(Object parent, Class<R> relationClass, String optionalDqlFilter) {
+	public <R> List<T> findByParent(Object parent, Class<R> relationClass, String optionalDqlFilter) {
 		DmsTypedQuery<T> query = cmd().createChildRelativesQuery(parent, relationClass, entityClass,
 				optionalDqlFilter);
 		return query.getResultList();
 	}
 
 	@Override
-	public <R> List<T> findParents(Object child, Class<R> relationClass, String optionalDqlFilter) {
+	public <R> List<T> findByChild(Object child, Class<R> relationClass, String optionalDqlFilter) {
 		DmsTypedQuery<T> query = cmd().createParentRelativesQuery(child, relationClass, entityClass,
 				optionalDqlFilter);
 		return query.getResultList();

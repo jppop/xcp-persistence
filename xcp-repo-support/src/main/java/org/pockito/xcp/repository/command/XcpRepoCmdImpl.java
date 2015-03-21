@@ -20,7 +20,9 @@ import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.entitymanager.api.Transaction;
+import org.pockito.xcp.repository.Message;
 import org.pockito.xcp.repository.NotYetImplemented;
+import org.pockito.xcp.repository.XcpRepoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +89,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public XcpRepoCommand create(Object entity) {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().persistCmd(entity));
 		return this;
@@ -101,7 +103,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public XcpRepoCommand update(Object entity) {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().persistCmd(entity));
 		return this;
@@ -110,7 +112,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public XcpRepoCommand remove(Object entity) {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().removeCmd(entity));
 		return this;
@@ -150,7 +152,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public void commit() {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		executeCommand();
 	}
@@ -158,7 +160,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public void rollback() {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		if (isTxActive()) {
 			this.tx().rollback();
@@ -177,7 +179,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public void go() {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		executeCommand();
 	}
@@ -185,7 +187,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public void abort() {
 		if (!hasCmdStarted()) {
-			throw new IllegalStateException("no command started either by a withTransaction nor a withoutTx call");
+			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		setTxRequested(false);
 		commands.clear();
@@ -210,7 +212,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public XcpRepoCommand to(Object child) {
 		if (this.parent == null) {
-			throw new IllegalStateException("No parent given");
+			throw new IllegalStateException(Message.E_NO_PARENT.get());
 		}
 		rememberChild(child);
 		return this;
@@ -225,17 +227,16 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public <T> XcpRepoCommand with(Class<T> relationType, Map<String, Object> extraAttributes) {
 		if (this.parent == null) {
-			throw new IllegalStateException("No parent given");
+			throw new IllegalStateException(Message.E_NO_PARENT.get());
 		}
 		if (this.child == null) {
-			throw new IllegalStateException("No child given");
+			throw new IllegalStateException(Message.E_NO_CHILD.get());
 		}
 		T instance;
 		try {
 			instance = relationType.newInstance();
 		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO: exception
-			throw new RuntimeException("failed to create the relation object");
+			throw new XcpRepoException(Message.E_INSTANCIATION_FAILED.get(relationType.getName()));
 		}
 		if (extraAttributes != null) {
 			MetaData metaData = em().getMetaData(relationType);
@@ -252,24 +253,22 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public XcpRepoCommand with(Object relation) {
 		if (this.parent == null) {
-			throw new IllegalStateException("No parent given");
+			throw new IllegalStateException(Message.E_NO_PARENT.get());
 		}
 		if (this.child == null) {
-			throw new IllegalStateException("No child given");
+			throw new IllegalStateException(Message.E_NO_CHILD.get());
 		}
 		MetaData metaData = em().getMetaData(relation.getClass());
 		if (metaData.getTypeCategory() != XcpTypeCategory.RELATION) {
-			throw new IllegalArgumentException("the object type is not a RELATION type");
+			throw new IllegalArgumentException(Message.E_NOT_RELATION_TYPE.get(relation.getClass().getName()));
 		}
 		final PersistentProperty parentProp = metaData.getParentMethod();
 		if (parentProp == null) {
-			// TODO create custom exception
-			throw new IllegalArgumentException("parent field not found");
+			throw new XcpRepoException(Message.E_NO_PARENT_SETTER.get(relation.getClass().getName()));
 		}
 		final PersistentProperty childProp = metaData.getChildMethod();
 		if (childProp == null) {
-			// TODO create custom exception
-			throw new IllegalArgumentException("child field not found");
+			throw new XcpRepoException(Message.E_NO_CHILD_SETTER.get(relation.getClass().getName()));
 		}
 		// set parent & child
 		parentProp.setProperty(relation, this.parent);

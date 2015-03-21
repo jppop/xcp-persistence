@@ -135,8 +135,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 			}
 		}
 		if (this.xcpCmd == null) {
-			// TODO
-			throw new IllegalStateException("No cmd");
+			throw new IllegalStateException(Message.E_CMD_CREATION_FAILED.get());
 		}
 		return this.xcpCmd;
 	}

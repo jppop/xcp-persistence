@@ -74,6 +74,11 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+			</resource>
+		</resources>
 		<testResources>
 			<testResource>
 				<filtering>true</filtering>

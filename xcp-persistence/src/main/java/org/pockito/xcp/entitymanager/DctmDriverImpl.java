@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.pockito.xcp.entitymanager.api.DctmDriver;
 import org.pockito.xcp.entitymanager.api.DmsException;
+import org.pockito.xcp.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,7 @@ public class DctmDriverImpl implements DctmDriver {
 		    setDfSessionManager(manager);
 		    setRepository(repository);
 		} catch (DfException e) {
-			throw new DmsException("failed to get the session manager",  e);
+			throw new DmsException(Message.E_DFC_SESSMGR_FAILED.get(),  e);
 		}
 		return manager;
 	}
@@ -68,7 +69,7 @@ public class DctmDriverImpl implements DctmDriver {
 		try {
 			session = sessionManager().getSession(getRepository());
 		} catch (DfException e) {
-			throw new DmsException("failed to get the session",  e);
+			throw new DmsException(Message.E_DFC_SESSION_FAILED.get(),  e);
 		}
 		return session;
 	}
@@ -109,7 +110,7 @@ public class DctmDriverImpl implements DctmDriver {
 			}
 		} catch (DfException e) {
 			logger.debug("failed to query the repository", e);
-			throw new DmsException("Failed to query the database using: " + query, e);
+			throw new DmsException(Message.E_DFC_QUERY_FAILED.get(query), e);
 		} finally {
 			try {
 				if (col != null) {
@@ -141,7 +142,7 @@ public class DctmDriverImpl implements DctmDriver {
 			}
 		} catch (DfException e) {
 			logger.debug("failed to query the repository", e);
-			throw new DmsException("Failed to query the database using: " + query, e);
+			throw new DmsException(Message.E_DFC_QUERY_FAILED.get(query), e);
 		} finally {
 			try {
 				if (col != null) {
@@ -172,7 +173,7 @@ public class DctmDriverImpl implements DctmDriver {
 				count = col.getInt(attr.getName());
 			}
 		} catch (DfException e) {
-			throw new DmsException("Failed to query the database using: " + query, e);
+			throw new DmsException(Message.E_DFC_QUERY_FAILED.get(query), e);
 		} finally {
 			try {
 				if (col != null) {
@@ -195,7 +196,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 	private void checkSessionMgr() {
 		if (dfSessionManager == null) {
-			throw new DmsException("No session manager");
+			throw new DmsException(Message.E_DFC_NO_SESSIONMGR.get());
 		}
 	}
 

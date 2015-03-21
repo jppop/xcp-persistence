@@ -11,6 +11,7 @@ import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.exception.XcpPersistenceException;
+import org.pockito.xcp.message.Message;
 
 import com.google.common.primitives.Primitives;
 
@@ -106,7 +107,7 @@ public class AnnotationInfo implements MetaData {
 		if (persistentField.isId()) {
 			final Attribute attr = field.getAnnotation(Attribute.class);
 			if (attr == null) {
-				throw new XcpPersistenceException("ID field must be annotated with Attribute");
+				throw new XcpPersistenceException(Message.E_NO_ATTRIBUTE_ID.get());
 			}
 			setIdProperty(persistentField);
 		} else if (persistentField.isParent()) {

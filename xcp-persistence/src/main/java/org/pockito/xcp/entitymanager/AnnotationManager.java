@@ -9,6 +9,7 @@ import org.pockito.xcp.annotations.Transient;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
 import org.pockito.xcp.exception.XcpPersistenceException;
+import org.pockito.xcp.message.Message;
 
 import com.google.common.base.Strings;
 
@@ -44,8 +45,7 @@ public class AnnotationManager {
 		{
 			XcpEntity entity = c.getAnnotation(XcpEntity.class);
 			if (entity == null) {
-				// TODO implements a better exception management
-				throw new XcpPersistenceException("Class not marked as an @Entity: " + c.getName());
+				throw new XcpPersistenceException(Message.E_NO_ENTITY_ANNOTATION.get(c.getName()));
 			}
 		}
 		
@@ -78,10 +78,10 @@ public class AnnotationManager {
             superClass = superClass.getSuperclass();
         }
         if (Strings.isNullOrEmpty(dmsTypeName)) {
-        	throw new XcpPersistenceException("Underlying type name not found. You must mark the entity with XcpType. Class: " + c.getName());
+        	throw new XcpPersistenceException(Message.E_NO_TYPE_ANNOTATION.get(c.getName()));
         }
         if (ai.getIdMethod() == null) {
-        	throw new XcpPersistenceException("Entity must have an ID field");
+        	throw new XcpPersistenceException(Message.E_NO_ID_ANNOTATION.get(c.getName()));
         }
         ai.setDmsType(dmsTypeName);
         getAnnotationMap().put(c.getName(), ai);

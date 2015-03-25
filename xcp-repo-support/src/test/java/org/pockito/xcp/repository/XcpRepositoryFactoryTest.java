@@ -12,6 +12,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.pockito.xcp.entitymanager.PropertyConstants;
+import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.api.DmsEntityManager;
 import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
 import org.pockito.xcp.repository.command.XcpRepoCmdImpl;

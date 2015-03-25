@@ -16,11 +16,10 @@
 			<modules>
 				<module>dctm-test-support</module>
 				<module>xcp-persistence</module>
+				<module>xcp-repo-support</module>
+				<module>todo-example</module>
 			</modules>
 		</profile>
 	</profiles>
 
-	<modules>
-		<module>xcp-repo-support</module>
-	</modules>
 </project>

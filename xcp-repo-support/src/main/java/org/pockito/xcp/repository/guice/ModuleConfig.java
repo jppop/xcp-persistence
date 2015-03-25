@@ -14,12 +14,13 @@ import org.pockito.xcp.repository.command.XcpRepoCmdImpl;
 import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Module;
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 
-public class ModuleConfig extends AbstractModule implements com.google.inject.Module {
+public class ModuleConfig extends AbstractModule implements Module {
 
 	public static final String PROPERTIES = "xcp-repository.properties";
 	public static final String OPT_CONFIG = "org.pockito.xcp.repository.guice.config";
@@ -52,8 +53,10 @@ public class ModuleConfig extends AbstractModule implements com.google.inject.Mo
 			} else {
 				is = new FileInputStream(configFilename);
 			}
-			appProperties.load(is);
-			Names.bindProperties(binder, appProperties);
+			if (is != null) {
+				appProperties.load(is);
+				Names.bindProperties(binder, appProperties);
+			}
 		} catch (IOException e) {
 			binder.addError(e);
 		}

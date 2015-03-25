@@ -27,7 +27,7 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 	 * Stores annotation info about our entities for easy retrieval when needed
 	 */
 	private final AnnotationManager annotationManager;
-	private final Map<String, ?> props;
+	private Map<String, ?> props;
 	private boolean sessionLess = false;
 	private CacheWrapper<String, CacheElement> firstLevelCache = null;
 
@@ -47,6 +47,7 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 	public DmsEntityManager createDmsEntityManager(final Map<String, ?> props) {
 		try {
 			Preconditions.checkNotNull(props);
+			this.props = props;
 			if (props.containsKey(SessionLess)) {
 				this.sessionLess = Boolean.valueOf(props.containsKey(SessionLess)).booleanValue();
 			} else {

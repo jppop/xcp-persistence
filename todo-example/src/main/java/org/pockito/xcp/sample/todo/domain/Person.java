@@ -25,6 +25,7 @@ public class Person extends PersistedObject {
 
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
+		setName(firstName + " " + getLastName());
 	}
 
 	public String getLastName() {
@@ -33,6 +34,7 @@ public class Person extends PersistedObject {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+		setName(getFirstName() + " " + lastName);
 	}
 
 	public String getName() {

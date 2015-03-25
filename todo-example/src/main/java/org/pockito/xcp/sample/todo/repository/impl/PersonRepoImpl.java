@@ -10,6 +10,8 @@ import org.pockito.xcp.sample.todo.domain.Person;
 import org.pockito.xcp.sample.todo.domain.PersonAddress;
 import org.pockito.xcp.sample.todo.repository.PersonRepo;
 
+import static org.pockito.xcp.entitymanager.query.RightExpression.*;
+
 public class PersonRepoImpl extends XcpGenericRepoImpl<Person> implements PersonRepo {
 
 	@Override
@@ -41,6 +43,22 @@ public class PersonRepoImpl extends XcpGenericRepoImpl<Person> implements Person
 		commit();
 	}
 
+	@Override
+	public Person findByName(String name) {
+	
+		DmsBeanQuery<Person> query = cmd().createBeanQuery(Person.class);
+		query.setParameter("name", eq(name));
+		
+		List<Person> persons = query.getResultList();
+		if (persons.isEmpty()) {
+			return null;
+		}
+		if (persons.size() > 1) {
+			throw new NotUniqueException();
+		}
+		return persons.get(0);
+	}
+	
 	public List<Address> findPersonAddresses(Person person) {
 		final List<Address> addresses;
 		DmsTypedQuery<Address> query = cmd().createChildRelativesQuery(person, PersonAddress.class, Address.class,

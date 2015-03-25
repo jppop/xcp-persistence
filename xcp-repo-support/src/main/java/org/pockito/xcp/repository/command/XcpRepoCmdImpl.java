@@ -29,20 +29,23 @@ import org.slf4j.LoggerFactory;
 public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private Logger logger = LoggerFactory.getLogger(XcpRepoCmdImpl.class);
-	
+
 	private final Provider<DmsEntityManagerFactory> emFactoryProvider;
 	private final DmsEntityManager em;
 	private Transaction tx = null;
 
-	@Inject @Named("org.pockito.xcp.repository.name")
+	@Inject
+	@Named("org.pockito.xcp.repository.name")
 	private String repository;
 
-	@Inject @Named("org.pockito.xcp.repository.username")
+	@Inject
+	@Named("org.pockito.xcp.repository.username")
 	private String username;
 
-	@Inject @Named("org.pockito.xcp.repository.password")
+	@Inject
+	@Named("org.pockito.xcp.repository.password")
 	private String password;
-	
+
 	private XcpPersistCommandCatalog cmd = null;
 	private final List<XcpPersistCommand> commands = new ArrayList<XcpPersistCommand>();
 
@@ -53,10 +56,12 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	private boolean commandInProgress = false;
 
 	private Object owner;
-	
+
 	@Inject
-	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider, String repository, String username,
-			String password) {
+	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider,
+			@Named("org.pockito.xcp.repository.name") String repository,
+			@Named("org.pockito.xcp.repository.username") String username,
+			@Named("org.pockito.xcp.repository.password") String password) {
 		this.emFactoryProvider = emFactoryProvider;
 		this.repository = repository;
 		this.username = username;
@@ -69,23 +74,23 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	}
 
 	private DmsEntityManager em() {
-//		if (em == null) {
-//			HashMap<String, Object> props = new HashMap<String, Object>();
-//			props.put(PropertyConstants.Repository, repository);
-//			props.put(PropertyConstants.Username, username);
-//			props.put(PropertyConstants.Password, password);
-//			this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
-//		}
+		// if (em == null) {
+		// HashMap<String, Object> props = new HashMap<String, Object>();
+		// props.put(PropertyConstants.Repository, repository);
+		// props.put(PropertyConstants.Username, username);
+		// props.put(PropertyConstants.Password, password);
+		// this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
+		// }
 		return em;
 	}
-	
+
 	private Transaction tx() {
 		if (tx == null) {
 			tx = em().getTransaction();
 		}
 		return tx;
 	}
-	
+
 	@Override
 	public XcpRepoCommand create(Object entity) {
 		if (!hasCmdStarted()) {
@@ -129,14 +134,14 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	}
 
 	@Override
-	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass,
-			String optionalDqlFilter) {
+	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass,
+			Class<T> childClass, String optionalDqlFilter) {
 		return em().createChildRelativesQuery(parent, relationClass, childClass, optionalDqlFilter);
 	}
 
 	@Override
-	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass,
-			String optionalDqlFilter) {
+	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass,
+			Class<T> parentClass, String optionalDqlFilter) {
 		return em().createParentRelativesQuery(child, relationClass, parentClass, optionalDqlFilter);
 	}
 
@@ -192,7 +197,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		setTxRequested(false);
 		commands.clear();
 	}
-	
+
 	@Override
 	public XcpRepoCommand rollbackOn(Class<? extends Exception> e) {
 		throw new NotYetImplemented();
@@ -221,7 +226,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	@Override
 	public <T> XcpRepoCommand with(Class<T> relationType) {
 		return with(relationType, null);
-			
+
 	}
 
 	@Override
@@ -335,22 +340,22 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 				logger.trace("Executing command: {}", cmd.toString());
 				cmd.execute();
 			}
+			if (txStarted) {
+				tx().commit();
+			}
 		} catch (Exception e) {
 			logger.trace("rolling back", e);
-//			logger.trace("Commands: {}", commands.toString());
+			// logger.trace("Commands: {}", commands.toString());
 			if (txStarted) {
 				tx().rollback();
 			}
 			throw e;
 		} finally {
-			if (txStarted) {
-				tx().commit();
-			}
 			this.commandInProgress = false;
 			commands.clear();
 		}
 	}
-	
+
 	private boolean isTxActive() {
 		return this.tx().isActive();
 	}

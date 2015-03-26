@@ -119,6 +119,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 				// destroy the object
 				dmsObj.destroy();
+				logger.trace("removed object {} from the repository", objectId);
 
 				// remove the entity from the cache
 				sessionCache().remove(objectId);
@@ -286,6 +287,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 			// save dms object
 			dmsObj.save();
+			logger.trace("Saved object {} to the repository", dmsObj.getObjectId().getId());
 
 			// update system generated value
 			dms2Entity(dmsObj, entity, ai);

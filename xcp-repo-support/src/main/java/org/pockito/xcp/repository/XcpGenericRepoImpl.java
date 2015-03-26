@@ -93,13 +93,13 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	@Override
-	public XcpRepoCommand getCmd() {
+	public XcpRepoCommand getCurrentCmd() {
 		return this.xcpCmd;
 	}
 
 	@Override
 	public void commitSharedCmd() {
-		if (getCmd() != null) {
+		if (getCurrentCmd() != null) {
 			cmd().commit();
 			unregisterCmd();
 		}
@@ -107,7 +107,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	@Override
 	public void rollbackSharedCmd() {
-		if (getCmd() != null) {
+		if (getCurrentCmd() != null) {
 			cmd().rollback();
 			unregisterCmd();
 		}
@@ -125,7 +125,8 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 		cmd().withinTransaction().remove(object);
 	}
 
-	protected XcpRepoCommand cmd() {
+	@Override
+	public XcpRepoCommand cmd() {
 		if (this.xcpCmd == null) {
 			XcpRepoCommand cmd = XcpRepoCmdFactory.instance.getSharedCmd();
 			if (cmd == null) {
@@ -158,7 +159,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	protected void commit() {
-		if ((getCmd() != null) && isAutoCommit()) {
+		if ((getCurrentCmd() != null) && isAutoCommit()) {
 			cmd().commit();
 		}
 	}

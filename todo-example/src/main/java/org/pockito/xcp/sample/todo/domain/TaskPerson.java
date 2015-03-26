@@ -59,7 +59,7 @@ public class TaskPerson extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"TaskPerson[id=%s, task=%s, person=%s, role=%s, vstamp=%d, oder=%d]",
+				"TaskPerson [id=%s, task=%s, person=%s, role=%s, vstamp=%d, oder=%d]",
 				getId(), 
 				getTask(), getPerson(), getRole(),
 				getvStamp(), getOrder()

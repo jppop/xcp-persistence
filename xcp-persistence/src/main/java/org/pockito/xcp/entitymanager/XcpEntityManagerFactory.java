@@ -17,12 +17,16 @@ import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
+	private Logger logger = LoggerFactory.getLogger(XcpEntityManagerFactory.class);
+	
 	/**
 	 * Stores annotation info about our entities for easy retrieval when needed
 	 */
@@ -65,6 +69,7 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 			
 			// create a new dctm session manager
 			dctmDriver.getSessionManager(repository, username, password);
+			logger.debug("Create a new entity manager for ({}, {})", repository, username);
 			return new XcpEntityManager(this, props, dctmDriver);
 			
 		} catch (Exception e) {

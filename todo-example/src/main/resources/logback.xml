@@ -3,6 +3,9 @@
 <configuration>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<encoder>
@@ -64,7 +67,7 @@
 		</encoder>
 	</appender>
 
-	<logger name="org.pockito.xcp" level="INFO" additivity="false">
+	<logger name="org.pockito.xcp" level="DEBUG" additivity="true">
 		<appender-ref ref="log-file" />
 	</logger>
 
@@ -72,11 +75,11 @@
 		<appender-ref ref="audit-file" />
 	</logger>
 
-	<logger name="org.pockito.xcp" level="DEBUG" additivity="false">
+	<logger name="org.pockito.xcp" level="TRACE" additivity="true">
 		<appender-ref ref="troubleshooting-file" />
 	</logger>
 
-	<root level="ERROR">
+	<root level="INFO">
 		<appender-ref ref="STDOUT" />
 	</root>
 

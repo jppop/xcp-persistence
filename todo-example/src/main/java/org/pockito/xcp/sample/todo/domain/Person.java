@@ -48,7 +48,7 @@ public class Person extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Person[id=%s, First Name=%s, Last Name=%s]",
+				"Person [id=%s, First Name=%s, Last Name=%s]",
 				getId(), 
 				getFirstName(), getLastName()
 				);

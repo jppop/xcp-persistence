@@ -48,10 +48,16 @@
 			<artifactId>xcp-repo-support</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3.1</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<resources>
 			<resource>
+				<filtering>true</filtering>
 				<directory>${basedir}/src/main/resources</directory>
 			</resource>
 		</resources>

@@ -68,7 +68,7 @@ public class Address extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Address[id=%s, Street Line 1=%s, Street Line 2=%s, zipcode=%s, city=%s], country=%s",
+				"Address [id=%s, Street Line 1=%s, Street Line 2=%s, zipcode=%s, city=%s, country=%s]",
 				getId(),
 				getStreetLine1(), getStreetLine2(), getZipcode(), getCity(), getCountry()
 				);

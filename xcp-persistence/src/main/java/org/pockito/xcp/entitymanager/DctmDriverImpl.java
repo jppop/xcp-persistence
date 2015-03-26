@@ -25,7 +25,7 @@ import com.google.common.base.Stopwatch;
 
 public class DctmDriverImpl implements DctmDriver {
 
-	private static final Logger logger = LoggerFactory.getLogger(DctmDriver.class);
+	private static final Logger logger = LoggerFactory.getLogger(DctmDriverImpl.class);
 	
 	private static final IDfClientX CLIENTX = new DfClientX();
 	
@@ -41,6 +41,7 @@ public class DctmDriverImpl implements DctmDriver {
 	@Override
 	public final IDfSessionManager getSessionManager(final String repository, final String username,
 			final String password) throws DmsException {
+		logger.trace("Getting an new session manager for ({}, {})", repository, username);
 		IDfSessionManager manager = null;
 		try {
 //			manager = DmsRepository.getInstance().getSessionManager();
@@ -64,6 +65,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public final IDfSession getSession() {
+		logger.trace("getting a new managed sesssion");
 		IDfSession session;
 		checkSessionMgr();
 		try {
@@ -76,6 +78,7 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public final void releaseSession(final IDfSession session) {
+		logger.trace("releasing sesssion");
 		try {
 			if (session != null) {
 				IDfSessionManager sMgr = session.getSessionManager();
@@ -95,6 +98,8 @@ public class DctmDriverImpl implements DctmDriver {
 	public final List<IDfId> getObjectsByQuery(final IDfSession session, final String query)
 			throws DmsException {
 		
+		logger.trace("executing query: {}", query);
+
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		
 		List<IDfId> results = new ArrayList<IDfId>();
@@ -127,6 +132,9 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public int getObjectsByQuery(IDfSession session, String query, RowHandler rowHandler) throws DmsException {
+
+		logger.trace("executing query: {}", query);
+
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		
 		int count = 0;
@@ -161,6 +169,7 @@ public class DctmDriverImpl implements DctmDriver {
 	public final int executeQuery(final IDfSession session, final String query)
 			throws DmsException {
 		
+		logger.trace("executing query: {}", query);
 		int count = -1;
 		
 		IDfQuery queryExecutor = createQuery();

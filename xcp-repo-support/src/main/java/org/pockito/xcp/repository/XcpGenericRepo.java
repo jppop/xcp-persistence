@@ -97,7 +97,7 @@ public interface XcpGenericRepo<T> {
 	 */
 	XcpRepoCommand createSharedCmd();
 
-	XcpRepoCommand getCmd();
+	XcpRepoCommand getCurrentCmd();
 
 	/**
 	 * Commits the shared command.
@@ -106,5 +106,7 @@ public interface XcpGenericRepo<T> {
 	void commitSharedCmd();
 
 	void rollbackSharedCmd();
+
+	public abstract XcpRepoCommand cmd();
 
 }

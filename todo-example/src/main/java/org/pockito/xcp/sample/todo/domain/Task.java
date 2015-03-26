@@ -70,7 +70,7 @@ public class Task extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Task[id=%s, Subject=%s, priority=%s, creation date=%tc, due date=%tc]",
+				"Task [id=%s, Subject=%s, priority=%s, creation date=%tc, due date=%tc]",
 				getId(), getWhat(), getPriority(),
 				creationDate, getDueDate()
 				);

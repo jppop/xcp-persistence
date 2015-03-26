@@ -44,6 +44,19 @@ public class PersonRepoImpl extends XcpGenericRepoImpl<Person> implements Person
 	}
 
 	@Override
+	public void remove(Person person) {
+		
+		cmd().withinTransaction();
+		
+		// remove first the person addresses
+		List<Address> addresses = findPersonAddresses(person);
+		for (Address address : addresses) {
+			cmd().remove(address);
+		}
+		super.remove(person);
+	}
+	
+	@Override
 	public Person findByName(String name) {
 	
 		DmsBeanQuery<Person> query = cmd().createBeanQuery(Person.class);

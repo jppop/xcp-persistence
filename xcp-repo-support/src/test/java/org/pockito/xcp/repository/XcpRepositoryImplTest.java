@@ -26,7 +26,7 @@ public class XcpRepositoryImplTest extends BaseMockedTest {
 	@Test
 	public void testCreateRelation() throws Exception {
 		
-		XcpRepoCommand cmd = XcpRepoCmdFactory.getInstance().create();
+		XcpRepoCommand cmd = XcpRepoCmdFactory.instance.create();
 		
 		EmailTemplate parent = new EmailTemplate();
 		parent.setName("parent");

@@ -86,7 +86,8 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 		order.verify(sharedCmd).commit();
 
 		// check internal command has been reseted
-		assertEquals(0, wfRepo.getCurrentCmd().size());
+		assertNull(wfRepo.getCurrentCmd());
+		assertNull(templateRepo.getCurrentCmd());
 		assertNull(XcpRepoCmdFactory.instance.getSharedCmd());
 
 	}

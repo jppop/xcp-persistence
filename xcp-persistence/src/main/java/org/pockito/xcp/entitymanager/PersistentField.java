@@ -7,6 +7,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
+import org.pockito.xcp.message.Message;
 
 /**
  * PersistentProperty that encapsulates access via direct Field accessor rather than getter/setter methods. Used to
@@ -36,9 +37,9 @@ public class PersistentField extends PersistentProperty {
                     break;
                 }
             }
-            if (getter == null || setter == null) throw new IllegalArgumentException("Only fields with valid JavaBean accessors can be annotated");
+            if (getter == null || setter == null) throw new IllegalArgumentException(Message.E_NO_JAVABEAN.get());
         } catch (IntrospectionException e) {
-            throw new IllegalArgumentException("Could not introspect field: "+field);
+            throw new IllegalArgumentException(Message.E_REFLECTION_FIELD.get(field.toString()));
         }
     }
 

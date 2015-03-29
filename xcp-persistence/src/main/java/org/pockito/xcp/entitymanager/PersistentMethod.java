@@ -3,6 +3,7 @@ package org.pockito.xcp.entitymanager;
 import java.lang.reflect.Method;
 
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
+import org.pockito.xcp.message.Message;
 
 /**
  * PersistentProperty that supports access to data through getter/setter pair.
@@ -24,8 +25,7 @@ public class PersistentMethod extends PersistentProperty {
 		try {
 			this.setter = method.getDeclaringClass().getDeclaredMethod(setterName, getter.getReturnType());
 		} catch (NoSuchMethodException e) {
-			throw new IllegalStateException("No setter found for method provided: " + getter.getName() + " in class: "
-					+ method.getDeclaringClass().getName());
+			throw new IllegalStateException(Message.E_NO_SETTER.get(getter.getName(), method.getDeclaringClass().getName()));
 		}
 		this.setter.setAccessible(true);
 	}

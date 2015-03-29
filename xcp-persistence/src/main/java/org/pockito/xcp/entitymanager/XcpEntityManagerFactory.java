@@ -16,16 +16,22 @@ import org.pockito.xcp.entitymanager.cache.BuiltInCache;
 import org.pockito.xcp.entitymanager.cache.CacheElement;
 import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.exception.XcpPersistenceException;
+import org.pockito.xcp.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
+	private Logger logger = LoggerFactory.getLogger(XcpEntityManagerFactory.class);
+	
 	/**
 	 * Stores annotation info about our entities for easy retrieval when needed
 	 */
 	private final AnnotationManager annotationManager;
-	private final Map<String, ?> props;
+	private Map<String, ?> props;
 	private boolean sessionLess = false;
 	private CacheWrapper<String, CacheElement> firstLevelCache = null;
 
@@ -44,9 +50,8 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 
 	public DmsEntityManager createDmsEntityManager(final Map<String, ?> props) {
 		try {
-			if (props == null ) {
-				throw new IllegalArgumentException("props cannot be null");
-			}
+			Preconditions.checkNotNull(props);
+			this.props = props;
 			if (props.containsKey(SessionLess)) {
 				this.sessionLess = Boolean.valueOf(props.containsKey(SessionLess)).booleanValue();
 			} else {
@@ -57,17 +62,18 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 				dctmDriver = getDctmDriver();
 			}
 			String username = (String) props.get(Username);
-			if (Strings.isNullOrEmpty(username)) throw new IllegalArgumentException("property 'username' is required");
+			if (Strings.isNullOrEmpty(username)) throw new IllegalArgumentException(Message.E_NO_REPOSITORY_CONTEXT.get());
 			String password = (String) props.get(Password);
 			String repository = (String) props.get(Repository);
-			if (Strings.isNullOrEmpty(repository)) throw new IllegalArgumentException("property 'repository' is required");
+			if (Strings.isNullOrEmpty(repository)) throw new IllegalArgumentException(Message.E_NO_REPOSITORY_CONTEXT.get());
 			
 			// create a new dctm session manager
 			dctmDriver.getSessionManager(repository, username, password);
+			logger.debug("Create a new entity manager for ({}, {})", repository, username);
 			return new XcpEntityManager(this, props, dctmDriver);
 			
 		} catch (Exception e) {
-			throw new XcpPersistenceException(e);
+			throw new XcpPersistenceException(Message.E_ENTITYMGR_CREATION_FAILED.get(), e);
 		}
 	}
 

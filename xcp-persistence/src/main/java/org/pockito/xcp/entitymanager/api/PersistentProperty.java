@@ -15,6 +15,7 @@ import org.pockito.xcp.annotations.Id;
 import org.pockito.xcp.annotations.Parent;
 import org.pockito.xcp.annotations.ParentFolder;
 import org.pockito.xcp.annotations.VStamp;
+import org.pockito.xcp.message.Message;
 
 import com.documentum.fc.common.DfTime;
 import com.documentum.fc.common.DfValue;
@@ -67,7 +68,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = getRawClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException("property is a collection");
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
 			}
 			if (rawClass.isAssignableFrom(Boolean.class)) {
 				getSetter().invoke(target, value == null ? false : value.asBoolean());
@@ -112,7 +113,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = getRawClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException("property is a collection");
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
 			}
 			if (anObject != null) {
 				if (rawClass.isAssignableFrom(boolean.class)) {
@@ -142,7 +143,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = value.getClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException("property is a collection");
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
 			}
 			if (value != null) {
 				if (rawClass.isAssignableFrom(boolean.class)) {

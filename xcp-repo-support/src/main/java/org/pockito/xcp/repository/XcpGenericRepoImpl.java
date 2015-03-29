@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
+import org.pockito.xcp.repository.command.XcpRepoCmdFactory.UnregisterCallback;
 import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
@@ -93,13 +94,13 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	@Override
-	public XcpRepoCommand getCmd() {
+	public XcpRepoCommand getCurrentCmd() {
 		return this.xcpCmd;
 	}
 
 	@Override
 	public void commitSharedCmd() {
-		if (getCmd() != null) {
+		if (getCurrentCmd() != null) {
 			cmd().commit();
 			unregisterCmd();
 		}
@@ -107,7 +108,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	@Override
 	public void rollbackSharedCmd() {
-		if (getCmd() != null) {
+		if (getCurrentCmd() != null) {
 			cmd().rollback();
 			unregisterCmd();
 		}
@@ -125,7 +126,8 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 		cmd().withinTransaction().remove(object);
 	}
 
-	protected XcpRepoCommand cmd() {
+	@Override
+	public XcpRepoCommand cmd() {
 		if (this.xcpCmd == null) {
 			XcpRepoCommand cmd = XcpRepoCmdFactory.instance.getSharedCmd();
 			if (cmd == null) {
@@ -135,15 +137,14 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 			}
 		}
 		if (this.xcpCmd == null) {
-			// TODO
-			throw new IllegalStateException("No cmd");
+			throw new IllegalStateException(Message.E_CMD_CREATION_FAILED.get());
 		}
 		return this.xcpCmd;
 	}
 
 	protected void unregisterCmd() {
 		// reset the commands
-		XcpRepoCmdFactory.instance.registerSharedCmd(null);
+		XcpRepoCmdFactory.instance.unregisterSharedCmd();
 	}
 
 	protected XcpRepoCommand createCmd() {
@@ -155,11 +156,18 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	protected void useSharedCmd(XcpRepoCommand cmd) {
 		setAutoCommit(false);
+		XcpRepoCmdFactory.instance.useSharedCmd(new UnregisterCallback() {
+			
+			@Override
+			public void unregistered() {
+				xcpCmd = null;
+			}
+		});
 		this.xcpCmd = cmd;
 	}
 
 	protected void commit() {
-		if ((getCmd() != null) && isAutoCommit()) {
+		if ((getCurrentCmd() != null) && isAutoCommit()) {
 			cmd().commit();
 		}
 	}

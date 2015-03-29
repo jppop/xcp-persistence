@@ -8,6 +8,12 @@ import org.pockito.xcp.entitymanager.api.DmsQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.Transaction;
 
+/**
+ * The gateway between a repository class and the entity manager.
+ * 
+ * @author jfrancon
+ *
+ */
 public interface XcpRepoCommand {
 
 	// basic CRUD operations
@@ -31,7 +37,7 @@ public interface XcpRepoCommand {
     void commit();
     void rollback();
     void go(); // commit if a transaction has been started
-    void abort(); // rollback if a transaction has been started
+    void abort(); // roll back if a transaction has been started
     Transaction getTransaction();
 
     // relation
@@ -46,13 +52,20 @@ public interface XcpRepoCommand {
     String getAttachment(Object entity, String filename);
     XcpRepoCommand removeAttachment(Object entity);
 
-    // helper methods
+    // connect the Command to the repository (through an entity manager)
+	void connect(String repository, String username, String password);
+	void connect();
+	String getPassword();
+	String getUsername();
+	String getRepository();
+
+	// helper methods
     DmsEntityManager getEntityManager();
     int size();
 
-    // no more used
     void setOwner(Object owner);
     Object getOwner();
     boolean isOwner(Object owner);
+	boolean isCmdInProgress();
     
 }

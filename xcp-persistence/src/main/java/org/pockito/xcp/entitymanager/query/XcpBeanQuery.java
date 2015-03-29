@@ -12,6 +12,7 @@ import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.MetaData;
 import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.exception.XcpPersistenceException;
+import org.pockito.xcp.message.Message;
 
 public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQuery<T> {
 
@@ -29,7 +30,7 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	public <B> DmsBeanQuery<T> setParameter(String fieldName, RightExpression<B> rightOp) {
 		final PersistentProperty prop = meta.getPersistentProperty(fieldName);
 		if (prop == null) {
-			throw new XcpPersistenceException("unknown field");
+			throw new XcpPersistenceException(Message.E_UNKNOWN_FIELD.get(fieldName));
 		}
 		Expression<B> expr = new Expression<B>(prop, rightOp);
 		remember(expr);
@@ -39,7 +40,7 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	@Override
 	public List<T> getResultList() {
 		if (getQueryType() != QueryType.select) {
-			throw new XcpPersistenceException("Not a select query");
+			throw new XcpPersistenceException(Message.E_NOT_SELECT_QUERY.get());
 		}
 		@SuppressWarnings("unchecked")
 		final List<T> resultList = (List<T>) executeNativeQuery(getEntityClass(), asDql());
@@ -89,7 +90,7 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 			throw new NotYetImplemented();
 		}
 		if ((getQueryType() != QueryType.select) && this.expressions.isEmpty()) {
-			throw new XcpPersistenceException("Please confirm you really want to delete all objects");
+			throw new XcpPersistenceException(Message.E_CONFIRM_DELETE_ALL.get());
 		}
 		setQuery(asDql());
 		return super.executeUpdate();
@@ -103,12 +104,12 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 
 	@Override
 	public DmsTypedQuery<T> setParameter(int position, Object value) {
-		throw new IllegalAccessError("Not supported");
+		throw new IllegalAccessError(Message.E_NOT_SUPPORTED.get());
 	}
 	
 	@Override
 	public DmsTypedQuery<T> setParameter(String name, Object value) {
-		throw new IllegalAccessError("Not supported");
+		throw new IllegalAccessError(Message.E_NOT_SUPPORTED.get());
 	}
 	
 	private void valueAsDql(StringBuffer buffer, Expression<?> expr) {

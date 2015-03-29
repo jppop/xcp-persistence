@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
+import org.pockito.xcp.repository.command.XcpRepoCmdFactory.UnregisterCallback;
 import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
@@ -143,7 +144,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	protected void unregisterCmd() {
 		// reset the commands
-		XcpRepoCmdFactory.instance.registerSharedCmd(null);
+		XcpRepoCmdFactory.instance.unregisterSharedCmd();
 	}
 
 	protected XcpRepoCommand createCmd() {
@@ -155,6 +156,13 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	protected void useSharedCmd(XcpRepoCommand cmd) {
 		setAutoCommit(false);
+		XcpRepoCmdFactory.instance.useSharedCmd(new UnregisterCallback() {
+			
+			@Override
+			public void unregistered() {
+				xcpCmd = null;
+			}
+		});
 		this.xcpCmd = cmd;
 	}
 

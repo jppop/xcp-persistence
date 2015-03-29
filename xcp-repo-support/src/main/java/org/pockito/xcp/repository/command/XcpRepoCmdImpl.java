@@ -10,6 +10,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import static com.google.common.base.Preconditions.*;
+
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.PropertyConstants;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
@@ -31,7 +33,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	private Logger logger = LoggerFactory.getLogger(XcpRepoCmdImpl.class);
 
 	private final Provider<DmsEntityManagerFactory> emFactoryProvider;
-	private final DmsEntityManager em;
+	private DmsEntityManager em;
 	private Transaction tx = null;
 
 	@Inject
@@ -58,11 +60,18 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	private Object owner;
 
 	@Inject
-	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider,
-			@Named("org.pockito.xcp.repository.name") String repository,
-			@Named("org.pockito.xcp.repository.username") String username,
-			@Named("org.pockito.xcp.repository.password") String password) {
+	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider) {
 		this.emFactoryProvider = emFactoryProvider;
+	}
+	
+	@Override
+	public void connect() {
+		connect(this.repository, this.username, this.password);
+	}
+
+	@Override
+	public void connect(String repository, String username, String password) {
+		checkNotNull(repository);
 		this.repository = repository;
 		this.username = username;
 		this.password = password;
@@ -74,13 +83,6 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	}
 
 	private DmsEntityManager em() {
-		// if (em == null) {
-		// HashMap<String, Object> props = new HashMap<String, Object>();
-		// props.put(PropertyConstants.Repository, repository);
-		// props.put(PropertyConstants.Username, username);
-		// props.put(PropertyConstants.Password, password);
-		// this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
-		// }
 		return em;
 	}
 
@@ -93,7 +95,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public XcpRepoCommand create(Object entity) {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().persistCmd(entity));
@@ -107,7 +109,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public XcpRepoCommand update(Object entity) {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().persistCmd(entity));
@@ -116,7 +118,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public XcpRepoCommand remove(Object entity) {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		commands.add(cmd().removeCmd(entity));
@@ -147,7 +149,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public XcpRepoCommand withinTransaction() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			startNewCommand();
 		}
 		setTxRequested(true);
@@ -156,7 +158,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public void commit() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		executeCommand();
@@ -164,7 +166,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public void rollback() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		if (isTxActive()) {
@@ -174,7 +176,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public XcpRepoCommand withoutTransaction() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			startNewCommand();
 		}
 		setTxRequested(false);
@@ -183,7 +185,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public void go() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		executeCommand();
@@ -191,7 +193,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public void abort() {
-		if (!hasCmdStarted()) {
+		if (!isCmdInProgress()) {
 			throw new IllegalStateException(Message.E_CMD_NO_STARTED.get());
 		}
 		setTxRequested(false);
@@ -360,7 +362,8 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		return this.tx().isActive();
 	}
 
-	private boolean hasCmdStarted() {
+	@Override
+	public boolean isCmdInProgress() {
 		return this.commandInProgress;
 	}
 
@@ -379,14 +382,17 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		rememberChild(null);
 	}
 
+	@Override
 	public String getRepository() {
 		return repository;
 	}
 
+	@Override
 	public String getUsername() {
 		return username;
 	}
 
+	@Override
 	public String getPassword() {
 		return password;
 	}

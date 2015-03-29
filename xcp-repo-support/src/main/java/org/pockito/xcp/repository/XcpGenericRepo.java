@@ -97,16 +97,29 @@ public interface XcpGenericRepo<T> {
 	 */
 	XcpRepoCommand createSharedCmd();
 
+	/**
+	 * @return the current command
+	 */
 	XcpRepoCommand getCurrentCmd();
 
 	/**
 	 * Commits the shared command.
 	 * 
+	 * Note that the Command will be reseted (ie, a new command will be created).
+	 * 
 	 */
 	void commitSharedCmd();
 
+	/**
+	 * Rolls back a shared command.
+	 */
 	void rollbackSharedCmd();
 
-	public abstract XcpRepoCommand cmd();
+	
+	/**
+	 * Uses a shared command if a command has been registered, create a new one if none.
+	 * @return
+	 */
+	XcpRepoCommand cmd();
 
 }

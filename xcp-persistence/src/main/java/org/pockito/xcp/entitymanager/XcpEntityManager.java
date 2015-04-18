@@ -197,6 +197,7 @@ public class XcpEntityManager implements DmsEntityManager {
 								field.setProperty(newInstance, dfValue);
 							}
 						} else {
+							// TODO
 							logger.warn("Field {} type is not a String. Cannot read folder path", field.getFieldName());
 						}
 					}

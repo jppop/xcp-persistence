@@ -33,6 +33,7 @@ public class App {
 
 	public static void main(String[] args) throws Exception {
 		App app = new App();
+		System.out.println("Injection framework: " + AppConfig.injector());
 		// create first an object (force DFC to initialize)
 		System.out.println("My name is James, James Bond!");
 		app.addJamesBond();

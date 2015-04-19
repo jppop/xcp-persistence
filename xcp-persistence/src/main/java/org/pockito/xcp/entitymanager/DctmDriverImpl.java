@@ -21,6 +21,7 @@ import com.documentum.fc.common.DfLoginInfo;
 import com.documentum.fc.common.IDfAttr;
 import com.documentum.fc.common.IDfId;
 import com.documentum.fc.common.IDfLoginInfo;
+import com.documentum.fc.impl.util.RegistryPasswordUtils;
 import com.google.common.base.Stopwatch;
 
 public class DctmDriverImpl implements DctmDriver {
@@ -52,7 +53,7 @@ public class DctmDriverImpl implements DctmDriver {
 			}
 		    IDfLoginInfo login = new DfLoginInfo();
 		    login.setUser(username);
-		    login.setPassword(password);
+		    login.setPassword(decrypt(password));
 		    manager = DfClient.getLocalClient().newSessionManager();
 		    manager.setIdentity(repository, login);
 		    setDfSessionManager(manager);
@@ -61,6 +62,20 @@ public class DctmDriverImpl implements DctmDriver {
 			throw new DmsException(Message.E_DFC_SESSMGR_FAILED.get(),  e);
 		}
 		return manager;
+	}
+
+	private String decrypt(final String password) {
+		if (password != null && password.startsWith("enc:")) {
+			String decryptedPwd;
+			try {
+				decryptedPwd = RegistryPasswordUtils.decrypt(password.substring(4));
+			} catch (DfException e) {
+				decryptedPwd = password;
+			}
+			return decryptedPwd;
+		} else {
+			return password;
+		}
 	}
 
 	@Override

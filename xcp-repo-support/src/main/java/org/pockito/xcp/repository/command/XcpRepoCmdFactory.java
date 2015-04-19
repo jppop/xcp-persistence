@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 
 public enum XcpRepoCmdFactory {
@@ -11,7 +12,8 @@ public enum XcpRepoCmdFactory {
 	instance;
 	
 	@Inject
-	private static Provider<XcpRepoCommand> repoProvider;
+	@Named("XcpRepoCommand")
+	private Provider<XcpRepoCommand> repoProvider;
 	
 	private XcpRepoCommand sharedCmd = null;
 	

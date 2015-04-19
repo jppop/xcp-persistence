@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default -->
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="troubleshooting-file"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${project.build.directory}/logs/xcp-persistence-troubleshooting.log
+		</file>
+		<!-- 10x10Mo files to limit size on disk -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>xcp-persistence-troubleshooting.%i.log
+			</fileNamePattern>
+			<maxIndex>10</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy
+			class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<maxFileSize>10MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<pattern>%d{yyyy/MM/dd HH:mm:ss,SSS};[%thread];%-5level;%logger{36};%m%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="log-file"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${project.build.directory}/logs/xcp-persistence.log</file>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<!-- only log problems, not debugging info -->
+			<level>WARN</level>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- rotate every day for log collection and archiving -->
+			<fileNamePattern>xcp-persistence.%d{yyyyMMdd}.log</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+			<!-- only log 2 lines of stack trace per cause of an exception -->
+			<pattern>%d{yyyy/MM/dd HH:mm:ss,SSS} [%thread] %-5level %logger{36} - %m %throwable{2}%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="audit-file"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${project.build.directory}/logs/xcp-persistence.log-audit.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- rotate every day -->
+			<fileNamePattern>xcp-persistence-audit.%d{yyyyMMdd}.log.zip
+			</fileNamePattern>
+		</rollingPolicy>
+		<encoder>
+			<!-- don't output the date or the logger name because the auditing framework 
+				handles this -->
+<!-- 			<pattern>%m %throwable{0}%n</pattern> -->
+			<!-- only log 2 lines of stack trace per cause of an exception -->
+			<pattern>%d{yyyy/MM/dd HH:mm:ss,SSS} [%thread] %-5level %logger{36} - %m %throwable{2}%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.pockito.xcp" level="DEBUG" additivity="true">
+		<appender-ref ref="log-file" />
+	</logger>
+
+	<logger name="org.pockito.xcp.audit" level="TRACE" additivity="false">
+		<appender-ref ref="audit-file" />
+	</logger>
+
+	<logger name="org.pockito.xcp" level="TRACE" additivity="true">
+		<appender-ref ref="troubleshooting-file" />
+	</logger>
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+	</root>
+
+</configuration>

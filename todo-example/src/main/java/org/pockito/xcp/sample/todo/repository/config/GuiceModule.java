@@ -9,14 +9,17 @@ import org.pockito.xcp.sample.todo.repository.impl.TaskRepoImpl;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
+import com.google.inject.name.Names;
 
 public class GuiceModule extends AbstractModule implements Module {
 
 	@Override
 	protected void configure() {
 		install(new ModuleConfig());
-		bind(PersonRepo.class).to(PersonRepoImpl.class).in(Scopes.SINGLETON);
-		bind(TaskRepo.class).to(TaskRepoImpl.class).in(Scopes.SINGLETON);
+		bind(PersonRepo.class).annotatedWith(Names.named("PersonRepo"))
+			.to(PersonRepoImpl.class).in(Scopes.SINGLETON);
+		bind(TaskRepo.class).annotatedWith(Names.named("TaskRepo"))
+			.to(TaskRepoImpl.class).in(Scopes.SINGLETON);
 	}
 
 }

@@ -1,5 +1,7 @@
 package org.pockito.xcp.repository.command;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,9 +10,6 @@ import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
-
-import static com.google.common.base.Preconditions.*;
 
 import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.entitymanager.PropertyConstants;
@@ -32,7 +31,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private Logger logger = LoggerFactory.getLogger(XcpRepoCmdImpl.class);
 
-	private final Provider<DmsEntityManagerFactory> emFactoryProvider;
+	private final DmsEntityManagerFactory emFactory;
 	private DmsEntityManager em;
 	private Transaction tx = null;
 
@@ -60,8 +59,8 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	private Object owner;
 
 	@Inject
-	XcpRepoCmdImpl(Provider<DmsEntityManagerFactory> emFactoryProvider) {
-		this.emFactoryProvider = emFactoryProvider;
+	XcpRepoCmdImpl(DmsEntityManagerFactory emFactory) {
+		this.emFactory = emFactory;
 	}
 	
 	@Override
@@ -79,7 +78,7 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		props.put(PropertyConstants.Repository, repository);
 		props.put(PropertyConstants.Username, username);
 		props.put(PropertyConstants.Password, password);
-		this.em = this.emFactoryProvider.get().createDmsEntityManager(props);
+		this.em = this.emFactory.createDmsEntityManager(props);
 	}
 
 	private DmsEntityManager em() {
@@ -411,6 +410,18 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private void rememberChild(Object child) {
 		this.child = child;
+	}
+
+	public void setRepository(String repository) {
+		this.repository = repository;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }

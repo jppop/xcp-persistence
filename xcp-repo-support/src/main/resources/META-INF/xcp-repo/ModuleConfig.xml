@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<!-- load default properties file -->
+	<context:property-placeholder location="classpath:repository.properties"
+		ignore-resource-not-found="true" />
+
+	<!-- repository name -->
+	<bean id="org.pockito.xcp.repository.name" class="java.lang.String">
+		<constructor-arg value="${org.pockito.xcp.repository.name}" />
+	</bean>
+
+	<!-- username name -->
+	<bean id="org.pockito.xcp.repository.username" class="java.lang.String">
+		<constructor-arg value="${org.pockito.xcp.repository.username}" />
+	</bean>
+
+	<!-- password -->
+	<bean id="org.pockito.xcp.repository.password" class="java.lang.String">
+		<constructor-arg value="${org.pockito.xcp.repository.password}" />
+	</bean>
+
+	<!-- xCP entity manager factory -->
+	<bean id="DmsEntityManagerFactory" class="org.pockito.xcp.entitymanager.XcpEntityManagerFactory" />
+	
+	<!-- tell to Spring how to create XcpRepoCommand -->
+	<bean id="XcpRepoCommand" class="org.pockito.xcp.repository.command.XcpRepoCmdImpl" scope="prototype">
+		<constructor-arg ref="DmsEntityManagerFactory" />
+	</bean>
+
+	<!-- prepare Spring to inject the XcpRepoCommand Provider in an enum -->
+	<bean id="XcpRepoCmdFactory" class="org.pockito.xcp.repository.command.XcpRepoCmdFactory" factory-method="valueOf">
+		<constructor-arg>
+			<value>instance</value>
+		</constructor-arg>
+	</bean>
+	
+	<!-- inject the XcpRepoCommand Provider -->
+	<context:component-scan base-package="org.pockito.xcp.repository.command" />
+
+</beans>

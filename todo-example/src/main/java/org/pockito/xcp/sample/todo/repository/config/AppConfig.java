@@ -11,6 +11,7 @@ import org.pockito.xcp.sample.todo.domain.Person;
 import org.pockito.xcp.sample.todo.domain.Task;
 import org.pockito.xcp.sample.todo.repository.PersonRepo;
 import org.pockito.xcp.sample.todo.repository.TaskRepo;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -20,7 +21,7 @@ public enum AppConfig {
 	instance;
 	
 	public static final String PROPERTIES = "xcp-repository.properties";
-	private static RepoProvider repoProvider = new RepoProvider();
+	private static RepoProvider repoProvider = null;
 	private static final Properties appProperties = new Properties();
 	
 	public PersonRepo getPersonRepo() {
@@ -47,10 +48,21 @@ public enum AppConfig {
 		return appProperties.getProperty("org.pockito.xcp.repository.password");
 	}
 	
+	public static String injector() {
+		return appProperties.getProperty("injector", "guice");
+	}
+	
 	static {
-		Injector injector = Guice.createInjector(new GuiceModule());
-		injector.injectMembers(repoProvider);
 		loadProperties();
+		if (injector().equals("spring")) {
+			try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "/META-INF/todo-example/beans.xml" })) {
+				repoProvider = context.getBean(RepoProvider.class);
+			}
+		} else {
+			Injector injector = Guice.createInjector(new GuiceModule());
+			repoProvider = new RepoProvider();
+			injector.injectMembers(repoProvider);
+		}
 	}
 
 	private static void loadProperties() {

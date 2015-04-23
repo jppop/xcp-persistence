@@ -207,7 +207,7 @@ public class XcpEntityManager implements DmsEntityManager {
 				cachePut(newInstance, ai);
 			}
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey));
+			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey), e);
 		} finally {
 			releaseSession(dfSession);
 		}
@@ -299,7 +299,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		} catch (XcpPersistenceException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_PERSIST_FAILED.get(entity.toString()));
+			throw new XcpPersistenceException(Message.E_PERSIST_FAILED.get(entity.toString()), e);
 		} finally {
 			releaseSession(dfSession);
 		}
@@ -350,7 +350,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		} catch (XcpPersistenceException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_ADD_ATTACHMENT_FAILED.get(filename, objectId));
+			throw new XcpPersistenceException(Message.E_ADD_ATTACHMENT_FAILED.get(filename, objectId), e);
 		} finally {
 			releaseSession(dfSession);
 		}

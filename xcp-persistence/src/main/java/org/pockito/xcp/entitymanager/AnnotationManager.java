@@ -8,6 +8,7 @@ import java.util.Map;
 import org.pockito.xcp.annotations.Transient;
 import org.pockito.xcp.annotations.XcpEntity;
 import org.pockito.xcp.annotations.XcpType;
+import org.pockito.xcp.annotations.XcpTypeCategory;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.message.Message;
 
@@ -15,9 +16,6 @@ import com.google.common.base.Strings;
 
 public class AnnotationManager {
 
-//	private static final String DMC_NAMESPACE = "dmc";
-//	private static final String DM_NAMESPACE = "dm";
-//	private static final String DM_RELATION = "dm_relation";
 	private Map<String, AnnotationInfo> annotationMap = new HashMap<String, AnnotationInfo>();
 
 	public AnnotationManager() {
@@ -67,7 +65,18 @@ public class AnnotationManager {
             			ai.setTypeCategory(xcpType.type());
 	            		String namespace = entity.namespace();
 	            		String shortName = xcpType.name();
-	            		dmsTypeName = namespace + "_" + shortName;
+	            		if (Strings.isNullOrEmpty(namespace) || Strings.isNullOrEmpty(shortName)) {
+	            			throw new XcpPersistenceException(Message.E_NO_NAMES.get(c.getName()));
+	            		}
+            			dmsTypeName = namespace + "_" + shortName;
+	            		if (xcpType.type() == XcpTypeCategory.RELATION) {
+	            			// set the relation name (equal to the Documentum type)
+            				ai.setDmsRelationName(dmsTypeName);
+	            			// xCP always creates a derived type for a relation but not Documentum
+	            			if (namespace.equals(XcpEntityManager.DOCUMENTUM_NAMESPACE)) {
+	            				dmsTypeName = XcpEntityManager.DMS_RELATION_TYPE;
+	            			}
+	            		}
 	                    ai.setLabel(xcpType.label());
             		}
             	}

@@ -405,6 +405,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// find child relatives using an assisted query
 			DmsTypedQuery<Document> assistedQuery = em.createChildRelativesQuery(wf, WfEmailTemplate.class,
 					Document.class, null);
+			
+			assertEquals("select c.r_object_id from dm_relation r, dm_document c"
+					+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = '" + parentId + "'"
+					+ " and r.child_id = c.r_object_id", assistedQuery.asDql());
 
 			emailTemplates = assistedQuery.getResultList();
 

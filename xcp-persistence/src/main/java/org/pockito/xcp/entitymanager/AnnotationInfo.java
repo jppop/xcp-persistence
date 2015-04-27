@@ -18,6 +18,7 @@ import com.google.common.primitives.Primitives;
 public class AnnotationInfo implements MetaData {
 
 	private String dmsType;
+	private String dmsRelationName;
 	private String label;
 	private XcpTypeCategory typeCategory;
 	private PersistentProperty idMethod;
@@ -181,6 +182,14 @@ public class AnnotationInfo implements MetaData {
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public String getDmsRelationName() {
+		return dmsRelationName;
+	}
+
+	public void setDmsRelationName(String dmsRelationName) {
+		this.dmsRelationName = dmsRelationName;
 	}
 
 }

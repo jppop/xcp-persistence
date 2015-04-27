@@ -17,4 +17,6 @@ public interface DmsQuery {
     
     DmsQuery setMaxResults(int maxResult);
     
+    String asDql();
+    
 }

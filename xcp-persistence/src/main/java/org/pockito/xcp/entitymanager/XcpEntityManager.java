@@ -45,7 +45,8 @@ import com.google.common.base.Strings;
 
 public class XcpEntityManager implements DmsEntityManager {
 
-	private static final String DMS_RELATION_TYPE = "dm_relation";
+	public static final String DMS_RELATION_TYPE = "dm_relation";
+	public static final String DOCUMENTUM_NAMESPACE = "dm";
 
 	private Logger logger = LoggerFactory.getLogger(XcpEntityManager.class);
 
@@ -477,7 +478,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		if (dmsParent == null) {
 			throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(parentObjectId));
 		}
-		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsType(), new DfId(childObjectId), null, false,
+		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false,
 				ai.getLabel());
 
 		return relationObj;
@@ -521,7 +522,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 		if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
 //			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
-			return getDmsObj(dfSession, DMS_RELATION_TYPE, PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
+			return getDmsObj(dfSession, ai.getDmsType(), PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
 		} else {
 			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
 		}
@@ -616,8 +617,8 @@ public class XcpEntityManager implements DmsEntityManager {
 		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parent);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select c.r_object_id").append(" from dm_relation r, ").append(childAi.getDmsType()).append(" c")
-				.append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+		buffer.append("select c.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(childAi.getDmsType()).append(" c")
+				.append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
 				.append(" and r.parent_id = '").append(parentObjectId).append("'")
 				.append(" and r.child_id = c.r_object_id");
 		if (dqlFilter.isPresent()) {
@@ -635,8 +636,8 @@ public class XcpEntityManager implements DmsEntityManager {
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(child);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select p.r_object_id").append(" from dm_relation r, ").append(parentAi.getDmsType())
-				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+		buffer.append("select p.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(parentAi.getDmsType())
+				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
 				.append(" and r.child_id = '").append(childObjectId).append("'")
 				.append(" and r.parent_id = p.r_object_id");
 		if (dqlFilter.isPresent()) {

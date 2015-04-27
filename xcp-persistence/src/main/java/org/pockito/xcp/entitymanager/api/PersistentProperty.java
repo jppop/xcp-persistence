@@ -40,6 +40,10 @@ public abstract class PersistentProperty {
 	
 	protected final AnnotatedElement element;
 
+	public AnnotatedElement getElement() {
+		return element;
+	}
+
 	protected PersistentProperty(final AnnotatedElement annotatedElement) {
 		this.element = annotatedElement;
 	}

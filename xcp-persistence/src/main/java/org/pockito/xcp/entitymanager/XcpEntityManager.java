@@ -207,7 +207,7 @@ public class XcpEntityManager implements DmsEntityManager {
 				cachePut(newInstance, ai);
 			}
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey));
+			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey), e);
 		} finally {
 			releaseSession(dfSession);
 		}

@@ -37,7 +37,7 @@ public class PersistentField extends PersistentProperty {
                     break;
                 }
             }
-            if (getter == null || setter == null) throw new IllegalArgumentException(Message.E_NO_JAVABEAN.get());
+            if (getter == null || setter == null) throw new IllegalArgumentException(Message.E_NO_JAVABEAN.get(field.getDeclaringClass().getName(), field.getName()));
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(Message.E_REFLECTION_FIELD.get(field.toString()));
         }

@@ -1,31 +1,22 @@
 package org.pockito.xcp.entitymanager.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.pockito.xcp.entitymanager.query.RightExpression.*;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.pockito.xcp.entitymanager.NotYetImplemented;
 import org.pockito.xcp.entitymanager.PropertyConstants;
 import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.XcpEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
-import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
-import org.pockito.xcp.entitymanager.api.DmsBeanQuery.QueryType;
-import org.pockito.xcp.exception.XcpPersistenceException;
-import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.Person;
 import org.pockito.xcp.test.domain.Task;
 import org.pockito.xcp.test.domain.TaskPerson;
-import org.pockito.xcp.test.domain.WfEmailTemplate;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RelationQueryTest {

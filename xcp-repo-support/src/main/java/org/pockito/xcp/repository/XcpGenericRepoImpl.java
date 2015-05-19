@@ -180,4 +180,18 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 		this.autoCommit = autoCommit;
 	}
 
+	@Override
+	public String getAttachment(T entity) {
+		return "dummy";
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getAttachment(T entity, String filename) {
+		return filename;
+		// TODO Auto-generated method stub
+		
+	}
+
 }

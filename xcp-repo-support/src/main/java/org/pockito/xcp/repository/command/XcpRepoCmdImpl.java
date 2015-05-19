@@ -424,4 +424,16 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 		this.password = password;
 	}
 
+	@Override
+	public void setContentDownloaderRootPath(String path) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setFilenameBuilder(FilenameBuilder builder) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

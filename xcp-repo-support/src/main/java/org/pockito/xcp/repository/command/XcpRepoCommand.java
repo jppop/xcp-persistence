@@ -56,6 +56,7 @@ public interface XcpRepoCommand {
     String getAttachment(Object entity, String filename);
     XcpRepoCommand removeAttachment(Object entity);
     void setContentDownloaderRootPath(String path);
+    String getRootPath();
     void setFilenameBuilder(FilenameBuilder builder);
 
     // connect the Command to the repository (through an entity manager)

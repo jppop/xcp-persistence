@@ -58,6 +58,8 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private Object owner;
 
+	private String rootPath;
+
 	@Inject
 	XcpRepoCmdImpl(DmsEntityManagerFactory emFactory) {
 		this.emFactory = emFactory;
@@ -426,8 +428,12 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	@Override
 	public void setContentDownloaderRootPath(String path) {
-		// TODO Auto-generated method stub
-		
+		rootPath = path;
+	}
+	
+	@Override
+	public String getRootPath() {
+		return rootPath;
 	}
 
 	@Override

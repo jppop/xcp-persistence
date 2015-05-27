@@ -182,16 +182,12 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	@Override
 	public String getAttachment(T entity) {
-		return "dummy";
-		// TODO Auto-generated method stub
-		
+		return cmd().getAttachment(entity, cmd().getRootPath());
 	}
 
 	@Override
 	public String getAttachment(T entity, String filename) {
-		return filename;
-		// TODO Auto-generated method stub
-		
+		return cmd().getAttachment(entity, filename);
 	}
 
 }

@@ -31,7 +31,7 @@ public interface DmsEntityManager {
 
 	void addAttachment(Object entity, String filename, String contentType);
 
-	String getAttachment(Object entity, String filename);
+	String getAttachment(Object entity, String folder, String filename);
 
 	Transaction getTransaction();
 

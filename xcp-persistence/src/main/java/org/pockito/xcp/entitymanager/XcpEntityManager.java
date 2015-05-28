@@ -2,6 +2,7 @@ package org.pockito.xcp.entitymanager;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -358,11 +359,13 @@ public class XcpEntityManager implements DmsEntityManager {
 	}
 
 	@Override
-	public String getAttachment(final Object entity, final String filename) {
+	public String getAttachment(final Object entity, final String folder, final String filename) {
 
 		checkNotNull(entity);
+		checkNotNull(folder);
 		checkNotNull(filename);
 
+		String filePath = folder + File.separator + filename;
 		String contentFile = null;
 
 		// get annotation info
@@ -388,7 +391,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			}
 
 			// get the content
-			contentFile = dmsObj.getFile(filename);
+			contentFile = dmsObj.getFile(filePath);
 
 		} catch (XcpPersistenceException e) {
 			throw e;

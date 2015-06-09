@@ -58,6 +58,8 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	private Object owner;
 
+	private String rootPath;
+
 	@Inject
 	XcpRepoCmdImpl(DmsEntityManagerFactory emFactory) {
 		this.emFactory = emFactory;
@@ -291,8 +293,8 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	}
 
 	@Override
-	public String getAttachment(Object entity, String filename) {
-		return em().getAttachment(entity, filename);
+	public String getAttachment(Object entity, String folder, String filename) {
+		return em().getAttachment(entity, folder, filename);
 	}
 
 	@Override
@@ -422,6 +424,22 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@Override
+	public void setContentDownloaderRootPath(String path) {
+		rootPath = path;
+	}
+	
+	@Override
+	public String getRootPath() {
+		return rootPath;
+	}
+
+	@Override
+	public void setFilenameBuilder(FilenameBuilder builder) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

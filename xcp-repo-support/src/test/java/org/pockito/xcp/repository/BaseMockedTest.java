@@ -78,15 +78,16 @@ public class BaseMockedTest {
 			@Override
 			protected void configure() {
 				loadProperties(binder());
-				requestStaticInjection(XcpRepoCmdFactory.class);
+//				requestStaticInjection(XcpRepoCmdFactory.class);
 				bind(DmsEntityManagerFactory.class).toInstance(emFactory);
 				if (mockXcpCmd) {
-					bind(XcpRepoCommand.class).toInstance(mockCmd);
+					bind(XcpRepoCommand.class).annotatedWith(Names.named("XcpRepoCommand")).toInstance(mockCmd);
 //					bind(XcpRepoCommand.class).toProvider(XcpCommandProvider.class);
 				} else {
-					bind(XcpRepoCommand.class).to(XcpRepoCmdImpl.class);
+					bind(XcpRepoCommand.class).annotatedWith(Names.named("XcpRepoCommand")).to(XcpRepoCmdImpl.class);
 				}
-				
+				requestInjection(XcpRepoCmdFactory.instance);
+
 				when(emFactory.createDmsEntityManager(Matchers.<Map<String, Object>>any())).thenReturn(em);
 				when(em.getTransaction()).thenReturn(txMock);
 

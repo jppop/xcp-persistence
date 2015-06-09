@@ -38,6 +38,10 @@ public abstract class AbstractQuery {
 	public DctmDriver dctmDriver() {
 		return dctmDriver;
 	}
+	
+	public String asDql() {
+		return getQuery();
+	}
 
 	public String getQuery() {
 		return qlString;

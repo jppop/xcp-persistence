@@ -13,6 +13,10 @@ public interface XcpGenericRepo<T> {
 	 */
 	void add(T object);
 
+	String getAttachment(T entity, String filename);
+
+	String getAttachment(T entity, String folder, String filename);
+
 	/**
 	 * Adds a list of objects
 	 * @param objects

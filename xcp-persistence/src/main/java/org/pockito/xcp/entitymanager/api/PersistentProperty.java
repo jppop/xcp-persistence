@@ -40,6 +40,10 @@ public abstract class PersistentProperty {
 	
 	protected final AnnotatedElement element;
 
+	public AnnotatedElement getElement() {
+		return element;
+	}
+
 	protected PersistentProperty(final AnnotatedElement annotatedElement) {
 		this.element = annotatedElement;
 	}
@@ -70,7 +74,7 @@ public abstract class PersistentProperty {
 			if (Collection.class.isAssignableFrom(rawClass)) {
 				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
 			}
-			if (rawClass.isAssignableFrom(Boolean.class)) {
+			if (rawClass.isAssignableFrom(boolean.class)) {
 				getSetter().invoke(target, value == null ? false : value.asBoolean());
 			} else if (rawClass.isAssignableFrom(int.class)) {
 				getSetter().invoke(target, value == null ? -1 : value.asInteger());
@@ -93,7 +97,7 @@ public abstract class PersistentProperty {
 		Class<?> rawClass = getPropertyClass();
 		Object obj = null;
 		if (value != null) {
-			if (rawClass.isAssignableFrom(Boolean.class)) {
+			if (rawClass.isAssignableFrom(boolean.class)) {
 				obj = value.asBoolean();
 			} else if (rawClass.isAssignableFrom(int.class)) {
 				obj = value.asInteger();

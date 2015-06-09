@@ -137,6 +137,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 			}
 		}
 		if (this.xcpCmd == null) {
+			
 			throw new IllegalStateException(Message.E_CMD_CREATION_FAILED.get());
 		}
 		return this.xcpCmd;
@@ -145,6 +146,8 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	protected void unregisterCmd() {
 		// reset the commands
 		XcpRepoCmdFactory.instance.unregisterSharedCmd();
+		// FIX: reset the owned command
+		xcpCmd = null;
 	}
 
 	protected XcpRepoCommand createCmd() {
@@ -178,6 +181,16 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	protected void setAutoCommit(boolean autoCommit) {
 		this.autoCommit = autoCommit;
+	}
+
+	@Override
+	public String getAttachment(T entity, String filename) {
+		return getAttachment(entity, cmd().getRootPath(), filename);
+	}
+
+	@Override
+	public String getAttachment(T entity, String folder, String filename) {
+		return cmd().getAttachment(entity, folder, filename);
 	}
 
 }

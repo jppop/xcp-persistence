@@ -256,13 +256,13 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertTrue(document.getContentSize() > 0);
 			assertEquals("text", document.getContentType());
 
-			File tempFile = File.createTempFile(expectedName, ".expected");
-			tempFile.deleteOnExit();
+			File tempDir = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempDir.deleteOnExit();
 
-			final String actualFilename = em.getAttachment(document, tempFile.getAbsolutePath());
-			assertEquals(tempFile.getAbsolutePath(), actualFilename);
+			final String actualFilename = em.getAttachment(document, tempDir.getAbsolutePath(), expectedName);
+			assertEquals(tempDir.getAbsolutePath() + File.separator + expectedName, actualFilename);
 
-			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
+			String actualContent = Files.toString(tempDir, Charsets.UTF_8);
 			assertEquals("sample", actualContent);
 
 		} finally {
@@ -405,6 +405,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// find child relatives using an assisted query
 			DmsTypedQuery<Document> assistedQuery = em.createChildRelativesQuery(wf, WfEmailTemplate.class,
 					Document.class, null);
+			
+			assertEquals("select c.r_object_id from dm_relation r, dm_document c"
+					+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = '" + parentId + "'"
+					+ " and r.child_id = c.r_object_id", assistedQuery.asDql());
 
 			emailTemplates = assistedQuery.getResultList();
 

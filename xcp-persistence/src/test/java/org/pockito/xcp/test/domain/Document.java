@@ -31,7 +31,7 @@ public class Document extends PersistedObject {
 	private String status;
 
 	@Attribute(name = "i_has_folder", readonly = true)
-	private Boolean hasFolder;
+	private boolean hasFolder;
 
 	@Attribute(name = "a_content_type", readonly = true)
 	private String contentType;
@@ -86,11 +86,11 @@ public class Document extends PersistedObject {
 		this.status = status;
 	}
 
-	public Boolean getHasFolder() {
+	public boolean getHasFolder() {
 		return hasFolder;
 	}
 
-	public void setHasFolder(Boolean hasFolder) {
+	public void setHasFolder(boolean hasFolder) {
 		this.hasFolder = hasFolder;
 	}
 

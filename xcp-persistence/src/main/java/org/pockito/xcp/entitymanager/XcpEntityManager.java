@@ -2,6 +2,7 @@ package org.pockito.xcp.entitymanager;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +46,8 @@ import com.google.common.base.Strings;
 
 public class XcpEntityManager implements DmsEntityManager {
 
-	private static final String DMS_RELATION_TYPE = "dm_relation";
+	public static final String DMS_RELATION_TYPE = "dm_relation";
+	public static final String DOCUMENTUM_NAMESPACE = "dm";
 
 	private Logger logger = LoggerFactory.getLogger(XcpEntityManager.class);
 
@@ -207,7 +209,7 @@ public class XcpEntityManager implements DmsEntityManager {
 				cachePut(newInstance, ai);
 			}
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey));
+			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey), e);
 		} finally {
 			releaseSession(dfSession);
 		}
@@ -299,7 +301,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		} catch (XcpPersistenceException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_PERSIST_FAILED.get(entity.toString()));
+			throw new XcpPersistenceException(Message.E_PERSIST_FAILED.get(entity.toString()), e);
 		} finally {
 			releaseSession(dfSession);
 		}
@@ -350,18 +352,20 @@ public class XcpEntityManager implements DmsEntityManager {
 		} catch (XcpPersistenceException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_ADD_ATTACHMENT_FAILED.get(filename, objectId));
+			throw new XcpPersistenceException(Message.E_ADD_ATTACHMENT_FAILED.get(filename, objectId), e);
 		} finally {
 			releaseSession(dfSession);
 		}
 	}
 
 	@Override
-	public String getAttachment(final Object entity, final String filename) {
+	public String getAttachment(final Object entity, final String folder, final String filename) {
 
 		checkNotNull(entity);
+		checkNotNull(folder);
 		checkNotNull(filename);
 
+		String filePath = folder + File.separator + filename;
 		String contentFile = null;
 
 		// get annotation info
@@ -387,7 +391,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			}
 
 			// get the content
-			contentFile = dmsObj.getFile(filename);
+			contentFile = dmsObj.getFile(filePath);
 
 		} catch (XcpPersistenceException e) {
 			throw e;
@@ -477,7 +481,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		if (dmsParent == null) {
 			throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(parentObjectId));
 		}
-		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsType(), new DfId(childObjectId), null, false,
+		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false,
 				ai.getLabel());
 
 		return relationObj;
@@ -521,7 +525,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 		if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
 //			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
-			return getDmsObj(dfSession, DMS_RELATION_TYPE, PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
+			return getDmsObj(dfSession, ai.getDmsType(), PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
 		} else {
 			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
 		}
@@ -616,8 +620,8 @@ public class XcpEntityManager implements DmsEntityManager {
 		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parent);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select c.r_object_id").append(" from dm_relation r, ").append(childAi.getDmsType()).append(" c")
-				.append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+		buffer.append("select c.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(childAi.getDmsType()).append(" c")
+				.append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
 				.append(" and r.parent_id = '").append(parentObjectId).append("'")
 				.append(" and r.child_id = c.r_object_id");
 		if (dqlFilter.isPresent()) {
@@ -635,8 +639,8 @@ public class XcpEntityManager implements DmsEntityManager {
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(child);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select p.r_object_id").append(" from dm_relation r, ").append(parentAi.getDmsType())
-				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsType()).append("'")
+		buffer.append("select p.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(parentAi.getDmsType())
+				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
 				.append(" and r.child_id = '").append(childObjectId).append("'")
 				.append(" and r.parent_id = p.r_object_id");
 		if (dqlFilter.isPresent()) {

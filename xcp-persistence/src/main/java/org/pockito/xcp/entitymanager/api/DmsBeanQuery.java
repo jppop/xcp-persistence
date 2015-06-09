@@ -18,5 +18,4 @@ public interface DmsBeanQuery<T> extends DmsTypedQuery<T> {
 	
 	int executeUpdate(boolean yesIReallyWantDeleteAll);
 	
-	String asDql();
 }

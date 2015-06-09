@@ -16,6 +16,10 @@ import org.pockito.xcp.entitymanager.api.Transaction;
  */
 public interface XcpRepoCommand {
 
+	public interface FilenameBuilder {
+		String buildFilename(Class<?> entity);
+	}
+	
 	// basic CRUD operations
 	XcpRepoCommand create(Object entity);
 	<T> T find(Class<T> entityClass, Object primaryKey);
@@ -49,8 +53,11 @@ public interface XcpRepoCommand {
     
     // content related
     XcpRepoCommand addAttachment(Object entity, String filename, String contentType);
-    String getAttachment(Object entity, String filename);
+    String getAttachment(Object entity, String folder, String filename);
     XcpRepoCommand removeAttachment(Object entity);
+    void setContentDownloaderRootPath(String path);
+    String getRootPath();
+    void setFilenameBuilder(FilenameBuilder builder);
 
     // connect the Command to the repository (through an entity manager)
 	void connect(String repository, String username, String password);

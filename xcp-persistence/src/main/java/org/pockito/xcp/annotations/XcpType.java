@@ -14,5 +14,5 @@ public @interface XcpType {
 	String name();
 	XcpTypeCategory type() default XcpTypeCategory.BUSINESS_OBJECT;
 	String label() default "";
-	String relationName() default "";
+//	String relationName() default "";
 }

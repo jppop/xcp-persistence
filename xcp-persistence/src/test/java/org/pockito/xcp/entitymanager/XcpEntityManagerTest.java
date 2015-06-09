@@ -256,13 +256,13 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertTrue(document.getContentSize() > 0);
 			assertEquals("text", document.getContentType());
 
-			File tempFile = File.createTempFile(expectedName, ".expected");
-			tempFile.deleteOnExit();
+			File tempDir = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempDir.deleteOnExit();
 
-			final String actualFilename = em.getAttachment(document, tempFile.getAbsolutePath());
-			assertEquals(tempFile.getAbsolutePath(), actualFilename);
+			final String actualFilename = em.getAttachment(document, tempDir.getAbsolutePath(), expectedName);
+			assertEquals(tempDir.getAbsolutePath() + File.separator + expectedName, actualFilename);
 
-			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
+			String actualContent = Files.toString(tempDir, Charsets.UTF_8);
 			assertEquals("sample", actualContent);
 
 		} finally {

@@ -72,7 +72,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = getRawClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get(getFieldName()));
 			}
 			if (rawClass.isAssignableFrom(boolean.class)) {
 				getSetter().invoke(target, value == null ? false : value.asBoolean());
@@ -117,7 +117,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = getPropertyClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get(getFieldName()));
 			}
 			if (anObject != null) {
 				if (rawClass.isAssignableFrom(boolean.class)) {
@@ -147,7 +147,7 @@ public abstract class PersistentProperty {
 		try {
 			Class<?> rawClass = value.getClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
-				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
+				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get(rawClass.getName()));
 			}
 			if (value != null) {
 				if (rawClass.isAssignableFrom(boolean.class)) {

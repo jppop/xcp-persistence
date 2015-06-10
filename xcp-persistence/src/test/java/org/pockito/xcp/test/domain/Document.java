@@ -46,6 +46,9 @@ public class Document extends PersistedObject {
 	@Attribute(name = "r_version_label", readonly = true)
 	protected Collection<String> versionLabels = new ArrayList<String>();
 
+	@Attribute(name = "keywords")
+	protected Collection<String> keywords = new ArrayList<String>();
+
 	public String getName() {
 		return name;
 	}
@@ -118,6 +121,14 @@ public class Document extends PersistedObject {
 		this.versionLabels = versionLabels;
 	}
 
+	public Collection<String> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(Collection<String> keywords) {
+		this.keywords = keywords;
+	}
+
 	public String getParentFolder() {
 		return parentFolder;
 	}
@@ -129,8 +140,8 @@ public class Document extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"Document[id=%s, name=%s, versions=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
-				getId(), name, Arrays.toString(versionLabels.toArray()),
+				"Document[id=%s, name=%s, versions=%s, keywords=%s, creation date=%tc, size=%d, parent folder=%s, vstamp=%d]",
+				getId(), name, Arrays.toString(versionLabels.toArray()), Arrays.toString(keywords.toArray()),
 				creationDate, contentSize, getParentFolder(), getvStamp()
 				);
 	}

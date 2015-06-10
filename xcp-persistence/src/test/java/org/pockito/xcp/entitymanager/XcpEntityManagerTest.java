@@ -9,7 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
 			dmDocument.setString("subject", "test purpose");
 			dmDocument.setString("a_status", "draft");
+			dmDocument.setRepeatingString("keywords", 0, "k-one");
+			dmDocument.setRepeatingString("keywords", 1, "k-two");
 			dmDocument.save();
 			String docId = dmDocument.getObjectId().toString();
 
@@ -77,6 +81,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertNotNull(document);
 			assertEquals(expectedName, document.getName());
 			assertEquals("draft", document.getStatus());
+			assertEquals(2, document.getKeywords().size());
+			String[] actualKeywords = (String[]) document.getKeywords().toArray(new String[document.getKeywords().size()]);
+			assertEquals("k-one", actualKeywords[0]);
+			assertEquals("k-two", actualKeywords[1]);
 
 		} finally {
 			getRepository().releaseSession(session);
@@ -97,6 +105,11 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			c.set(1965, 2, 28);
 			document.setCreationDate(c.getTime());
 
+			// repeating values
+			Collection<String> keywords = new ArrayList<String> ();
+			keywords.add("k-one");
+			keywords.add("k-two");
+			document.setKeywords(keywords);
 			em.persist(document);
 
 			assertNotNull(document.getId());
@@ -110,6 +123,10 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals("draft", dmDocument.getStatus());
 			// should be overridden by the repository
 			assertTrue(dmDocument.getCreationDate().getYear() == today.get(Calendar.YEAR));
+			// keywords
+			assertEquals(2, dmDocument.getValueCount("keywords"));
+			assertEquals("k-one", dmDocument.getRepeatingString("keywords", 0));
+			assertEquals("k-two", dmDocument.getRepeatingString("keywords", 1));
 
 		} finally {
 			getRepository().releaseSession(session);
@@ -256,13 +273,13 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertTrue(document.getContentSize() > 0);
 			assertEquals("text", document.getContentType());
 
-			File tempDir = File.createTempFile("temp", Long.toString(System.nanoTime()));
-			tempDir.deleteOnExit();
+			File tempFile = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempFile.deleteOnExit();
 
-			final String actualFilename = em.getAttachment(document, tempDir.getAbsolutePath(), expectedName);
-			assertEquals(tempDir.getAbsolutePath() + File.separator + expectedName, actualFilename);
+			final String actualFilename = em.getAttachment(document, tempFile.getParent(), tempFile.getName());
+			assertEquals(tempFile.getAbsolutePath(), actualFilename);
 
-			String actualContent = Files.toString(tempDir, Charsets.UTF_8);
+			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
 			assertEquals("sample", actualContent);
 
 		} finally {

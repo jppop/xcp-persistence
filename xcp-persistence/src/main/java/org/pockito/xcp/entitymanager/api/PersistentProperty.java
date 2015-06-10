@@ -115,7 +115,7 @@ public abstract class PersistentProperty {
 	public IDfValue objToDfValue(final Object anObject) {
 		IDfValue dfValue = null;
 		try {
-			Class<?> rawClass = getRawClass();
+			Class<?> rawClass = getPropertyClass();
 			if (Collection.class.isAssignableFrom(rawClass)) {
 				throw new IllegalAccessException(Message.E_COLLECTION_FIELD.get());
 			}

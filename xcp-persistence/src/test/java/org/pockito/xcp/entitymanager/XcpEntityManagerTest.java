@@ -25,6 +25,7 @@ import org.pockito.xcp.entitymanager.api.DmsQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.Transaction;
 import org.pockito.xcp.test.domain.Document;
+import org.pockito.xcp.test.domain.Folder;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
 
 import com.documentum.fc.client.DfQuery;
@@ -82,7 +83,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(expectedName, document.getName());
 			assertEquals("draft", document.getStatus());
 			assertEquals(2, document.getKeywords().size());
-			String[] actualKeywords = (String[]) document.getKeywords().toArray(new String[document.getKeywords().size()]);
+			String[] actualKeywords = (String[]) document.getKeywords().toArray(
+					new String[document.getKeywords().size()]);
 			assertEquals("k-one", actualKeywords[0]);
 			assertEquals("k-two", actualKeywords[1]);
 
@@ -106,7 +108,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			document.setCreationDate(c.getTime());
 
 			// repeating values
-			Collection<String> keywords = new ArrayList<String> ();
+			Collection<String> keywords = new ArrayList<String>();
 			keywords.add("k-one");
 			keywords.add("k-two");
 			document.setKeywords(keywords);
@@ -176,6 +178,57 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// should not be persisted yet
 			dmsObj = session.getObjectByQualification("dm_sysobject where r_object_id = '" + document.getId() + "'");
 			assertNull(dmsObj);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testCreateFolderAndSubFolderWithinTransaction() throws DfException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			String expectedName = "_#_" + name.getMethodName();
+
+			Folder folder = new Folder();
+			folder.setName(expectedName);
+			folder.setParentFolder("/Temp");
+
+			Document document = new Document();
+			document.setName(expectedName);
+			document.setStatus("draft");
+
+			// link the document to its parent folder
+			document.setParentFolder(folder.getParentFolder() + "/" + folder.getName());
+
+			Transaction tx = em.getTransaction();
+			tx.begin();
+			em.persist(folder);
+			em.persist(document);
+
+			assertNotNull(folder.getId());
+			assertNotNull(document.getId());
+
+			// commit now
+			tx.commit();
+			
+			// addToDeleteList(new DfId(document.getId()));
+			addToDeleteList(new DfId(folder.getId()));
+
+			// retrieve the created objects
+			IDfPersistentObject dmsFolder = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ folder.getId() + "'");
+			assertNotNull(dmsFolder);
+			IDfPersistentObject dmsDoc = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ document.getId() + "'");
+			assertNotNull(dmsDoc);
+
+			final IDfId dfId = dmsDoc.getId("i_folder_id");
+			final IDfFolder parentFolder = (IDfFolder) session.getObject(dfId);
+			String docPath = parentFolder.getFolderPath(0);
+			assertEquals(folder.getParentFolder() + "/" + document.getName(), docPath);
 
 		} finally {
 			getRepository().releaseSession(session);
@@ -406,8 +459,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			DmsTypedQuery<Document> query = em.createNativeQuery(
 					"select t.r_object_id from dm_relation r, dm_document t"
 							+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = :wfId"
-							+ " and r.child_id = t.r_object_id order by 1", Document.class)
-					.setParameter("wfId", wf.getId());
+							+ " and r.child_id = t.r_object_id order by 1", Document.class).setParameter("wfId",
+					wf.getId());
 
 			List<Document> emailTemplates = query.getResultList();
 
@@ -422,7 +475,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// find child relatives using an assisted query
 			DmsTypedQuery<Document> assistedQuery = em.createChildRelativesQuery(wf, WfEmailTemplate.class,
 					Document.class, null);
-			
+
 			assertEquals("select c.r_object_id from dm_relation r, dm_document c"
 					+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = '" + parentId + "'"
 					+ " and r.child_id = c.r_object_id", assistedQuery.asDql());
@@ -485,7 +538,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(template.getId(), childId.toString());
 			// no more child
 			assertTrue(childRelatives.next() == false);
-			
+
 			// check extra relation attributes
 			final IDfRelation relDmsObj = (IDfRelation) session.getObject(relId);
 			assertEquals(2, relDmsObj.getInt("order_no"));

@@ -21,6 +21,7 @@ import org.pockito.xcp.entitymanager.query.XcpTypedQuery;
 import org.pockito.xcp.repository.command.XcpRepoCmdFactory;
 import org.pockito.xcp.repository.command.XcpRepoCommand;
 import org.pockito.xcp.repository.test.domain.EmailTemplate;
+import org.pockito.xcp.repository.test.domain.Folder;
 import org.pockito.xcp.repository.test.domain.WfEmailTemplate;
 import org.pockito.xcp.repository.test.domain.Workflow;
 import org.pockito.xcp.repository.test.repo.EmailTemplateRepoImpl;
@@ -88,6 +89,48 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 		// check internal command has been reseted
 		assertNull(wfRepo.getCurrentCmd());
 		assertNull(templateRepo.getCurrentCmd());
+		assertNull(XcpRepoCmdFactory.instance.getSharedCmd());
+
+	}
+
+	@Test
+	public void testCreateFoldersWithSharedCmd() {
+
+		// create the repositories (in real life, should be injected)
+		XcpGenericRepoImpl<Folder> repo = new XcpGenericRepoImpl<Folder>();
+
+		// create a shared command
+		XcpRepoCommand sharedCmd = repo.createSharedCmd();
+		assertEquals(sharedCmd, XcpRepoCmdFactory.instance.getSharedCmd());
+
+		// add the parent folder
+		Folder parentFolder = new Folder();
+		parentFolder.setName("parent folder");
+		parentFolder.setParentFolder("/Level 1");
+		repo.add(parentFolder);
+
+		// add the sub folder
+		Folder subFolder = new Folder();
+		subFolder.setName("sub folder");
+		subFolder.setParentFolder("/Level 1/" + parentFolder.getName());
+		repo.add(subFolder);
+
+		InOrder order = inOrder(sharedCmd);
+		order.verify(sharedCmd).setOwner(repo);
+		;
+		order.verify(sharedCmd).withinTransaction();
+		order.verify(sharedCmd).create(parentFolder);
+		order.verify(sharedCmd).create(subFolder);
+
+		// verify no commit calls has been done
+		verify(sharedCmd, never()).commit();
+
+		// now commit the shared command
+		repo.commitSharedCmd();
+		order.verify(sharedCmd).commit();
+
+		// check internal command has been reseted
+		assertNull(repo.getCurrentCmd());
 		assertNull(XcpRepoCmdFactory.instance.getSharedCmd());
 
 	}

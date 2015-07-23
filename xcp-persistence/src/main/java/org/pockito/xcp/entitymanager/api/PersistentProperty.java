@@ -188,6 +188,11 @@ public abstract class PersistentProperty {
 		return rawClass.isAssignableFrom(c);
 	}
 
+	public boolean isPropClassAssignableFrom(Class<?> c) {
+		Class<?> propClass = getPropertyClass();
+		return propClass.isAssignableFrom(c);
+	}
+
 	public abstract Method getGetter();
 
 	public abstract Method getSetter();

@@ -182,7 +182,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 						// parent folder
 						logger.trace("reading parent folder property {}", field.getFieldName());
-						if (field.isAssignableFrom(String.class)) {
+						if (field.isPropClassAssignableFrom(String.class)) {
 							if (field.isRepeating()) {
 								List<Object> values = new ArrayList<Object>();
 								final String attributeName = field.getAttributeName();

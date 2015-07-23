@@ -54,6 +54,7 @@ public interface XcpRepoCommand {
     // content related
     XcpRepoCommand addAttachment(Object entity, String filename, String contentType);
     String getAttachment(Object entity, String folder, String filename);
+    String getAttachment(Object entity, String folder, String filename, String contentType);
     XcpRepoCommand removeAttachment(Object entity);
     void setContentDownloaderRootPath(String path);
     String getRootPath();

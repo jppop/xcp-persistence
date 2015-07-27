@@ -217,7 +217,8 @@ public class XcpEntityManager implements DmsEntityManager {
 	private IDfValue getFolderPathAsDfValue(IDfSession dfSession, IDfPersistentObject dmsObj, int index) throws DfException {
 		final IDfId dfId = dmsObj.getId(PersistentProperty.DMS_ATTR_FOLDER_ID);
 		final IDfFolder parentFolder = (IDfFolder) dfSession.getObject(dfId);
-		final IDfValue dfValue = new DfValue(parentFolder.getFolderPath(index));
+		// ISSUE @2 -- Out of bounds
+		final IDfValue dfValue = new DfValue(parentFolder.getFolderPath(0));
 		return dfValue;
 	}
 

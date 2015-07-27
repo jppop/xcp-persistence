@@ -31,6 +31,7 @@ import org.pockito.xcp.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
 import com.documentum.fc.client.IDfPersistentObject;
 import com.documentum.fc.client.IDfRelation;
@@ -58,8 +59,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	private final SessionCacheWrapper sessionCache;
 	private Transaction currentTx = null;
 
-	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> props,
-			DctmDriver dctmDriver) {
+	public XcpEntityManager(XcpEntityManagerFactory dmsEntityManagerFactoryImpl, Map<String, ?> props, DctmDriver dctmDriver) {
 		this.factory = dmsEntityManagerFactoryImpl;
 		this.dctmDriver = dctmDriver;
 		this.properties = props;
@@ -102,7 +102,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	public void remove(Object entity) {
 
 		checkNotNull(entity);
-		
+
 		// get the id of the object to be deleted
 		final AnnotationInfo ai = getAnnotationInfo(entity.getClass());
 		final String objectId = (String) ai.getIdMethod().getProperty(entity);
@@ -164,8 +164,7 @@ public class XcpEntityManager implements DmsEntityManager {
 							field.setProperty(newInstance, dfValue);
 						}
 
-					} else if ((field.isChild() || field.isParent())
-							&& (ai.getTypeCategory() == XcpTypeCategory.RELATION)) {
+					} else if ((field.isChild() || field.isParent()) && (ai.getTypeCategory() == XcpTypeCategory.RELATION)) {
 
 						// relation field
 
@@ -174,8 +173,7 @@ public class XcpEntityManager implements DmsEntityManager {
 						if (beanClass.isPrimitive()) {
 							throw new XcpPersistenceException(Message.E_NOT_PRIMITIVE_TYPE.get(field.getFieldName()));
 						}
-						String foreignKey = field.isChild() ? PersistentProperty.DMS_ATTR_CHILD_ID
-								: PersistentProperty.DMS_ATTR_PARENT_ID;
+						String foreignKey = field.isChild() ? PersistentProperty.DMS_ATTR_CHILD_ID : PersistentProperty.DMS_ATTR_PARENT_ID;
 						IDfId externalKey = dmsObj.getId(foreignKey);
 						Object bean = doFind(beanClass, getAnnotationInfo(beanClass), externalKey);
 						field.setProperty(newInstance, bean);
@@ -184,7 +182,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 						// parent folder
 						logger.trace("reading parent folder property {}", field.getFieldName());
-						if (field.isAssignableFrom(String.class)) {
+						if (field.isPropClassAssignableFrom(String.class)) {
 							if (field.isRepeating()) {
 								List<Object> values = new ArrayList<Object>();
 								final String attributeName = field.getAttributeName();
@@ -209,15 +207,14 @@ public class XcpEntityManager implements DmsEntityManager {
 				cachePut(newInstance, ai);
 			}
 		} catch (Exception e) {
-			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String)primaryKey), e);
+			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String) primaryKey), e);
 		} finally {
 			releaseSession(dfSession);
 		}
 		return newInstance;
 	}
 
-	private IDfValue getFolderPathAsDfValue(IDfSession dfSession, IDfPersistentObject dmsObj, int index)
-			throws DfException {
+	private IDfValue getFolderPathAsDfValue(IDfSession dfSession, IDfPersistentObject dmsObj, int index) throws DfException {
 		final IDfId dfId = dmsObj.getId(PersistentProperty.DMS_ATTR_FOLDER_ID);
 		final IDfFolder parentFolder = (IDfFolder) dfSession.getObject(dfId);
 		final IDfValue dfValue = new DfValue(parentFolder.getFolderPath(index));
@@ -236,9 +233,9 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	@Override
 	public void persist(Object entity) {
-		
+
 		checkNotNull(entity);
-		
+
 		// get annotation info
 		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
 		IDfSession dfSession = null;
@@ -320,6 +317,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			throw new IllegalStateException(Message.E_NO_ID_KEY.get());
 		}
 		IDfSession dfSession = null;
+		IDfCollection collection = null;
 		try {
 			// get a DFC session
 			dfSession = getSession();
@@ -335,10 +333,25 @@ public class XcpEntityManager implements DmsEntityManager {
 				throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(objectId));
 			}
 
-			// set the content type
-			dmsObj.setContentType(contentType);
-			// set content
-			dmsObj.setFile(filename);
+			if (dmsObj.getContentType() == null || dmsObj.getContentType().trim().equals("")) {
+				// set the content type
+				dmsObj.setContentType(contentType);
+				// set content
+				dmsObj.setFile(filename);
+			} else {
+				if (dmsObj.getContentType().equals(contentType)) {
+					throw new IllegalStateException(Message.E_ILLEGAL_ADD_RENDITION.get());
+				} else {
+					collection = dmsObj.getRenditions(null);
+					while (collection.next()) {
+						if (collection.getString("full_format").equals(contentType)) {
+							dmsObj.removeRendition(contentType);
+							break;
+						}
+					}
+					dmsObj.addRendition(filename, contentType);
+				}
+			}
 
 			// save dms object
 			dmsObj.save();
@@ -354,6 +367,12 @@ public class XcpEntityManager implements DmsEntityManager {
 		} catch (Exception e) {
 			throw new XcpPersistenceException(Message.E_ADD_ATTACHMENT_FAILED.get(filename, objectId), e);
 		} finally {
+			if (collection != null) {
+				try {
+					collection.close();
+				} catch (DfException e) {
+				}
+			}
 			releaseSession(dfSession);
 		}
 	}
@@ -365,6 +384,20 @@ public class XcpEntityManager implements DmsEntityManager {
 		checkNotNull(folder);
 		checkNotNull(filename);
 
+		return doGetAttachment(entity, folder, filename, Optional.fromNullable((String)null));
+	}
+
+	@Override
+	public String getAttachment(Object entity, String folder, String filename, String contentType) {
+		checkNotNull(entity);
+		checkNotNull(folder);
+		checkNotNull(filename);
+		checkNotNull(contentType);
+
+		return doGetAttachment(entity, folder, filename, Optional.fromNullable(contentType));
+	}
+
+	private String doGetAttachment(Object entity, String folder, String filename, Optional<String> contentType) {
 		String filePath = folder + File.separator + filename;
 		String contentFile = null;
 
@@ -391,8 +424,8 @@ public class XcpEntityManager implements DmsEntityManager {
 			}
 
 			// get the content
-			contentFile = dmsObj.getFile(filePath);
-
+			contentFile = dmsObj.getFileEx(filePath, contentType.or(dmsObj.getContentType()), 0, false);
+			
 		} catch (XcpPersistenceException e) {
 			throw e;
 		} catch (Exception e) {
@@ -403,7 +436,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		return contentFile;
 	}
-
+	
 	@Override
 	public Transaction getTransaction() {
 		if (this.currentTx == null) {
@@ -441,8 +474,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	private IDfPersistentObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai)
-			throws DfException {
+	private IDfPersistentObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
 		// create a DMS object if needed
 		IDfPersistentObject dmsObj = null;
 		String identifier = (String) ai.getIdMethod().getProperty(entity);
@@ -457,8 +489,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	private IDfPersistentObject createRelationObject(IDfSession dfSession, Object entity, AnnotationInfo ai)
-			throws DfException {
+	private IDfPersistentObject createRelationObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
 
 		// retrieve the parent_id and child_id
 		PersistentProperty parentMethod = ai.getParentMethod();
@@ -476,13 +507,11 @@ public class XcpEntityManager implements DmsEntityManager {
 		final AnnotationInfo childAi = getAnnotationInfo(childObject.getClass());
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(childObject);
 
-		IDfPersistentObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod()
-				.getAttributeName(), parentObjectId, -1);
+		IDfPersistentObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod().getAttributeName(), parentObjectId, -1);
 		if (dmsParent == null) {
 			throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(parentObjectId));
 		}
-		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false,
-				ai.getLabel());
+		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false, ai.getLabel());
 
 		return relationObj;
 	}
@@ -518,21 +547,19 @@ public class XcpEntityManager implements DmsEntityManager {
 		return getDmsObj(dfSession, ai, objectId, -1);
 	}
 
-	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp)
-			throws DfException {
+	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp) throws DfException {
 		if (Strings.isNullOrEmpty(objectId.toString())) {
 			return null;
 		}
 		if (ai.getTypeCategory() == XcpTypeCategory.RELATION) {
-//			return getDmsRelationObj(dfSession, ai, objectId, vstamp);
+			// return getDmsRelationObj(dfSession, ai, objectId, vstamp);
 			return getDmsObj(dfSession, ai.getDmsType(), PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
 		} else {
 			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
 		}
 	}
 
-	private IDfPersistentObject getDmsObj(IDfSession dfSession, String objectType, String keyIdentifier,
-			Object objectId, int vstamp) throws DfException {
+	private IDfPersistentObject getDmsObj(IDfSession dfSession, String objectType, String keyIdentifier, Object objectId, int vstamp) throws DfException {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(objectType);
 		buffer.append(" where ");
@@ -594,25 +621,20 @@ public class XcpEntityManager implements DmsEntityManager {
 	public <T> DmsBeanQuery<T> createBeanQuery(Class<T> entityClass) {
 		return new XcpBeanQuery<T>(this, entityClass);
 	}
-	
+
 	@Override
-	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass,
-			Class<T> childClass, String optionalDqlFilter) {
-		final String dqlQuery = buildChildRelative(parent, relationClass, childClass,
-				Optional.fromNullable(optionalDqlFilter));
+	public <T, R> DmsTypedQuery<T> createChildRelativesQuery(Object parent, Class<R> relationClass, Class<T> childClass, String optionalDqlFilter) {
+		final String dqlQuery = buildChildRelative(parent, relationClass, childClass, Optional.fromNullable(optionalDqlFilter));
 		return new XcpTypedQuery<T>(this, dqlQuery, childClass, true);
 	}
 
 	@Override
-	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass,
-			Class<T> parentClass, String optionalDqlFilter) {
-		final String dqlQuery = buildParentRelative(child, relationClass, parentClass,
-				Optional.fromNullable(optionalDqlFilter));
+	public <T, R> DmsTypedQuery<T> createParentRelativesQuery(Object child, Class<R> relationClass, Class<T> parentClass, String optionalDqlFilter) {
+		final String dqlQuery = buildParentRelative(child, relationClass, parentClass, Optional.fromNullable(optionalDqlFilter));
 		return new XcpTypedQuery<T>(this, dqlQuery, parentClass, true);
 	}
 
-	private <T, R> String buildChildRelative(Object parent, Class<R> relationClass, Class<T> childClass,
-			Optional<String> dqlFilter) {
+	private <T, R> String buildChildRelative(Object parent, Class<R> relationClass, Class<T> childClass, Optional<String> dqlFilter) {
 
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo parentAi = getAnnotationInfo(parent.getClass());
@@ -621,17 +643,15 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("select c.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(childAi.getDmsType()).append(" c")
-				.append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
-				.append(" and r.parent_id = '").append(parentObjectId).append("'")
-				.append(" and r.child_id = c.r_object_id");
+				.append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'").append(" and r.parent_id = '").append(parentObjectId)
+				.append("'").append(" and r.child_id = c.r_object_id");
 		if (dqlFilter.isPresent()) {
 			buffer.append(" ").append(dqlFilter.get());
 		}
 		return buffer.toString();
 	}
 
-	private <T, R> String buildParentRelative(Object child, Class<R> relationClass, Class<T> parentClass,
-			Optional<String> dqlFilter) {
+	private <T, R> String buildParentRelative(Object child, Class<R> relationClass, Class<T> parentClass, Optional<String> dqlFilter) {
 
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo childAi = getAnnotationInfo(child.getClass());
@@ -639,10 +659,9 @@ public class XcpEntityManager implements DmsEntityManager {
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(child);
 
 		final StringBuffer buffer = new StringBuffer();
-		buffer.append("select p.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(parentAi.getDmsType())
-				.append(" p").append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'")
-				.append(" and r.child_id = '").append(childObjectId).append("'")
-				.append(" and r.parent_id = p.r_object_id");
+		buffer.append("select p.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(parentAi.getDmsType()).append(" p")
+				.append(" where r.relation_name = '").append(relationAi.getDmsRelationName()).append("'").append(" and r.child_id = '").append(childObjectId)
+				.append("'").append(" and r.parent_id = p.r_object_id");
 		if (dqlFilter.isPresent()) {
 			buffer.append(" ").append(dqlFilter.get());
 		}
@@ -652,5 +671,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	SessionCacheWrapper sessionCache() {
 		return sessionCache;
 	}
+
+	
 
 }

@@ -7,7 +7,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,7 +26,9 @@ import org.pockito.dctm.test.RepositoryRequiredTest;
 import org.pockito.xcp.entitymanager.api.DmsQuery;
 import org.pockito.xcp.entitymanager.api.DmsTypedQuery;
 import org.pockito.xcp.entitymanager.api.Transaction;
+import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.test.domain.Document;
+import org.pockito.xcp.test.domain.Folder;
 import org.pockito.xcp.test.domain.WfEmailTemplate;
 
 import com.documentum.fc.client.DfQuery;
@@ -82,7 +86,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(expectedName, document.getName());
 			assertEquals("draft", document.getStatus());
 			assertEquals(2, document.getKeywords().size());
-			String[] actualKeywords = (String[]) document.getKeywords().toArray(new String[document.getKeywords().size()]);
+			String[] actualKeywords = (String[]) document.getKeywords().toArray(
+					new String[document.getKeywords().size()]);
 			assertEquals("k-one", actualKeywords[0]);
 			assertEquals("k-two", actualKeywords[1]);
 
@@ -106,7 +111,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			document.setCreationDate(c.getTime());
 
 			// repeating values
-			Collection<String> keywords = new ArrayList<String> ();
+			Collection<String> keywords = new ArrayList<String>();
 			keywords.add("k-one");
 			keywords.add("k-two");
 			document.setKeywords(keywords);
@@ -183,6 +188,57 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 	}
 
 	@Test
+	public void testCreateFolderAndSubFolderWithinTransaction() throws DfException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			String expectedName = "_#_" + name.getMethodName();
+
+			Folder folder = new Folder();
+			folder.setName(expectedName);
+			folder.setParentFolder("/Temp");
+
+			Document document = new Document();
+			document.setName(expectedName);
+			document.setStatus("draft");
+
+			// link the document to its parent folder
+			document.setParentFolder(folder.getParentFolder() + "/" + folder.getName());
+
+			Transaction tx = em.getTransaction();
+			tx.begin();
+			em.persist(folder);
+			em.persist(document);
+
+			assertNotNull(folder.getId());
+			assertNotNull(document.getId());
+
+			// commit now
+			tx.commit();
+			
+			// addToDeleteList(new DfId(document.getId()));
+			addToDeleteList(new DfId(folder.getId()));
+
+			// retrieve the created objects
+			IDfPersistentObject dmsFolder = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ folder.getId() + "'");
+			assertNotNull(dmsFolder);
+			IDfPersistentObject dmsDoc = session.getObjectByQualification("dm_sysobject where r_object_id = '"
+					+ document.getId() + "'");
+			assertNotNull(dmsDoc);
+
+			final IDfId dfId = dmsDoc.getId("i_folder_id");
+			final IDfFolder parentFolder = (IDfFolder) session.getObject(dfId);
+			String docPath = parentFolder.getFolderPath(0);
+			assertEquals(folder.getParentFolder() + "/" + document.getName(), docPath);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
 	public void testUpdate() throws DfException {
 
 		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
@@ -222,7 +278,6 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			dmDocument.setString("a_status", "draft");
 			dmDocument.save();
 			String docId = dmDocument.getObjectId().toString();
-
 			final Document document = em.find(Document.class, docId);
 			assertNotNull(document);
 
@@ -244,6 +299,120 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			dmDocument.getFile(actualFile.getAbsolutePath());
 			String actualContent = Files.toString(actualFile, Charsets.UTF_8);
 			assertEquals("sample", actualContent);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+	
+	@Test(expected=XcpPersistenceException.class)
+	public void testAddContentWithSameContentType() throws DfException, IOException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+			addToDeleteList(dmDocument.getObjectId());
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+
+			File tempFile = File.createTempFile(expectedName, ".expected");
+			tempFile.deleteOnExit();
+			PrintWriter writer = new PrintWriter(tempFile, "UTF-8");
+			writer.print("sample");
+			writer.close();
+
+			em.addAttachment(document, tempFile.getAbsolutePath(), "text");
+			em.addAttachment(document, tempFile.getAbsolutePath(), "text");			
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+	
+	public void testAddRendition() throws DfException, IOException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+
+			File tempFile = File.createTempFile(expectedName, ".expected");
+			tempFile.deleteOnExit();
+			PrintWriter writer = new PrintWriter(tempFile, "UTF-8");
+			writer.print("sample");
+			writer.close();
+			// add first as attachment
+			em.addAttachment(document, tempFile.getAbsolutePath(), "text");
+			
+			File tempRendition = File.createTempFile(expectedName, ".expected");
+			tempRendition.deleteOnExit();
+			writer = new PrintWriter(tempRendition, "UTF-8");
+			writer.print("sampleRendition");
+			writer.close();
+			em.addAttachment(document, tempFile.getAbsolutePath(), "csv");
+			
+			assertTrue(document.getContentSize() > 0);
+			// first attachment should be the 'primary content' 
+			assertEquals("text", document.getContentType());
+			
+			// verify the second attachment is added as a rendition
+			boolean foundRendition = false;
+			int countDoc = 0;
+			IDfCollection collection = dmDocument.getRenditions(null);
+			while (collection.next()) {
+				if (collection.getString("full_format").equals("csv")) {
+					foundRendition = true;
+				}
+				countDoc++;
+			}
+			assertTrue(foundRendition);
+			assertEquals(2,countDoc);
+			
+			File actualFile = File.createTempFile(expectedName, ".actual");
+			actualFile.deleteOnExit();
+			dmDocument.getFileEx(actualFile.getAbsolutePath(),"csv", 0, false);
+			String actualContent = Files.toString(actualFile, Charsets.UTF_8);
+			assertEquals("sampleRendition", actualContent);
+			
+			// verify the second attachment is replaced
+			File tempRendition2 = File.createTempFile(expectedName, ".expected");
+			tempRendition2.deleteOnExit();
+			writer = new PrintWriter(tempRendition2, "UTF-8");
+			writer.print("sampleRendition2");
+			writer.close();
+			em.addAttachment(document, tempFile.getAbsolutePath(), "csv");
+			collection = dmDocument.getRenditions(null);
+			foundRendition = false;
+			while (collection.next()) {
+				if (collection.getString("full_format").equals("csv")) {
+					foundRendition = true;
+				}
+				countDoc++;
+			}
+			
+			assertTrue(foundRendition);
+			assertEquals(2,countDoc);
+			
+			actualFile = File.createTempFile(expectedName, ".actual");
+			actualFile.deleteOnExit();
+			dmDocument.getFileEx(actualFile.getAbsolutePath(),"csv", 0, false);
+			actualContent = Files.toString(actualFile, Charsets.UTF_8);
+			assertEquals("sampleRendition2", actualContent);
 
 		} finally {
 			getRepository().releaseSession(session);
@@ -286,7 +455,159 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			getRepository().releaseSession(session);
 		}
 	}
+	
+	@Test
+	public void testGetPrimaryContent() throws DfException, IOException {
 
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.setContentType("text");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			stream.write("sample".getBytes("UTF-8"));
+			dmDocument.setContent(stream);
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			assertTrue(document.getContentSize() > 0);
+			assertEquals("text", document.getContentType());
+
+			File tempFile = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempFile.deleteOnExit();
+
+			final String actualFilename = em.getAttachment(document, tempFile.getParent(), tempFile.getName(), "text");
+			assertEquals(tempFile.getAbsolutePath(), actualFilename);
+
+			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
+			assertEquals("sample", actualContent);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+	
+	@Test(expected= XcpPersistenceException.class)
+	public void testGetContentWithoutContent() throws DfException, IOException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+
+			File tempFile = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempFile.deleteOnExit();
+
+		em.getAttachment(document, tempFile.getParent(), tempFile.getName(), "text");
+			
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+
+	@Test
+	public void testGetRendition() throws DfException, IOException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.setContentType("text");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			stream.write("sample".getBytes("UTF-8"));
+			dmDocument.setContent(stream);
+			
+			ByteArrayOutputStream streamRendition = new ByteArrayOutputStream();
+			streamRendition.write("sampleRendition".getBytes("UTF-8"));
+			
+			File tempRendition = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempRendition.deleteOnExit();
+			OutputStream outputStream = new FileOutputStream (tempRendition); 
+			streamRendition.writeTo(outputStream);
+			dmDocument.addRendition(tempRendition.getAbsolutePath(), "csv");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			assertTrue(document.getContentSize() > 0);
+			assertEquals("text", document.getContentType());
+
+			File tempFile = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempFile.deleteOnExit();
+
+			final String actualFilename = em.getAttachment(document, tempFile.getParent(), tempFile.getName(), "csv");
+			assertEquals(tempFile.getAbsolutePath(), actualFilename);
+
+			String actualContent = Files.toString(tempFile, Charsets.UTF_8);
+			assertEquals("sampleRendition", actualContent);
+
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+	
+	@Test(expected= XcpPersistenceException.class)
+	public void testGetWrongRendition() throws DfException, IOException {
+
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+
+			// create a document object
+			final String expectedName = "_#_" + name.getMethodName();
+			final IDfSysObject dmDocument = createObject(session, "dm_document", expectedName);
+			dmDocument.setString("subject", "test purpose");
+			dmDocument.setString("a_status", "draft");
+			dmDocument.setContentType("text");
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			stream.write("sample".getBytes("UTF-8"));
+			dmDocument.setContent(stream);
+			
+			ByteArrayOutputStream streamRendition = new ByteArrayOutputStream();
+			streamRendition.write("sampleRendition".getBytes("UTF-8"));
+			
+			File tempRendition = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempRendition.deleteOnExit();
+			OutputStream outputStream = new FileOutputStream (tempRendition); 
+			streamRendition.writeTo(outputStream);
+			dmDocument.addRendition(tempRendition.getAbsolutePath(), "csv");
+			dmDocument.save();
+			String docId = dmDocument.getObjectId().toString();
+
+			final Document document = em.find(Document.class, docId);
+			assertNotNull(document);
+			assertTrue(document.getContentSize() > 0);
+			assertEquals("text", document.getContentType());
+
+			File tempFile = File.createTempFile("temp", Long.toString(System.nanoTime()));
+			tempFile.deleteOnExit();
+
+			em.getAttachment(document, tempFile.getParent(), tempFile.getName(), "pdf");
+		} finally {
+			getRepository().releaseSession(session);
+		}
+	}
+	
 	@Test
 	public void testFindList() throws DfException {
 
@@ -406,8 +727,8 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			DmsTypedQuery<Document> query = em.createNativeQuery(
 					"select t.r_object_id from dm_relation r, dm_document t"
 							+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = :wfId"
-							+ " and r.child_id = t.r_object_id order by 1", Document.class)
-					.setParameter("wfId", wf.getId());
+							+ " and r.child_id = t.r_object_id order by 1", Document.class).setParameter("wfId",
+					wf.getId());
 
 			List<Document> emailTemplates = query.getResultList();
 
@@ -422,7 +743,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			// find child relatives using an assisted query
 			DmsTypedQuery<Document> assistedQuery = em.createChildRelativesQuery(wf, WfEmailTemplate.class,
 					Document.class, null);
-			
+
 			assertEquals("select c.r_object_id from dm_relation r, dm_document c"
 					+ " where r.relation_name = 'dm_wf_email_template' and r.parent_id = '" + parentId + "'"
 					+ " and r.child_id = c.r_object_id", assistedQuery.asDql());
@@ -485,7 +806,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 			assertEquals(template.getId(), childId.toString());
 			// no more child
 			assertTrue(childRelatives.next() == false);
-			
+
 			// check extra relation attributes
 			final IDfRelation relDmsObj = (IDfRelation) session.getObject(relId);
 			assertEquals(2, relDmsObj.getInt("order_no"));

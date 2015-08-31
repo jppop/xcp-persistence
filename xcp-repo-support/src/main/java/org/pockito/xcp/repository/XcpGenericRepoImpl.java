@@ -171,7 +171,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 			
 			@Override
 			public void unregistered() {
-				xcpCmd = null;
+				resetCmd();
 			}
 		});
 		this.xcpCmd = cmd;
@@ -180,7 +180,12 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	protected void commit() {
 		if ((getCurrentCmd() != null) && isAutoCommit()) {
 			cmd().commit();
+			resetCmd();
 		}
+	}
+
+	private void resetCmd() {
+		this.xcpCmd = null;
 	}
 
 	public boolean isAutoCommit() {

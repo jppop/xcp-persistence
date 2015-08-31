@@ -102,6 +102,8 @@ public class App {
 			Collection<SerializedPerson> persons = gson.fromJson(reader, collectionType);
 
 			Stopwatch stopwatch = Stopwatch.createStarted();
+			
+			repo.createSharedCmd();
 
 			int count = 0;
 			for (SerializedPerson serializedPerson : persons) {
@@ -119,6 +121,8 @@ public class App {
 				repo.add(person, address);
 				count++;
 			}
+			
+			repo.commitSharedCmd();
 			stopwatch.stop();
 			System.out.printf("%d objects created in %s\n", count, stopwatch.toString());
 		}

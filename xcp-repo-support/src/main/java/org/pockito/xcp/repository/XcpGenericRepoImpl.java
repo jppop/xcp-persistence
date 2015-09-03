@@ -10,13 +10,20 @@ import org.pockito.xcp.repository.command.XcpRepoCommand;
 
 public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
-	@SuppressWarnings("unchecked")
+	
 //	private final Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
 //			.getActualTypeArguments()[0];
 	
 	private Class<T> entityClass = null;
 	
-	private XcpRepoCommand xcpCmd = null;
+	private ThreadLocal<XcpRepoCommand> xcpCmd = new ThreadLocal<XcpRepoCommand>(){
+
+		@Override
+		protected XcpRepoCommand initialValue() {
+			return null;
+		}
+		
+	};
 
 	protected boolean autoCommit;
 
@@ -103,7 +110,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	@Override
 	public XcpRepoCommand getCurrentCmd() {
-		return this.xcpCmd;
+		return this.xcpCmd.get();
 	}
 
 	@Override
@@ -136,7 +143,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 
 	@Override
 	public XcpRepoCommand cmd() {
-		if (this.xcpCmd == null) {
+		if (this.xcpCmd.get() == null) {
 			XcpRepoCommand cmd = XcpRepoCmdFactory.instance.getSharedCmd();
 			if (cmd == null) {
 				createCmd();
@@ -144,25 +151,25 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 				useSharedCmd(cmd);
 			}
 		}
-		if (this.xcpCmd == null) {
+		if (this.xcpCmd.get()== null) {
 			
 			throw new IllegalStateException(Message.E_CMD_CREATION_FAILED.get());
 		}
-		return this.xcpCmd;
+		return this.xcpCmd.get();
 	}
 
 	protected void unregisterCmd() {
 		// reset the commands
 		XcpRepoCmdFactory.instance.unregisterSharedCmd();
 		// FIX: reset the owned command
-		xcpCmd = null;
+		xcpCmd.set(null);
 	}
 
 	protected XcpRepoCommand createCmd() {
-		this.xcpCmd = XcpRepoCmdFactory.instance.create();
+		this.xcpCmd.set(XcpRepoCmdFactory.instance.create());
 		XcpRepoCmdFactory.instance.registerSharedCmd(null);
 		setAutoCommit(true);
-		return this.xcpCmd;
+		return this.xcpCmd.get();
 	}
 
 	protected void useSharedCmd(XcpRepoCommand cmd) {
@@ -174,7 +181,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 				resetCmd();
 			}
 		});
-		this.xcpCmd = cmd;
+		this.xcpCmd.set(cmd);
 	}
 
 	protected void commit() {
@@ -185,7 +192,7 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	private void resetCmd() {
-		this.xcpCmd = null;
+		xcpCmd.set(null);
 	}
 
 	public boolean isAutoCommit() {

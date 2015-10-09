@@ -142,6 +142,10 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 		WorkflowRepoImpl wfRepo = new WorkflowRepoImpl();
 		EmailTemplateRepoImpl templateRepo = new EmailTemplateRepoImpl();
 
+		// private commands (only for test purpose, no need to that as it's automatically done)
+		XcpRepoCommand wfCmd = wfRepo.cmd();
+		XcpRepoCommand templateCmd = templateRepo.cmd();
+		
 		// add a workflow
 		Workflow wf = new Workflow();
 		wf.setName("sample wf");
@@ -161,11 +165,10 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 			someTemplates[i] = template;
 		}
 
-		XcpRepoCommand wfCmd = wfRepo.getCurrentCmd();
-		assertNotNull(wfCmd);
-		XcpRepoCommand templateCmd = templateRepo.getCurrentCmd();
-		assertNotNull(templateCmd);
-
+		// Commands are reseted after commits
+		assertNull(wfRepo.getCurrentCmd());
+		assertNull(templateRepo.getCurrentCmd());
+		
 		InOrder order = inOrder(wfCmd, templateCmd);
 		order.verify(wfCmd).withinTransaction();
 		order.verify(wfCmd).create(wf);
@@ -179,6 +182,52 @@ public class XcpGenericRepoImplTest extends BaseMockedTest {
 			order.verify(wfCmd).to(someTemplates[i]);
 			order.verify(wfCmd).with(any(WfEmailTemplate.class));
 		}
+
+	}
+
+	@Test
+	public void testUsePrivateCmdThenSharedCmd() {
+
+		// create the repositories (in real life, should be injected)
+		WorkflowRepoImpl wfRepo = new WorkflowRepoImpl();
+		EmailTemplateRepoImpl templateRepo = new EmailTemplateRepoImpl();
+
+		// add a workflow
+		Workflow wf = new Workflow();
+		wf.setName("sample wf");
+		wfRepo.add(wf);
+
+		final int count = 2;
+		EmailTemplate someTemplates[] = new EmailTemplate[count];
+
+		// add some templates
+		for (int i = 0; i < count; i++) {
+			EmailTemplate template = new EmailTemplate();
+			template.setName("sample template #" + Integer.toString(i));
+			templateRepo.add(template);
+
+			wfRepo.useTemplate(wf, template, i);
+
+			someTemplates[i] = template;
+		}
+
+		// Commands are reseted after commits
+		assertNull(wfRepo.getCurrentCmd());
+		assertNull(templateRepo.getCurrentCmd());
+
+		// Now, create a shared command
+		XcpRepoCommand sharedCmd = wfRepo.createSharedCmd();
+
+		// add another template
+		EmailTemplate template = new EmailTemplate();
+		templateRepo.add(template);
+		wfRepo.useTemplate(wf, template, 100);
+		
+		// check the second repo has used the shared command
+		assertNotNull(templateRepo.getCurrentCmd());
+		assertEquals(sharedCmd, templateRepo.getCurrentCmd());
+		
+		wfRepo.rollbackSharedCmd();
 
 	}
 

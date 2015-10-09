@@ -90,7 +90,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		// Note: primary key is unique through all entities (as r_object_id)
 		@SuppressWarnings("unchecked")
-		T bean = (T) cacheGet(primaryKey.toString());
+		T bean = (T) cacheGet(cacheGetKey(entityClass, primaryKey.toString()));
 		if (bean != null) {
 			return bean;
 		}
@@ -206,6 +206,8 @@ public class XcpEntityManager implements DmsEntityManager {
 				// cache the instance
 				cachePut(newInstance, ai);
 			}
+		} catch (XcpPersistenceException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String) primaryKey), e);
 		} finally {
@@ -523,6 +525,10 @@ public class XcpEntityManager implements DmsEntityManager {
 
 	private final Object cacheGet(String key) {
 		return sessionCache().get(key);
+	}
+
+	private final String cacheGetKey(Class<?> entityClass, String key) {
+		return entityClass.getName() + "::" + key;
 	}
 
 	private final void dms2Entity(IDfPersistentObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {

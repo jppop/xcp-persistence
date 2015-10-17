@@ -29,9 +29,18 @@ public interface DmsEntityManager {
 
 	<T> DmsTypedQuery<T> createNativeQuery(String qlString, Class<T> entityClass);
 
+	/**
+	 * Adds primary content if not exists otherwise adds or replaces rendition with content type.
+	 * 
+	 * @param entity
+	 * @param filename
+	 * @param contentType
+	 */
 	void addAttachment(Object entity, String filename, String contentType);
 
 	String getAttachment(Object entity, String folder, String filename);
+	
+	String getAttachment(Object entity, String folder, String filename, String contentType);
 
 	Transaction getTransaction();
 

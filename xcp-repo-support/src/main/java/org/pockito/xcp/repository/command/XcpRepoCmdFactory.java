@@ -15,7 +15,13 @@ public enum XcpRepoCmdFactory {
 	@Named("XcpRepoCommand")
 	private Provider<XcpRepoCommand> repoProvider;
 	
-	private XcpRepoCommand sharedCmd = null;
+	private ThreadLocal<XcpRepoCommand> sharedCmd = new ThreadLocal<XcpRepoCommand>(){
+		@Override
+		protected XcpRepoCommand initialValue() {
+			return null;
+		}
+		
+	};
 	
 	public XcpRepoCommand create() {
 		XcpRepoCommand cmd = repoProvider.get();
@@ -32,35 +38,42 @@ public enum XcpRepoCmdFactory {
 	public interface UnregisterCallback {
 		void unregistered();
 	}
-	private final List<UnregisterCallback> callbacks = new ArrayList<XcpRepoCmdFactory.UnregisterCallback>();
+	private final ThreadLocal<List<UnregisterCallback>> callbacks = new ThreadLocal<List<XcpRepoCmdFactory.UnregisterCallback>>(){
+
+		@Override
+		protected List<UnregisterCallback> initialValue() {
+			return new ArrayList<XcpRepoCmdFactory.UnregisterCallback>();
+		}
+		
+	};
 	
 	public void registerSharedCmd(final XcpRepoCommand cmd) {
 		if (cmd == null) {
 			unregisterSharedCmd();
 		} else {
-			if (this.sharedCmd != null) {
+			if (this.sharedCmd.get() != null) {
 				unregisterSharedCmd();
 			}
-			this.sharedCmd = cmd;
+			this.sharedCmd.set(cmd);
 		}
 	}
 	
 	public void unregisterSharedCmd() {
-		for (UnregisterCallback unregisterCallback : callbacks) {
+		for (UnregisterCallback unregisterCallback : callbacks.get()) {
 			unregisterCallback.unregistered();
 		}
-		this.callbacks.clear();
-		this.sharedCmd = null;
+		this.callbacks.get().clear();
+		this.sharedCmd.set(null);
 	}
 	
 	public XcpRepoCommand useSharedCmd(UnregisterCallback onUnregister) {
-		if (this.sharedCmd != null) {
-			callbacks.add(onUnregister);
+		if (this.sharedCmd.get() != null) {
+			callbacks.get().add(onUnregister);
 		}
-		return this.sharedCmd;
+		return this.sharedCmd.get();
 	}
 
 	public XcpRepoCommand getSharedCmd() {
-		return this.sharedCmd;
+		return this.sharedCmd.get();
 	}
 }

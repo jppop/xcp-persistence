@@ -296,6 +296,11 @@ public class XcpRepoCmdImpl implements XcpRepoCommand {
 	public String getAttachment(Object entity, String folder, String filename) {
 		return em().getAttachment(entity, folder, filename);
 	}
+	
+	@Override
+	public String getAttachment(Object entity, String folder, String filename, String contentType) {
+		return em().getAttachment(entity, folder, filename, contentType);
+	}
 
 	@Override
 	public DmsEntityManager getEntityManager() {

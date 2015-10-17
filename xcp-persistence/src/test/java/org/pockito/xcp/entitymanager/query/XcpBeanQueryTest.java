@@ -90,13 +90,13 @@ public class XcpBeanQueryTest {
 			queryTask.executeUpdate();
 			fail("should raise an exception");
 		} catch(XcpPersistenceException e) {
-			assertEquals("[XDP0016] E_CONFIRM_DELETE_ALL - Please confirm you really want to delete all objects", e.getMessage());
+			assertEquals("[XDP0017] E_CONFIRM_DELETE_ALL - Please confirm you really want to delete all objects", e.getMessage());
 		}
 		try {
 			queryTask.getResultList();
 			fail("should raise an exception");
 		} catch(XcpPersistenceException e) {
-			assertEquals("[XDP0015] E_NOT_SELECT_QUERY - Only select query can retrieve a list of entities", e.getMessage());
+			assertEquals("[XDP0016] E_NOT_SELECT_QUERY - Only select query can retrieve a list of entities", e.getMessage());
 		}
 
 		queryTask.executeUpdate(true); // should not raise an exception

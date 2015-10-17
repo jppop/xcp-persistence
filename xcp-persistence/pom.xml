@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.pockito.xcp</groupId>
 	<artifactId>xcp-persistence</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 
 	<properties>
 		<scm.url>https://use.steria.com/gitroot/backoffpi/project.git</scm.url>
@@ -68,7 +68,7 @@
 		<dependency>
 			<groupId>org.pockicto.dctm</groupId>
 			<artifactId>dctm-test-support</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -26,6 +26,7 @@
 			<!-- <groupId>log4j</groupId> -->
 			<!-- </exclusion> -->
 			<!-- </exclusions> -->
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>

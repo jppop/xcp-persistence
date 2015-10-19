@@ -57,6 +57,11 @@
 			<version>4.1.6.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.emc.documentum.dfc</groupId>
+			<artifactId>dfc</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-persistence</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
@@ -42,9 +42,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.pockicto.dctm</groupId>
+			<groupId>org.pockito.dctm</groupId>
 			<artifactId>dctm-test-support</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -56,7 +55,7 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-repo-support</artifactId>
-			<version>0-0-3-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

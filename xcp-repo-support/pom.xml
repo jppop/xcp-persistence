@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-persistence</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>

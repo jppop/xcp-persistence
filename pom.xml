@@ -55,6 +55,11 @@
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
 			</dependency>
+			<dependency>
+				<groupId>org.pockito.dctm</groupId>
+				<artifactId>dctm-test-support</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

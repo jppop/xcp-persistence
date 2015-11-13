@@ -57,6 +57,16 @@
 				<version>4.11</version>
 			</dependency>
 			<dependency>
+				<groupId>org.pockito.xcp</groupId>
+				<artifactId>xcp-persistence</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.pockito.xcp</groupId>
+				<artifactId>xcp-repo-support</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.pockito.dctm</groupId>
 				<artifactId>dctm-test-support</artifactId>
 				<version>${project.version}</version>

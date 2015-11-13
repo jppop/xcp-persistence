@@ -3,21 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>dctm-test-support</artifactId>
 
+	<groupId>org.pockito.dctm</groupId>
 	<parent>
 		<groupId>org.pockito.xcp</groupId>
 		<artifactId>xcp-repository</artifactId>
 		<version>0.0.3-SNAPSHOT</version>
 	</parent>
-
-	<properties>
-		<scm.url>https://use.steria.com/gitroot/backoffpi/project.git</scm.url>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<dfc.version>7.1.0120.0167</dfc.version>
-		<slf4j.version>1.7.10</slf4j.version>
-		<logback.version>1.1.2</logback.version>
-	</properties>
 
 	<dependencies>
 		<dependency>

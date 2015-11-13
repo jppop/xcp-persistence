@@ -18,7 +18,6 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-persistence</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>
@@ -55,7 +54,6 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-repo-support</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

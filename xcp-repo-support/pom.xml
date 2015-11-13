@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.pockito.xcp</groupId>
 		<artifactId>xcp-repository</artifactId>
-		<version>0.0.2</version>
+		<version>0.0.3</version>
 	</parent>
 	<artifactId>xcp-repo-support</artifactId>
 
@@ -17,7 +17,6 @@
 		<dependency>
 			<groupId>org.pockito.xcp</groupId>
 			<artifactId>xcp-persistence</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.inject</groupId>

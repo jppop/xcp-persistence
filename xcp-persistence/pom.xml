@@ -1,12 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.pockito.xcp</groupId>
 	<artifactId>xcp-persistence</artifactId>
 
 	<parent>
 		<groupId>org.pockito.xcp</groupId>
 		<artifactId>xcp-repository</artifactId>
-		<version>0.0.2</version>
+		<version>0.0.3</version>
 	</parent>
 
 	<properties>
@@ -72,15 +71,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.pockicto.dctm</groupId>
-			<artifactId>dctm-test-support</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.pockito.dctm</groupId>
+			<artifactId>dctm-test-support</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

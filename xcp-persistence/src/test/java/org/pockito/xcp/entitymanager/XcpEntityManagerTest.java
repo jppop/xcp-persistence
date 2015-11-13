@@ -932,7 +932,7 @@ public class XcpEntityManagerTest extends RepositoryRequiredTest {
 
 			Document document1 = em.find(Document.class, docId);
 			assertNotNull(document1);
-			assertNotNull(em.sessionCache().get(docId));
+			assertNotNull(em.sessionCache().get(Document.class.getName() + "::" + docId));
 
 			int vtamp = document1.getvStamp();
 

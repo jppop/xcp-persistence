@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>dctm-test-support</artifactId>
 
-	<groupId>org.pockito.dctm</groupId>
 	<parent>
 		<groupId>org.pockito.xcp</groupId>
 		<artifactId>xcp-repository</artifactId>

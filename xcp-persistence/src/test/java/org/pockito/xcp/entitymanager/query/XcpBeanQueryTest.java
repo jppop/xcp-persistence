@@ -127,5 +127,36 @@ public class XcpBeanQueryTest {
 				+ " where role = 'supervisor' and child_id = 'supervisor id'", query.asDql());
 		
 	}
+	
+	@Test
+	public void testQueryPersonWithIsAndLikeOperator() {
+
+		DmsBeanQuery<Person> queryPerson = em.createBeanQuery(Person.class);
+
+		// find the Does (all person named "Doe")
+		queryPerson.setParameter("lastName", eq("Doe"));
+		
+		//find the person with null fisrtName
+		queryPerson.setParameter("name", is("null"));
+		
+		//find the person with fisrtName starting by Jo
+		queryPerson.setParameter("firstName", like("Jo%"));
+
+		assertEquals("select r_object_id from todo_person where last_name = 'Doe' and object_name is null and first_name like 'Jo%'", queryPerson.asDql());
+
+		DmsBeanQuery<Task> queryTask = em.createBeanQuery(Task.class);
+
+		Calendar c = new GregorianCalendar();
+		c.set(1965, 2 - 1, 28, 9, 15, 25);
+		queryTask.setParameter("priority", eq("medium"));
+		queryTask.setParameter("creationDate", gt(c.getTime()));
+		assertEquals("select r_object_id from todo_task where priority = 'medium' "
+				+ "and r_creation_date > DATE('1965/02/28 09:15:25', 'yyyy/mm/dd hh:mi:ss')", queryTask.asDql());
+
+		DmsBeanQuery<Task> queryTask2 = em.createBeanQuery(Task.class);
+		queryTask2.setParameter("priority", in("high", "urgent"));
+		assertEquals("select r_object_id from todo_task where priority in ( 'high', 'urgent' )", queryTask2.asDql());
+
+	}
 
 }

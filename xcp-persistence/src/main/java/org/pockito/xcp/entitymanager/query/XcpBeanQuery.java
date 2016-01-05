@@ -124,7 +124,12 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 				comma = ", ";
 			}
 			buffer.append(" )");
-		} else {
+		}else if (expr.rightOpt.op() == Operator.is){
+			String attributeValue = String.class.cast(expr.rightOpt.value()).toString();
+			buffer.append(" ").append(expr.prop.getAttributeName()).append(" ")
+					.append(expr.rightOpt.op().dqlOperator()).append(" ").append(attributeValue);
+		}		
+		else {
 			String attributeValue = PersistentProperty.asDqlValue(expr.rightOpt.value());
 			buffer.append(" ").append(expr.prop.getAttributeName()).append(" ")
 					.append(expr.rightOpt.op().dqlOperator()).append(" ").append(attributeValue);

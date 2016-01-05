@@ -1,0 +1,213 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] xcp-repository
+[INFO] dctm-test-support
+[INFO] xcp-persistence
+[INFO] xcp-repo-support
+[INFO] todo-example
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building xcp-repository 0.0.4
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ xcp-repository ---
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ xcp-repository ---
+[INFO] Installing d:\workspace\inpi-git\xcp-persitence\pom.xml to D:\Users\rbourse\.m2\repository\org\pockito\xcp\xcp-repository\0.0.4\xcp-repository-0.0.4.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building dctm-test-support 0.0.4
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ dctm-test-support ---
+[INFO] Deleting D:\workspace\inpi-git\xcp-persitence\dctm-test-support\target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ dctm-test-support ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ dctm-test-support ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 3 source files to D:\workspace\inpi-git\xcp-persitence\dctm-test-support\target\classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ dctm-test-support ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory D:\workspace\inpi-git\xcp-persitence\dctm-test-support\src\test\resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ dctm-test-support ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ dctm-test-support ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ dctm-test-support ---
+[INFO] Building jar: D:\workspace\inpi-git\xcp-persitence\dctm-test-support\target\dctm-test-support-0.0.4.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ dctm-test-support ---
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\dctm-test-support\target\dctm-test-support-0.0.4.jar to D:\Users\rbourse\.m2\repository\org\pockito\dctm\dctm-test-support\0.0.4\dctm-test-support-0.0.4.jar
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\dctm-test-support\pom.xml to D:\Users\rbourse\.m2\repository\org\pockito\dctm\dctm-test-support\0.0.4\dctm-test-support-0.0.4.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building xcp-persistence 0.0.4
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ xcp-persistence ---
+[INFO] Deleting D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ xcp-persistence ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ xcp-persistence ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 52 source files to D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target\classes
+[WARNING] /D:/workspace/inpi-git/xcp-persitence/xcp-persistence/src/main/java/org/pockito/xcp/message/Utf8ResourceBundle.java: D:\workspace\inpi-git\xcp-persitence\xcp-persistence\src\main\java\org\pockito\xcp\message\Utf8ResourceBundle.java uses unchecked or unsafe operations.
+[WARNING] /D:/workspace/inpi-git/xcp-persitence/xcp-persistence/src/main/java/org/pockito/xcp/message/Utf8ResourceBundle.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ xcp-persistence ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ xcp-persistence ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 13 source files to D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target\test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.18.1:test (default-test) @ xcp-persistence ---
+[INFO] Surefire report directory: D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target\surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.pockito.xcp.entitymanager.AnnotationManagerTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 sec - in org.pockito.xcp.entitymanager.AnnotationManagerTest
+Running org.pockito.xcp.entitymanager.query.RelationQueryTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.427 sec - in org.pockito.xcp.entitymanager.query.RelationQueryTest
+Running org.pockito.xcp.entitymanager.query.XcpBeanQueryTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.019 sec - in org.pockito.xcp.entitymanager.query.XcpBeanQueryTest
+Running org.pockito.xcp.entitymanager.VStampTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.759 sec - in org.pockito.xcp.entitymanager.VStampTest
+Running org.pockito.xcp.entitymanager.XcpEntityManagerTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 28.662 sec - in org.pockito.xcp.entitymanager.XcpEntityManagerTest
+
+Results :
+
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ xcp-persistence ---
+[INFO] Building jar: D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target\xcp-persistence-0.0.4.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ xcp-persistence ---
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\xcp-persistence\target\xcp-persistence-0.0.4.jar to D:\Users\rbourse\.m2\repository\org\pockito\xcp\xcp-persistence\0.0.4\xcp-persistence-0.0.4.jar
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\xcp-persistence\pom.xml to D:\Users\rbourse\.m2\repository\org\pockito\xcp\xcp-persistence\0.0.4\xcp-persistence-0.0.4.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building xcp-repo-support 0.0.4
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ xcp-repo-support ---
+[INFO] Deleting D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ xcp-repo-support ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ xcp-repo-support ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 16 source files to D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target\classes
+[WARNING] /D:/workspace/inpi-git/xcp-persitence/xcp-repo-support/src/main/java/org/pockito/xcp/repository/Utf8ResourceBundle.java: D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\src\main\java\org\pockito\xcp\repository\Utf8ResourceBundle.java uses unchecked or unsafe operations.
+[WARNING] /D:/workspace/inpi-git/xcp-persitence/xcp-repo-support/src/main/java/org/pockito/xcp/repository/Utf8ResourceBundle.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ xcp-repo-support ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ xcp-repo-support ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 12 source files to D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target\test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ xcp-repo-support ---
+[INFO] Surefire report directory: D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target\surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.pockito.xcp.repository.XcpGenericRepoImplTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.82 sec
+Running org.pockito.xcp.repository.XcpRepositoryFactoryTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 0 sec
+Running org.pockito.xcp.repository.XcpRepositoryImplTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 3
+
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ xcp-repo-support ---
+[INFO] Building jar: D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target\xcp-repo-support-0.0.4.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ xcp-repo-support ---
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\target\xcp-repo-support-0.0.4.jar to D:\Users\rbourse\.m2\repository\org\pockito\xcp\xcp-repo-support\0.0.4\xcp-repo-support-0.0.4.jar
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\xcp-repo-support\pom.xml to D:\Users\rbourse\.m2\repository\org\pockito\xcp\xcp-repo-support\0.0.4\xcp-repo-support-0.0.4.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building todo-example 0.0.4
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ todo-example ---
+[INFO] Deleting D:\workspace\inpi-git\xcp-persitence\todo-example\target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ todo-example ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 4 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ todo-example ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 16 source files to D:\workspace\inpi-git\xcp-persitence\todo-example\target\classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ todo-example ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 3 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ todo-example ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to D:\workspace\inpi-git\xcp-persitence\todo-example\target\test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ todo-example ---
+[INFO] Surefire report directory: D:\workspace\inpi-git\xcp-persitence\todo-example\target\surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.pockito.xcp.sample.todo.repository.ProviderTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.533 sec
+
+Results :
+
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ todo-example ---
+[INFO] Building jar: D:\workspace\inpi-git\xcp-persitence\todo-example\target\todo-example-0.0.4.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ todo-example ---
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\todo-example\target\todo-example-0.0.4.jar to D:\Users\rbourse\.m2\repository\org\pockito\xcp\todo-example\0.0.4\todo-example-0.0.4.jar
+[INFO] Installing D:\workspace\inpi-git\xcp-persitence\todo-example\pom.xml to D:\Users\rbourse\.m2\repository\org\pockito\xcp\todo-example\0.0.4\todo-example-0.0.4.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] xcp-repository ..................................... SUCCESS [  0.300 s]
+[INFO] dctm-test-support .................................. SUCCESS [  1.576 s]
+[INFO] xcp-persistence .................................... SUCCESS [ 43.256 s]
+[INFO] xcp-repo-support ................................... SUCCESS [  2.326 s]
+[INFO] todo-example ....................................... SUCCESS [  1.405 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 49.012 s
+[INFO] Finished at: 2016-01-05T14:56:06+01:00
+[INFO] Final Memory: 23M/313M
+[INFO] ------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 
 	<groupId>org.pockito.xcp</groupId>
 	<artifactId>xcp-repository</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>

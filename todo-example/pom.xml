@@ -41,7 +41,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.pockito.dctm</groupId>
+			<groupId>org.pockito.xcp</groupId>
 			<artifactId>dctm-test-support</artifactId>
 			<scope>test</scope>
 		</dependency>

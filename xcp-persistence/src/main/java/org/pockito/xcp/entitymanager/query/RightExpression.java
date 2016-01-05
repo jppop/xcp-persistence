@@ -68,5 +68,11 @@ public class RightExpression<B>  {
 	public static <B> RightExpression<B> in(B... values) {
 		return new RightExpression<B>(Operator.in, values);
 	}
+	public static <B> RightExpression<B> is(B value) {
+		return new RightExpression<B>(Operator.is, value);
+	}
+	public static <B> RightExpression<B> like(B value) {
+		return new RightExpression<B>(Operator.like, value);
+	}
 
 }

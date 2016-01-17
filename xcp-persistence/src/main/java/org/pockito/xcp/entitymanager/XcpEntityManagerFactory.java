@@ -68,8 +68,8 @@ public class XcpEntityManagerFactory implements DmsEntityManagerFactory {
 			if (Strings.isNullOrEmpty(repository)) throw new IllegalArgumentException(Message.E_NO_REPOSITORY_CONTEXT.get());
 			
 			// create a new dctm session manager
-			dctmDriver.getSessionManager(repository, username, password);
 			logger.debug("Create a new entity manager for ({}, {})", repository, username);
+			dctmDriver.getSessionManager(repository, username, password);
 			return new XcpEntityManager(this, props, dctmDriver);
 			
 		} catch (Exception e) {

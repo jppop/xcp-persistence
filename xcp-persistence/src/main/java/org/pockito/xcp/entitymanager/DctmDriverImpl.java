@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.pockito.xcp.entitymanager.api.DctmDriver;
 import org.pockito.xcp.entitymanager.api.DmsException;
+import org.pockito.xcp.entitymanager.cache.BuiltInCache;
+import org.pockito.xcp.entitymanager.cache.CacheWrapper;
 import org.pockito.xcp.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,15 @@ public class DctmDriverImpl implements DctmDriver {
 	
 	private String repository = null;
 	
+	private static final ThreadLocal<CacheWrapper<String, IDfSessionManager>> sessMgrCache = new ThreadLocal<CacheWrapper<String, IDfSessionManager>>(){
+
+		@Override
+		protected CacheWrapper<String, IDfSessionManager> initialValue() {
+			return  new BuiltInCache<String, IDfSessionManager>();
+		}
+		
+	};
+	
 	@Override
 	public final IDfSessionManager getSessionManager() throws DmsException {
 		return this.dfSessionManager;
@@ -42,20 +53,28 @@ public class DctmDriverImpl implements DctmDriver {
 	@Override
 	public final IDfSessionManager getSessionManager(final String repository, final String username,
 			final String password) throws DmsException {
-		logger.trace("Getting an new session manager for ({}, {})", repository, username);
 		IDfSessionManager manager = null;
 		try {
-//			manager = DmsRepository.getInstance().getSessionManager();
-			if (this.dfSessionManager != null) {
-				this.dfSessionManager.clearIdentities();
-				this.dfSessionManager.flushSessions();
-				this.dfSessionManager = null;
+			// retrieve he session manager from the cache
+			final String key = repository + "::" + username;
+			manager = sessMgrCache.get().get(key);
+			if (manager != null) {
+				logger.trace("got the session manager for ({}, {}) from the cache", repository, username);
+			} else {
+				logger.trace("Getting an new session manager for ({}, {})", repository, username);
+				if (this.dfSessionManager != null) {
+					this.dfSessionManager.clearIdentities();
+					this.dfSessionManager.flushSessions();
+					this.dfSessionManager = null;
+				}
+			    IDfLoginInfo login = new DfLoginInfo();
+			    login.setUser(username);
+			    login.setPassword(decrypt(password));
+			    manager = DfClient.getLocalClient().newSessionManager();
+			    manager.setIdentity(repository, login);
+			    // cache the session manager
+			    sessMgrCache.get().put(key, manager);
 			}
-		    IDfLoginInfo login = new DfLoginInfo();
-		    login.setUser(username);
-		    login.setPassword(decrypt(password));
-		    manager = DfClient.getLocalClient().newSessionManager();
-		    manager.setIdentity(repository, login);
 		    setDfSessionManager(manager);
 		    setRepository(repository);
 		} catch (DfException e) {
@@ -80,11 +99,12 @@ public class DctmDriverImpl implements DctmDriver {
 
 	@Override
 	public final IDfSession getSession() {
-		logger.trace("getting a new managed sesssion");
+		logger.trace("getting a managed sesssion");
 		IDfSession session;
 		checkSessionMgr();
 		try {
 			session = sessionManager().getSession(getRepository());
+			logger.trace("got session: {}", session.getSessionConfig().getString("session_id") );
 		} catch (DfException e) {
 			throw new DmsException(Message.E_DFC_SESSION_FAILED.get(),  e);
 		}

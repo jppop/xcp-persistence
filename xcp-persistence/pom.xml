@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.pockito.xcp</groupId>
 		<artifactId>xcp-repository</artifactId>
-		<version>0.0.6-SNAPSHOT</version>
+		<version>0.0.6</version>
 	</parent>
 
 	<properties>

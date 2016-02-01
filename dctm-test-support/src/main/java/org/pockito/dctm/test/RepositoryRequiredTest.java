@@ -9,6 +9,7 @@ import org.junit.Before;
 
 import com.documentum.com.DfClientX;
 import com.documentum.fc.client.IDfPersistentObject;
+import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
 import com.documentum.fc.common.DfException;
@@ -121,4 +122,9 @@ public abstract class RepositoryRequiredTest {
 		dmDocument.setContent(stream);
 		dmDocument.save();
 	}
+
+	public final IDfQuery createQuery() {
+		return getRepository().createQuery();
+	}
+
 }

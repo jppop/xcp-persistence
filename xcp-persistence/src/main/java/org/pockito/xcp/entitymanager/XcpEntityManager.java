@@ -34,9 +34,11 @@ import org.slf4j.LoggerFactory;
 import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfFolder;
 import com.documentum.fc.client.IDfPersistentObject;
+import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfRelation;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSysObject;
+import com.documentum.fc.client.IDfTypedObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.DfId;
 import com.documentum.fc.common.DfValue;
@@ -115,12 +117,15 @@ public class XcpEntityManager implements DmsEntityManager {
 			dfSession = getSession();
 
 			// retrieve the object
-			final IDfPersistentObject dmsObj = getDmsObj(dfSession, ai, objectId);
+			final IDfTypedObject dmsObj = getDmsObj(dfSession, ai, objectId);
 
 			if (dmsObj != null) {
 
+				if (!(dmsObj instanceof IDfPersistentObject)) {
+					throw new XcpPersistenceException(Message.E_NOT_PERSISTENT_OBJECT.get(ai.getDmsType()));
+				}
 				// destroy the object
-				dmsObj.destroy();
+				((IDfPersistentObject) dmsObj).destroy();
 				logger.trace("removed object {} from the repository", objectId);
 
 				// remove the entity from the cache
@@ -142,7 +147,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			// get a DFC session
 			dfSession = getSession();
 
-			IDfPersistentObject dmsObj = getDmsObj(dfSession, ai, primaryKey);
+			IDfTypedObject dmsObj = getDmsObj(dfSession, ai, primaryKey);
 
 			if (dmsObj != null) {
 
@@ -216,7 +221,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return newInstance;
 	}
 
-	private IDfValue getFolderPathAsDfValue(IDfSession dfSession, IDfPersistentObject dmsObj, int index) throws DfException {
+	private IDfValue getFolderPathAsDfValue(IDfSession dfSession, IDfTypedObject dmsObj, int index) throws DfException {
 		final IDfId dfId = dmsObj.getId(PersistentProperty.DMS_ATTR_FOLDER_ID);
 		final IDfFolder parentFolder = (IDfFolder) dfSession.getObject(dfId);
 		// ISSUE @2 -- Out of bounds
@@ -224,7 +229,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return dfValue;
 	}
 
-	private List<Object> getRepeatingValues(IDfPersistentObject dmsObj, PersistentProperty field) throws DfException {
+	private List<Object> getRepeatingValues(IDfTypedObject dmsObj, PersistentProperty field) throws DfException {
 		List<Object> values = new ArrayList<Object>();
 		String attributeName = field.getAttributeName();
 		int valueCount = dmsObj.getValueCount(attributeName);
@@ -246,11 +251,14 @@ public class XcpEntityManager implements DmsEntityManager {
 			// get a DFC session
 			dfSession = getSession();
 
-			IDfPersistentObject dmsObj = null;
+			IDfTypedObject dmsObj = null;
 			// retrieve the object
 			final String objectId = (String) ai.getIdMethod().getProperty(entity);
 			if (!Strings.isNullOrEmpty(objectId)) {
 				dmsObj = getDmsObj(dfSession, ai, objectId);
+				if (!(dmsObj instanceof IDfPersistentObject)) {
+					throw new XcpPersistenceException(Message.E_NOT_PERSISTENT_OBJECT.get(ai.getDmsType()));
+				}
 			}
 
 			if (dmsObj == null) {
@@ -289,7 +297,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			}
 
 			// save dms object
-			dmsObj.save();
+			((IDfPersistentObject) dmsObj).save();
 			logger.trace("Saved object {} to the repository", dmsObj.getObjectId().getId());
 
 			// update system generated value
@@ -477,9 +485,9 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	private IDfPersistentObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
+	private IDfTypedObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
 		// create a DMS object if needed
-		IDfPersistentObject dmsObj = null;
+		IDfTypedObject dmsObj = null;
 		String identifier = (String) ai.getIdMethod().getProperty(entity);
 		if (!Strings.isNullOrEmpty(identifier)) {
 			dmsObj = getDmsObj(dfSession, ai, identifier);
@@ -492,7 +500,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return dmsObj;
 	}
 
-	private IDfPersistentObject createRelationObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
+	private IDfTypedObject createRelationObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
 
 		// retrieve the parent_id and child_id
 		PersistentProperty parentMethod = ai.getParentMethod();
@@ -510,11 +518,14 @@ public class XcpEntityManager implements DmsEntityManager {
 		final AnnotationInfo childAi = getAnnotationInfo(childObject.getClass());
 		final String childObjectId = (String) childAi.getIdMethod().getProperty(childObject);
 
-		IDfPersistentObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod().getAttributeName(), parentObjectId, -1);
+		IDfTypedObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod().getAttributeName(), parentObjectId, -1);
 		if (dmsParent == null) {
 			throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(parentObjectId));
 		}
-		IDfRelation relationObj = dmsParent.addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false, ai.getLabel());
+		if (!(dmsParent instanceof IDfPersistentObject)) {
+			throw new XcpPersistenceException(Message.E_NOT_PERSISTENT_OBJECT.get(ai.getDmsType()));
+		}
+		IDfRelation relationObj = ((IDfPersistentObject) dmsParent).addChildRelative(ai.getDmsRelationName(), new DfId(childObjectId), null, false, ai.getLabel());
 
 		return relationObj;
 	}
@@ -531,7 +542,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		return entityClass.getName() + "::" + key;
 	}
 
-	private final void dms2Entity(IDfPersistentObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {
+	private final void dms2Entity(IDfTypedObject dmsObj, Object entity, AnnotationInfo ai) throws DfException {
 		for (PersistentProperty field : ai.getPersistentProperties()) {
 			if (field.isGeneratedValue() || field.isReadonly()) {
 				if (field.isRepeating()) {
@@ -550,11 +561,11 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId) throws DfException {
+	IDfTypedObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId) throws DfException {
 		return getDmsObj(dfSession, ai, objectId, -1);
 	}
 
-	public IDfPersistentObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp) throws DfException {
+	public IDfTypedObject getDmsObj(IDfSession dfSession, AnnotationInfo ai, Object objectId, int vstamp) throws DfException {
 		if (Strings.isNullOrEmpty(objectId.toString())) {
 			return null;
 		}
@@ -566,7 +577,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 	}
 
-	private IDfPersistentObject getDmsObj(IDfSession dfSession, String objectType, String keyIdentifier, Object objectId, int vstamp) throws DfException {
+	private IDfTypedObject getDmsObj(IDfSession dfSession, String objectType, String keyIdentifier, Object objectId, int vstamp) throws DfException {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(objectType);
 		buffer.append(" where ");
@@ -579,7 +590,30 @@ public class XcpEntityManager implements DmsEntityManager {
 		if (logger.isDebugEnabled()) {
 			logger.debug("find by qualification: {}", buffer.toString());
 		}
-		IDfPersistentObject dmsObj = dfSession.getObjectByQualification(buffer.toString());
+		IDfTypedObject dmsObj = null;
+		if (PersistentProperty.DMS_ATTR_OBJECT_ID.equals(keyIdentifier)) {
+			dmsObj = dfSession.getObjectByQualification(buffer.toString());
+		} else {
+			buffer.insert(0, "select * from ");
+			dmsObj = getObjectByQuery(dfSession, buffer.toString());
+		}
+		return dmsObj;
+	}
+
+	private IDfTypedObject getObjectByQuery(IDfSession dfSession, String dql) throws DfException {
+		IDfTypedObject dmsObj = null;
+		
+		IDfQuery query = getDctmDriver().createQuery();
+		query.setDQL(dql);
+		IDfCollection results = query.execute(dfSession, IDfQuery.DF_READ_QUERY);
+		try {
+			if (results.next()) {
+				dmsObj = results.getTypedObject();
+			}
+		} finally {
+			results.close();
+		}
+		
 		return dmsObj;
 	}
 

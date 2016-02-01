@@ -11,6 +11,7 @@ import com.documentum.com.IDfClientX;
 import com.documentum.fc.client.DfClient;
 import com.documentum.fc.client.IDfClient;
 import com.documentum.fc.client.IDfDocbrokerClient;
+import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSessionManager;
 import com.documentum.fc.client.IDfTypedObject;
@@ -282,6 +283,10 @@ public enum Repository {
 			logger.debug("failed to retrieve the docbase name from the object id", ignore);
 		}
 		return docbaseName;
+	}
+
+	public final IDfQuery createQuery() {
+		return clientX.getQuery();
 	}
 
 	/**

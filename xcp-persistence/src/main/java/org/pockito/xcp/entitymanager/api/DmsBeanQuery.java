@@ -18,4 +18,7 @@ public interface DmsBeanQuery<T> extends DmsTypedQuery<T> {
 	
 	int executeUpdate(boolean yesIReallyWantDeleteAll);
 	
+	DmsBeanQuery<T> setHint(String hintName, Object value);
+    
+	DmsBeanQuery<T> setMaxResults(int maxResult);
 }

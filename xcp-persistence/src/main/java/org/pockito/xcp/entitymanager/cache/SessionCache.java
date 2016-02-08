@@ -60,7 +60,7 @@ public class SessionCache implements SessionCacheWrapper {
 			try {
 				session = em().getSession();
 				AnnotationInfo ai = aiMgr().getAnnotationInfo(cacheElement.value.getClass());
-				final PersistentProperty keyProperty = ai.getIdMethod();
+				final PersistentProperty keyProperty = ai.getIdProperty();
 				final String objId = (String) keyProperty.getProperty(cacheElement.value);
 				IDfTypedObject dmsObj = em().getDmsObj(session, ai, objId, cacheElement.vstamp);
 				upToDate = dmsObj != null;
@@ -79,7 +79,7 @@ public class SessionCache implements SessionCacheWrapper {
 	 */
 	@Override
 	public void put(Object value, AnnotationInfo ai) {
-		final PersistentProperty keyProperty = ai.getIdMethod();
+		final PersistentProperty keyProperty = ai.getIdProperty();
 		final String key = value.getClass().getName() + "::" + (String) keyProperty.getProperty(value);
 		final PersistentProperty vstampMethod = ai.getVStampMethod();
 		int vstamp;

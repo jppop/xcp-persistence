@@ -50,7 +50,7 @@ public class AnnotationInfo implements MetaData {
 	 * @see org.pockito.xcp.entitymanager.MetaData#getIdMethod()
 	 */
 	@Override
-	public PersistentProperty getIdMethod() {
+	public PersistentProperty getIdProperty() {
 		return idMethod;
 	}
 

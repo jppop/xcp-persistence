@@ -8,7 +8,7 @@ public interface MetaData {
 
 	public abstract String getDmsType();
 
-	public abstract PersistentProperty getIdMethod();
+	public abstract PersistentProperty getIdProperty();
 
 	public abstract Collection<PersistentProperty> getPersistentProperties();
 

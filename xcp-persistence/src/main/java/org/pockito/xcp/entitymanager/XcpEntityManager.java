@@ -107,7 +107,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		// get the id of the object to be deleted
 		final AnnotationInfo ai = getAnnotationInfo(entity.getClass());
-		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		final String objectId = (String) ai.getIdProperty().getProperty(entity);
 		if (Strings.isNullOrEmpty(objectId)) {
 			throw new IllegalStateException(Message.E_NO_ID_KEY.get());
 		}
@@ -153,63 +153,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 				logger.debug("Found dms object {}", primaryKey.toString());
 
-				newInstance = entityClass.newInstance();
-
-				Collection<PersistentProperty> persistentProperties = ai.getPersistentProperties();
-				for (PersistentProperty field : persistentProperties) {
-
-					if (field.isAttribute()) {
-
-						logger.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
-						if (field.isRepeating()) {
-							List<Object> values = getRepeatingValues(dmsObj, field);
-							field.setProperty(newInstance, values);
-						} else {
-							IDfValue dfValue = dmsObj.getValue(field.getAttributeName());
-							field.setProperty(newInstance, dfValue);
-						}
-
-					} else if ((field.isChild() || field.isParent()) && (ai.getTypeCategory() == XcpTypeCategory.RELATION)) {
-
-						// relation field
-
-						logger.trace("OneToOne relation {}", field.getFieldName());
-						Class<?> beanClass = field.getRawClass();
-						if (beanClass.isPrimitive()) {
-							throw new XcpPersistenceException(Message.E_NOT_PRIMITIVE_TYPE.get(field.getFieldName()));
-						}
-						String foreignKey = field.isChild() ? PersistentProperty.DMS_ATTR_CHILD_ID : PersistentProperty.DMS_ATTR_PARENT_ID;
-						IDfId externalKey = dmsObj.getId(foreignKey);
-						Object bean = doFind(beanClass, getAnnotationInfo(beanClass), externalKey);
-						field.setProperty(newInstance, bean);
-
-					} else if (field.isParentFolder()) {
-
-						// parent folder
-						logger.trace("reading parent folder property {}", field.getFieldName());
-						if (field.isPropClassAssignableFrom(String.class)) {
-							if (field.isRepeating()) {
-								List<Object> values = new ArrayList<Object>();
-								final String attributeName = field.getAttributeName();
-								final int valueCount = dmsObj.getValueCount(attributeName);
-								for (int index = 0; index < valueCount; index++) {
-									final IDfValue dfValue = getFolderPathAsDfValue(dfSession, dmsObj, index);
-									values.add(dfValue.asString());
-								}
-								field.setProperty(newInstance, values);
-							} else {
-								final IDfValue dfValue = getFolderPathAsDfValue(dfSession, dmsObj, 0);
-								field.setProperty(newInstance, dfValue);
-							}
-						} else {
-							// TODO
-							logger.warn("Field {} type is not a String. Cannot read folder path", field.getFieldName());
-						}
-					}
-				}
-
-				// cache the instance
-				cachePut(newInstance, ai);
+				newInstance = load(entityClass, ai, dfSession, dmsObj);
 			}
 		} catch (XcpPersistenceException e) {
 			throw e;
@@ -218,6 +162,92 @@ public class XcpEntityManager implements DmsEntityManager {
 		} finally {
 			releaseSession(dfSession);
 		}
+		return newInstance;
+	}
+
+	public <B> B load(Class<B> entityClass, IDfTypedObject dmsObj) {
+		checkNotNull(dmsObj);
+
+		B newInstance = null;
+		String primaryKey = "?";
+		IDfSession dfSession = null;
+		try {
+			// get a DFC session
+			dfSession = getSession();
+			AnnotationInfo ai = getAnnotationInfo(entityClass);
+			primaryKey = ai.getIdProperty().getAttributeName();
+
+			newInstance = load(entityClass, ai, dfSession, dmsObj);
+		} catch (XcpPersistenceException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new XcpPersistenceException(Message.E_FIND_FAILED.get((String) primaryKey), e);
+		} finally {
+			releaseSession(dfSession);
+		}
+		return newInstance;
+	}
+
+	private <B> B load(Class<B> entityClass, AnnotationInfo ai, IDfSession dfSession, IDfTypedObject dmsObj)
+			throws InstantiationException, IllegalAccessException, DfException {
+		B newInstance;
+		newInstance = entityClass.newInstance();
+
+		Collection<PersistentProperty> persistentProperties = ai.getPersistentProperties();
+		for (PersistentProperty field : persistentProperties) {
+
+			if (field.isAttribute()) {
+
+				logger.trace("reading property {} bound to {}", field.getFieldName(), field.getAttributeName());
+				if (field.isRepeating()) {
+					List<Object> values = getRepeatingValues(dmsObj, field);
+					field.setProperty(newInstance, values);
+				} else {
+					IDfValue dfValue = dmsObj.getValue(field.getAttributeName());
+					field.setProperty(newInstance, dfValue);
+				}
+
+			} else if ((field.isChild() || field.isParent()) && (ai.getTypeCategory() == XcpTypeCategory.RELATION)) {
+
+				// relation field
+
+				logger.trace("OneToOne relation {}", field.getFieldName());
+				Class<?> beanClass = field.getRawClass();
+				if (beanClass.isPrimitive()) {
+					throw new XcpPersistenceException(Message.E_NOT_PRIMITIVE_TYPE.get(field.getFieldName()));
+				}
+				String foreignKey = field.isChild() ? PersistentProperty.DMS_ATTR_CHILD_ID : PersistentProperty.DMS_ATTR_PARENT_ID;
+				IDfId externalKey = dmsObj.getId(foreignKey);
+				Object bean = doFind(beanClass, getAnnotationInfo(beanClass), externalKey);
+				field.setProperty(newInstance, bean);
+
+			} else if (field.isParentFolder()) {
+
+				// parent folder
+				logger.trace("reading parent folder property {}", field.getFieldName());
+				if (field.isPropClassAssignableFrom(String.class)) {
+					if (field.isRepeating()) {
+						List<Object> values = new ArrayList<Object>();
+						final String attributeName = field.getAttributeName();
+						final int valueCount = dmsObj.getValueCount(attributeName);
+						for (int index = 0; index < valueCount; index++) {
+							final IDfValue dfValue = getFolderPathAsDfValue(dfSession, dmsObj, index);
+							values.add(dfValue.asString());
+						}
+						field.setProperty(newInstance, values);
+					} else {
+						final IDfValue dfValue = getFolderPathAsDfValue(dfSession, dmsObj, 0);
+						field.setProperty(newInstance, dfValue);
+					}
+				} else {
+					// TODO
+					logger.warn("Field {} type is not a String. Cannot read folder path", field.getFieldName());
+				}
+			}
+		}
+
+		// cache the instance
+		cachePut(newInstance, ai);
 		return newInstance;
 	}
 
@@ -253,7 +283,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 			IDfTypedObject dmsObj = null;
 			// retrieve the object
-			final String objectId = (String) ai.getIdMethod().getProperty(entity);
+			final String objectId = (String) ai.getIdProperty().getProperty(entity);
 			if (!Strings.isNullOrEmpty(objectId)) {
 				dmsObj = getDmsObj(dfSession, ai, objectId);
 				if (!(dmsObj instanceof IDfPersistentObject)) {
@@ -323,7 +353,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		// get annotation info
 		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
-		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		final String objectId = (String) ai.getIdProperty().getProperty(entity);
 		if (Strings.isNullOrEmpty(objectId)) {
 			throw new IllegalStateException(Message.E_NO_ID_KEY.get());
 		}
@@ -414,7 +444,7 @@ public class XcpEntityManager implements DmsEntityManager {
 
 		// get annotation info
 		AnnotationInfo ai = factory().getAnnotationManager().getAnnotationInfo(entity);
-		final String objectId = (String) ai.getIdMethod().getProperty(entity);
+		final String objectId = (String) ai.getIdProperty().getProperty(entity);
 		if (Strings.isNullOrEmpty(objectId)) {
 			throw new IllegalStateException(Message.E_NO_ID_KEY.get());
 		}
@@ -488,7 +518,7 @@ public class XcpEntityManager implements DmsEntityManager {
 	private IDfTypedObject createDmsObject(IDfSession dfSession, Object entity, AnnotationInfo ai) throws DfException {
 		// create a DMS object if needed
 		IDfTypedObject dmsObj = null;
-		String identifier = (String) ai.getIdMethod().getProperty(entity);
+		String identifier = (String) ai.getIdProperty().getProperty(entity);
 		if (!Strings.isNullOrEmpty(identifier)) {
 			dmsObj = getDmsObj(dfSession, ai, identifier);
 		}
@@ -513,12 +543,12 @@ public class XcpEntityManager implements DmsEntityManager {
 		}
 		final Object parentObject = parentMethod.getProperty(entity);
 		final AnnotationInfo parentAi = getAnnotationInfo(parentObject.getClass());
-		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parentObject);
+		final String parentObjectId = (String) parentAi.getIdProperty().getProperty(parentObject);
 		final Object childObject = childMethod.getProperty(entity);
 		final AnnotationInfo childAi = getAnnotationInfo(childObject.getClass());
-		final String childObjectId = (String) childAi.getIdMethod().getProperty(childObject);
+		final String childObjectId = (String) childAi.getIdProperty().getProperty(childObject);
 
-		IDfTypedObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdMethod().getAttributeName(), parentObjectId, -1);
+		IDfTypedObject dmsParent = getDmsObj(dfSession, parentAi.getDmsType(), parentAi.getIdProperty().getAttributeName(), parentObjectId, -1);
 		if (dmsParent == null) {
 			throw new XcpPersistenceException(Message.E_REPO_OBJ_NOT_FOUND.get(parentObjectId));
 		}
@@ -573,7 +603,7 @@ public class XcpEntityManager implements DmsEntityManager {
 			// return getDmsRelationObj(dfSession, ai, objectId, vstamp);
 			return getDmsObj(dfSession, ai.getDmsType(), PersistentProperty.DMS_ATTR_OBJECT_ID, objectId, vstamp);
 		} else {
-			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdMethod().getAttributeName(), objectId, vstamp);
+			return getDmsObj(dfSession, ai.getDmsType(), ai.getIdProperty().getAttributeName(), objectId, vstamp);
 		}
 	}
 
@@ -680,7 +710,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo parentAi = getAnnotationInfo(parent.getClass());
 		final AnnotationInfo childAi = getAnnotationInfo(childClass);
-		final String parentObjectId = (String) parentAi.getIdMethod().getProperty(parent);
+		final String parentObjectId = (String) parentAi.getIdProperty().getProperty(parent);
 
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("select c.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(childAi.getDmsType()).append(" c")
@@ -697,7 +727,7 @@ public class XcpEntityManager implements DmsEntityManager {
 		final AnnotationInfo relationAi = getAnnotationInfo(relationClass);
 		final AnnotationInfo childAi = getAnnotationInfo(child.getClass());
 		final AnnotationInfo parentAi = getAnnotationInfo(parentClass);
-		final String childObjectId = (String) childAi.getIdMethod().getProperty(child);
+		final String childObjectId = (String) childAi.getIdProperty().getProperty(child);
 
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("select p.r_object_id").append(" from ").append(relationAi.getDmsType()).append(" r, ").append(parentAi.getDmsType()).append(" p")

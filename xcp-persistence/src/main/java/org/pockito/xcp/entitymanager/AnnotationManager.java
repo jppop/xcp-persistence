@@ -89,7 +89,7 @@ public class AnnotationManager {
         if (Strings.isNullOrEmpty(dmsTypeName)) {
         	throw new XcpPersistenceException(Message.E_NO_TYPE_ANNOTATION.get(c.getName()));
         }
-        if (ai.getIdMethod() == null) {
+        if (ai.getIdProperty() == null) {
         	throw new XcpPersistenceException(Message.E_NO_ID_ANNOTATION.get(c.getName()));
         }
         ai.setDmsType(dmsTypeName);

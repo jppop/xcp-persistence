@@ -22,7 +22,7 @@ public class AnnotationManagerTest {
 		assertNotNull(ai);
 		assertEquals(8, ai.getPersistentProperties().size());
 		assertEquals("todo_task", ai.getDmsType());
-		assertEquals("id", ai.getIdMethod().getFieldName());
+		assertEquals("id", ai.getIdProperty().getFieldName());
 		assertEquals("subject", ai.getPersistentProperty("what").getAttributeName());
 		assertEquals("priority", ai.getPersistentProperty("priority").getAttributeName());
 		assertEquals("r_creation_date", ai.getPersistentProperty("creationDate").getAttributeName());

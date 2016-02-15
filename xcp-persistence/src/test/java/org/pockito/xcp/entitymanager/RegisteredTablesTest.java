@@ -5,10 +5,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
+import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.message.Message;
 
@@ -18,7 +22,10 @@ import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.common.DfException;
 
 public class RegisteredTablesTest extends RepositoryRequiredTest {
-	
+
+	@Rule
+	public TestName testName = new TestName();
+
 	private static XcpEntityManager em;
 
 	@BeforeClass
@@ -35,58 +42,41 @@ public class RegisteredTablesTest extends RepositoryRequiredTest {
 
 	@Test
 	public void testFind() throws DfException {
-		
-		String expectedSegName = null;
-		
-		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
-		try {
-			IDfQuery query = createQuery();
-			query.setDQL("select segment_name from dm_extents enable (RETURN_TOP  1)");
-			IDfCollection results = query.execute(session, IDfQuery.DF_READ_QUERY);
-			try {
-				if (results.next()) {
-					expectedSegName = results.getString("segment_name");
-				}
-			} finally {
-				results.close();
-			}
-		} finally {
-			getRepository().releaseSession(session);
-		}
+
+		final String expectedSegName = findAnyExtent();
 		assertNotNull(expectedSegName);
-		
+
 		Extent extent = em.find(Extent.class, expectedSegName);
-		
+
 		assertNotNull(extent);
 		assertEquals(expectedSegName, extent.getSegmentName());
 	}
 
 	@Test
-	public void testUnsupportedOp() throws DfException {
-		String expectedSegName = null;
-		
-		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
-		try {
-			IDfQuery query = createQuery();
-			query.setDQL("select segment_name from dm_extents enable (RETURN_TOP  1)");
-			IDfCollection results = query.execute(session, IDfQuery.DF_READ_QUERY);
-			try {
-				if (results.next()) {
-					expectedSegName = results.getString("segment_name");
-				}
-			} finally {
-				results.close();
-			}
-		} finally {
-			getRepository().releaseSession(session);
-		}
+	public void testQuery() throws DfException {
+
+		final String expectedSegName = findAnyExtent();
 		assertNotNull(expectedSegName);
-		
+
+		DmsBeanQuery<Extent> query = em.createBeanQuery(Extent.class).setMaxResults(1);
+		List<Extent> extents = query.getResultList();
+		assertNotNull(extents);
+		assertEquals(1, extents.size());
+		assertEquals(expectedSegName, extents.get(0).getSegmentName());
+
+	}
+
+	@Test
+	public void testUnsupportedOp() throws DfException {
+
+		final String expectedSegName = findAnyExtent();
+		assertNotNull(expectedSegName);
+
 		Extent extent = em.find(Extent.class, expectedSegName);
-		
+
 		assertNotNull(extent);
 		assertEquals(expectedSegName, extent.getSegmentName());
-		
+
 		try {
 			em.persist(extent);
 			fail("should be unsupported");
@@ -104,4 +94,25 @@ public class RegisteredTablesTest extends RepositoryRequiredTest {
 			assertEquals(Message.E_NOT_PERSISTENT_OBJECT.get("dm_extents"), cause.getMessage());
 		}
 	}
+
+	private String findAnyExtent() throws DfException {
+		String segmentName = null;
+		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
+		try {
+			IDfQuery query = createQuery();
+			query.setDQL("select segment_name from dm_extents enable (RETURN_TOP  1)");
+			IDfCollection results = query.execute(session, IDfQuery.DF_READ_QUERY);
+			try {
+				if (results.next()) {
+					segmentName = results.getString("segment_name");
+				}
+			} finally {
+				results.close();
+			}
+		} finally {
+			getRepository().releaseSession(session);
+		}
+		return segmentName;
+	}
+
 }

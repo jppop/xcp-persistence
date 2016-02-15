@@ -166,6 +166,9 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	}
 
 	private void valueAsDql(StringBuffer buffer, Expression<?> expr) {
+		if ( expr.prop.isRepeating() ) {
+			buffer.append(" any");
+		}
 		if (expr.rightOpt.op() == Operator.in) {
 			buffer.append(" ").append(expr.prop.getAttributeName()).append(" in (");
 			List<?> values = expr.rightOpt.values();

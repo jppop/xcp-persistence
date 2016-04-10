@@ -100,7 +100,8 @@ public interface XcpGenericRepo<T> {
 	 * @return
 	 */
 	XcpRepoCommand createSharedCmd();
-
+	XcpRepoCommand createSharedCmd(String repository, String username, String password);
+	
 	/**
 	 * @return the current command
 	 */

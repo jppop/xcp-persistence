@@ -109,6 +109,15 @@ public class XcpGenericRepoImpl<T> implements XcpGenericRepo<T> {
 	}
 
 	@Override
+	public XcpRepoCommand createSharedCmd(String repository, String username, String password) {
+		XcpRepoCommand cmd = XcpRepoCmdFactory.instance.create(repository, username, password);
+		cmd.setOwner(this); // unused
+		XcpRepoCmdFactory.instance.registerSharedCmd(cmd);
+		useSharedCmd(cmd);
+		return cmd;
+	}
+
+	@Override
 	public XcpRepoCommand getCurrentCmd() {
 		return this.xcpCmd.get();
 	}

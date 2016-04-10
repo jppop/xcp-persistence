@@ -2,12 +2,15 @@ package org.pockito.xcp.entitymanager.query;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.pockito.xcp.entitymanager.XcpEntityManager;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
+import org.pockito.xcp.entitymanager.api.DmsQuery;
+import org.pockito.xcp.entitymanager.api.DmsQuery.OrderDirection;
 
 import com.documentum.fc.client.IDfSession;
 
@@ -19,6 +22,17 @@ public abstract class AbstractQuery {
 	protected boolean nativeQuery;
 	protected final Map<String, Object> parameters = new HashMap<String, Object>();
 	protected final Map<String, Object> hints = new HashMap<String, Object>();
+	
+	private class OrderCriteria {
+		public String field;
+		public OrderDirection direction;
+		public OrderCriteria(String field, OrderDirection direction) {
+			super();
+			this.field = field;
+			this.direction = direction;
+		}
+	}
+	protected final ArrayList<OrderCriteria> orders = new ArrayList<OrderCriteria>();
 
 	public AbstractQuery(XcpEntityManager em) {
 		this.em = em;
@@ -59,6 +73,11 @@ public abstract class AbstractQuery {
 		this.nativeQuery = isNative;
 	}
 
+	public DmsQuery setOrder(String property, OrderDirection direction) {
+		this.getOrders().add(new OrderCriteria(property, direction));
+		return (DmsQuery) this;
+	}
+
 	public int executeUpdate() {
 		final int count;
 		IDfSession session = dctmDriver().getSession();
@@ -89,6 +108,22 @@ public abstract class AbstractQuery {
 				sep = ", ";
 			}
 			buffer.append(")");
+			return buffer.toString();
+		} else {
+			return originalQuery;
+		}
+	}
+
+	protected String addOrders(final String originalQuery) {
+		if (getOrders().size() > 0) {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append(originalQuery).append(" ORDER BY");
+			ArrayList<OrderCriteria> criteria = getOrders();
+			String sep = " ";
+			for (OrderCriteria orderCriteria : criteria) {
+				buffer.append(sep).append(orderCriteria.field).append(" ").append(orderCriteria.direction.toString());
+				sep = ", ";
+			}
 			return buffer.toString();
 		} else {
 			return originalQuery;
@@ -144,6 +179,10 @@ public abstract class AbstractQuery {
 
 	public Map<String, Object> getHints() {
 		return hints;
+	}
+	
+	public ArrayList<OrderCriteria> getOrders() {
+		return orders;
 	}
 
 }

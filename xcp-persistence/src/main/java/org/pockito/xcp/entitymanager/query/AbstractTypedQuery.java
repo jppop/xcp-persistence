@@ -69,6 +69,12 @@ public abstract class AbstractTypedQuery<T> extends AbstractQuery implements Dms
 		getHints().put("RETURN_TOP", maxResult);
 		return this;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public DmsTypedQuery<T> setOrder(String property, OrderDirection direction) {
+		return (DmsTypedQuery<T>) super.setOrder(property, direction);
+	}
 
 	protected List<?> executeNativeQuery(Class<?> beanClass, String dqlString) {
 		logger.debug("executeNativeQuery: {}", getQuery());
@@ -81,7 +87,7 @@ public abstract class AbstractTypedQuery<T> extends AbstractQuery implements Dms
 			// TODO: Not optimized! Should use a query with the entity fields as
 			// columns
 			logger.debug("Original query: {}", dqlString);
-			String finalQuery = replaceQueryParameters(addHints(dqlString));
+			String finalQuery = replaceQueryParameters(addHints(addOrders(dqlString)));
 			logger.debug("Final query: {}", finalQuery);
 			rawResultList = dctmDriver().getObjectsByQuery(session, finalQuery);
 			for (IDfId objectId : rawResultList) {

@@ -17,6 +17,10 @@ public interface DmsQuery {
     
     DmsQuery setMaxResults(int maxResult);
     
+	public enum OrderDirection { desc, asc };
+	
+    DmsQuery setOrder(String property, OrderDirection direction);
+    
     String asDql();
     
 }

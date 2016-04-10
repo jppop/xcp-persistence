@@ -43,4 +43,9 @@ public class XcpTypedQuery<T> extends AbstractTypedQuery<T> implements DmsTypedQ
 		return resultList;
 	}
 
+	@Override
+	public DmsTypedQuery<T> setOrder(String property, OrderDirection direction) {
+		return (DmsTypedQuery<T>) super.setOrder(property, direction);
+	}
+
 }

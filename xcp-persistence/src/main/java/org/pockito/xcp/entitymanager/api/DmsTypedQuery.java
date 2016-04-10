@@ -13,4 +13,7 @@ public interface DmsTypedQuery<T> extends DmsQuery {
 	DmsTypedQuery<T> setHint(String hintName, Object value);
     
 	DmsTypedQuery<T> setMaxResults(int maxResult);
+
+	DmsTypedQuery<T> setOrder(String property, OrderDirection direction);
+    
 }

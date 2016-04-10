@@ -56,6 +56,16 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 	}
 
 	@Override
+	public DmsBeanQuery<T> setOrder(String fieldName, OrderDirection direction) {
+		final PersistentProperty prop = meta.getPersistentProperty(fieldName);
+		if (prop == null) {
+			throw new XcpPersistenceException(Message.E_UNKNOWN_FIELD.get(fieldName));
+		}
+		String property = prop.getAttributeName();
+		return (DmsBeanQuery<T>) super.setOrder(property, direction);
+	}
+	
+	@Override
 	public List<T> getResultList() {
 		if (getQueryType() != QueryType.select) {
 			throw new XcpPersistenceException(Message.E_NOT_SELECT_QUERY.get());
@@ -63,7 +73,7 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 		RowHandler rowHandler = new RowHandler();
 		IDfSession session = dctmDriver().getSession();
 		try {
-			dctmDriver().getObjectsByQuery(session, addHints(asDql()), rowHandler);
+			dctmDriver().getObjectsByQuery(session, asDql(), rowHandler);
 		} finally {
 			dctmDriver().releaseSession(session);
 		}
@@ -123,7 +133,7 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 			valueAsDql(buffer, expr);
 			andOp = " and";
 		}
-		return buffer.toString();
+		return addHints(addOrders(buffer.toString()));
 	}
 
 	public String getColums(MetaData meta) {

@@ -21,4 +21,6 @@ public interface DmsBeanQuery<T> extends DmsTypedQuery<T> {
 	DmsBeanQuery<T> setHint(String hintName, Object value);
     
 	DmsBeanQuery<T> setMaxResults(int maxResult);
+
+	DmsBeanQuery<T> setOrder(String fieldName, OrderDirection direction);
 }

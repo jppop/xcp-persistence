@@ -8,17 +8,6 @@
 		<version>0.0.8-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<scm.url>https://use.steria.com/gitroot/backoffpi/project.git</scm.url>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<dfc.version>7.1.0120.0167</dfc.version>
-		<slf4j.version>1.7.10</slf4j.version>
-		<logback.version>1.1.2</logback.version>
-		<guava.version>18.0</guava.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.emc.documentum.dfc</groupId>
@@ -56,9 +45,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -68,7 +55,6 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

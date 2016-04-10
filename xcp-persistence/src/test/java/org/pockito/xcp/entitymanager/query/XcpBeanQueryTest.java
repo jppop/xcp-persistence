@@ -19,6 +19,7 @@ import org.pockito.xcp.entitymanager.XcpEntityManagerFactory;
 import org.pockito.xcp.entitymanager.api.DctmDriver;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery.QueryType;
+import org.pockito.xcp.entitymanager.api.DmsQuery.OrderDirection;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.test.domain.Document;
 import org.pockito.xcp.test.domain.Person;
@@ -72,6 +73,27 @@ public class XcpBeanQueryTest {
 		queryTask2.setParameter("priority", in("high", "urgent"));
 		queryPart = extractFromPart(queryTask2.asDql());
 		assertEquals("from todo_task where priority in ( 'high', 'urgent' )", queryPart);
+
+		DmsBeanQuery<Task> queryTask3 = em.createBeanQuery(Task.class);
+		queryTask3.setParameter("priority", in(new String[] {"high", "urgent"}));
+		queryPart = extractFromPart(queryTask3.asDql());
+		assertEquals("from todo_task where priority in ( 'high', 'urgent' )", queryPart);
+
+	}
+
+	@Test
+	public void testQueryIsOrdered() {
+
+		DmsBeanQuery<Person> queryPerson = em.createBeanQuery(Person.class);
+
+		// find the Does (all person named "Doe")
+		queryPerson.setParameter("lastName", eq("Doe"))
+			.setOrder("lastName", OrderDirection.asc)
+			.setOrder("firstName", OrderDirection.desc)
+			;
+
+		String queryPart = extractFromPart(queryPerson.asDql());
+		assertEquals("from todo_person where last_name = 'Doe' ORDER BY last_name asc, first_name desc", queryPart);
 
 	}
 

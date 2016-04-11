@@ -67,4 +67,5 @@ public enum AppConfig {
 		} catch (IOException e) {
 		}
 	}
+
 }

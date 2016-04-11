@@ -13,11 +13,14 @@ import org.pockito.xcp.repository.XcpGenericRepoImpl;
 public class XcpParameterRepoImpl extends XcpGenericRepoImpl<XcpParameter> implements XcpParameterRepo {
 
 	@Override
-	public List<XcpParameter> findByNamespaces(String[] namespaces) {
+	public List<XcpParameter> findByNamespaces(String[] namespaces, String[] typeFilter) {
 		
 		DmsBeanQuery<XcpParameter> queryPrm = cmd().createBeanQuery(XcpParameter.class);
 
 		queryPrm.setParameter("namespace", in(namespaces));
+		if (typeFilter != null) {
+			queryPrm.setParameter("configType", in(typeFilter));
+		}
 		queryPrm.setOrder("namespace", OrderDirection.asc).setOrder("configName", OrderDirection.asc);
 		return queryPrm.getResultList();
 	}
@@ -26,7 +29,7 @@ public class XcpParameterRepoImpl extends XcpGenericRepoImpl<XcpParameter> imple
 	public XcpParameter findByName(String namespace, String configName) {
 		DmsBeanQuery<XcpParameter> queryPrm = cmd().createBeanQuery(XcpParameter.class);
 
-		queryPrm.setParameter("namespace", eq(namespace)).setParameter("configName", configName).setMaxResults(1);
+		queryPrm.setParameter("namespace", eq(namespace)).setParameter("configName", eq(configName)).setMaxResults(1);
 		List<XcpParameter> prms = queryPrm.getResultList();
 		if ( prms.size() == 1) {
 			return prms.get(0);

@@ -90,7 +90,7 @@ public class XcpConfigToolTest {
 		prm.setPropertyValue(Arrays.asList("p-value-#02.01"));
 		prms.add(prm);
 		
-		when(repo.findByNamespaces(aryEq(new String[] { "nm1", "nm2"}))).thenReturn(prms);
+		when(repo.findByNamespaces(aryEq(new String[] { "nm1", "nm2"}), null)).thenReturn(prms);
 		
 		XcpConfigTool configTool = new XcpConfigTool(repo);
 		
@@ -107,7 +107,7 @@ public class XcpConfigToolTest {
 	        }
 	    };
 	    
-	    configTool.exportConfig("repo", "username", "password", new String[] { "nm1", "nm2"}, output);
+	    configTool.exportConfig("repo", "username", "password", new String[] { "nm1", "nm2"}, output, null);
 	    
 	    assertEquals(expected, output.toString());
 	}
@@ -121,7 +121,7 @@ public class XcpConfigToolTest {
 		
 		List<XcpParameter> prms = new ArrayList<XcpParameter>();
 		
-		when(repo.findByNamespaces(Mockito.any(String[].class))).thenReturn(prms);
+		when(repo.findByNamespaces(Mockito.any(String[].class), null)).thenReturn(prms);
 		
 		XcpConfigTool configTool = new XcpConfigTool(repo);
 		
@@ -138,13 +138,13 @@ public class XcpConfigToolTest {
 	        }
 	    };
 	    
-	    configTool.exportConfig("repo", "username", "password", new String[] { "nm1", "nm2"}, output);
+	    configTool.exportConfig("repo", "username", "password", new String[] { "nm1", "nm2"}, output, null);
 	    
 	    assertEquals(expected, output.toString());
 	}
 	
 	@Test
-	public void testUpdate() throws JAXBException {
+	public void testUpdate() throws Exception {
 		
 		String input = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
 				+ "<parameters>\n"
@@ -185,7 +185,7 @@ public class XcpConfigToolTest {
 		InputStream is = new ByteArrayInputStream(input.getBytes());
 
 		XcpConfigTool configTool = new XcpConfigTool(repo);
-	    Collection<XcpParameter> paramList = configTool.importConfig("repo", "username", "password", is, false);
+	    Collection<XcpParameter> paramList = configTool.importConfig("repo", "username", "password", is, false, null, null);
 	    assertNotNull(paramList);
 	    assertEquals(1, paramList.size());
 	    prm = paramList.iterator().next();

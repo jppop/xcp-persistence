@@ -118,7 +118,7 @@ public class XcpParameter extends PersistedObject {
 	@Override
 	public String toString() {
 		return String.format(
-				"XcpFormat [namespace=%s, name=%s, type=%s, config-names=%s, config-type=%s]",
+				"XcpFormat [namespace=%s, name=%s, type=%s, property-names=%s, property-values=%s]",
 				getNamespace(), getConfigName(), getConfigType(), getPropertyName().toString(), getPropertyValue().toString()
 				);
 	}

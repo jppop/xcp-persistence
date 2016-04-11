@@ -2,10 +2,14 @@ package org.pockito.xcp.config;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.MissingOptionException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
@@ -19,7 +23,10 @@ public class CommandLineHelper {
 	private static final String OPT_REPO = "r";
 	private static final String OPT_FILE = "f";
 	private static final String OPT_IMPORT = "i";
+	private static final String OPT_EXPORT = "e";
+	private static final String OPT_TYPEFILTER = "t";
 	private static final String LONGOPT_IMPORT = "import";
+	private static final String OPT_EXCLUDELIST = "x";
 
 	public CommandLineHelper(String[] args) {
 		super();
@@ -33,11 +40,16 @@ public class CommandLineHelper {
 		options.addOption(Option.builder(OPT_PASSWORD).desc("Password").required(true).longOpt("password").hasArg()
 				.build());
 		options.addOption(Option.builder(OPT_NAMESPACES)
-				.desc("Namespaces to be imported/exported (comma separated values)").required(true)
+				.desc("Namespaces to be imported/exported (comma separated values)").required(false)
 				.longOpt("namespaces").hasArg().build());
+		options.addOption(Option.builder(OPT_TYPEFILTER).desc("Config type filter (comma separated values)")
+				.required(false).longOpt("type-filter").hasArg().build());
+
+		options.addOption(Option.builder(OPT_EXCLUDELIST).desc("Exclude list")
+				.required(false).longOpt("exclude").hasArg().build());
 
 		Option fileOption = Option.builder(OPT_FILE).desc("input or output file. Default is standard input/output")
-				.required(false).longOpt("file").numberOfArgs(2).build();
+				.required(false).longOpt("file").hasArg().build();
 
 		options.addOption(fileOption);
 
@@ -45,7 +57,7 @@ public class CommandLineHelper {
 		cmdOptionGroup.setRequired(true);
 		Option importOption = Option.builder(OPT_IMPORT).desc("udapte parameters from a file").longOpt(LONGOPT_IMPORT)
 				.build();
-		Option exportOption = Option.builder("e").desc("dump parameters to a file").longOpt("export").build();
+		Option exportOption = Option.builder(OPT_EXPORT).desc("dump parameters to a file").longOpt("export").build();
 		cmdOptionGroup.addOption(importOption);
 		cmdOptionGroup.addOption(exportOption);
 		options.addOptionGroup(cmdOptionGroup);
@@ -67,7 +79,19 @@ public class CommandLineHelper {
 			if (this.cli.hasOption("h")) {
 				help();
 			}
-		} catch (ParseException e) {
+			if (this.hasExportOption()) {
+				if (!this.cli().hasOption(OPT_NAMESPACES)) {
+					throw new MissingOptionException("Missing required option:" + OPT_NAMESPACES);
+				}
+			} else {
+				if (this.cli().hasOption(OPT_EXCLUDELIST)) {
+					File file = new File(this.getExcludeList());
+					if (!file.isFile() || !file.canRead()) {
+						throw new FileNotFoundException(file.getAbsolutePath());
+					}
+				}
+			}
+		} catch (ParseException | FileNotFoundException e) {
 			System.out.println(e.getMessage());
 			help();
 		}
@@ -75,7 +99,7 @@ public class CommandLineHelper {
 	}
 
 	private void help() {
-		final String USAGE = "xcp-prm [-h] --export | --import [-f <filename>] -r <repository> -u <username> -p <password> -n <namspaces>";
+		final String USAGE = "xcp-prm [-h] (--export -n <namepaces> [-t <arg>] | --import [-x <arg>]) -r <repository> -u <username> -p <password> [-f <filename>]";
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(120);
 		formatter.printHelp(USAGE, options);
@@ -88,9 +112,19 @@ public class CommandLineHelper {
 		return this.cli().hasOption(OPT_IMPORT);
 	}
 
+	public boolean hasExportOption() {
+		checkNotNull(this.cli);
+		return this.cli().hasOption(OPT_EXPORT);
+	}
+
 	public boolean hasFileOpt() {
 		checkNotNull(this.cli);
 		return this.cli().hasOption(OPT_FILE);
+	}
+
+	public boolean hasExcludeOpt() {
+		checkNotNull(this.cli);
+		return this.cli().hasOption(OPT_EXCLUDELIST);
 	}
 
 	public String getFilename() {
@@ -115,6 +149,11 @@ public class CommandLineHelper {
 		return this.cli().getOptionValue(OPT_PASSWORD);
 	}
 
+	public String getExcludeList() {
+		checkNotNull(this.cli);
+		return this.cli().getOptionValue(OPT_EXCLUDELIST);
+	}
+
 	public String[] getNamespaces() {
 		checkNotNull(this.cli);
 		String nm = this.cli().getOptionValue(OPT_NAMESPACES);
@@ -122,4 +161,14 @@ public class CommandLineHelper {
 		return namespaces;
 	};
 
+	public String[] getTypeFilter() {
+		checkNotNull(this.cli);
+		if (this.cli().hasOption(OPT_TYPEFILTER)) {
+			String filter = this.cli().getOptionValue(OPT_TYPEFILTER);
+			String[] filters = filter.split(",");
+			return filters;
+		} else {
+			return null;
+		}
+	};
 }

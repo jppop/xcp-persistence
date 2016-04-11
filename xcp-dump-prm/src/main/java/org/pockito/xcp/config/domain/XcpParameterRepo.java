@@ -6,7 +6,7 @@ import org.pockito.xcp.repository.XcpGenericRepo;
 
 public interface XcpParameterRepo extends XcpGenericRepo<XcpParameter> {
 
-	List<XcpParameter> findByNamespaces(String[] namespaces);
+	List<XcpParameter> findByNamespaces(String[] namespaces, String[] typeFilter);
 
 	XcpParameter findByName(String namespace, String configName);
 }

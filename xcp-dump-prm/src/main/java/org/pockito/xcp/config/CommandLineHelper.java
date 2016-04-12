@@ -17,6 +17,7 @@ import org.apache.commons.cli.ParseException;
 
 public class CommandLineHelper {
 
+	private static final String OPT_QUIET = "q";
 	private static final String OPT_NAMESPACES = "n";
 	private static final String OPT_PASSWORD = "p";
 	private static final String OPT_USERNAME = "u";
@@ -47,6 +48,9 @@ public class CommandLineHelper {
 
 		options.addOption(Option.builder(OPT_EXCLUDELIST).desc("Exclude list")
 				.required(false).longOpt("exclude").hasArg().build());
+
+		options.addOption(Option.builder(OPT_QUIET).desc("Quiet mode")
+				.required(false).longOpt("quiet").build());
 
 		Option fileOption = Option.builder(OPT_FILE).desc("input or output file. Default is standard input/output")
 				.required(false).longOpt("file").hasArg().build();
@@ -99,7 +103,7 @@ public class CommandLineHelper {
 	}
 
 	private void help() {
-		final String USAGE = "xcp-prm [-h] (--export -n <namepaces> [-t <arg>] | --import [-x <arg>]) -r <repository> -u <username> -p <password> [-f <filename>]";
+		final String USAGE = "xcp-prm [-h] [-q] (--export -n <namepaces> [-t <arg>] | --import [-x <arg>]) -r <repository> -u <username> -p <password> [-f <filename>]";
 		HelpFormatter formatter = new HelpFormatter();
 		formatter.setWidth(120);
 		formatter.printHelp(USAGE, options);
@@ -125,6 +129,11 @@ public class CommandLineHelper {
 	public boolean hasExcludeOpt() {
 		checkNotNull(this.cli);
 		return this.cli().hasOption(OPT_EXCLUDELIST);
+	}
+
+	public boolean isQuiet() {
+		checkNotNull(this.cli);
+		return this.cli().hasOption(OPT_QUIET);
 	}
 
 	public String getFilename() {

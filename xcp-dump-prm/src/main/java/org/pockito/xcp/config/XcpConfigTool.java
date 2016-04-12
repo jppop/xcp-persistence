@@ -79,16 +79,16 @@ public class XcpConfigTool {
 							|| excluder.isNameExluded(localPrm.getConfigName());
 				}
 				if (ignored) {
-					listener.progress("Parameter " + localPrm.toString() + " ignored", "ignored", localPrm);
+					listener.progress("Parameter ignored: " + localPrm.toString(), "ignored", localPrm);
 				} else {
 					if (remotePrm == null) {
 						if (createIfNotExists) {
-							listener.progress("Parameter " + localPrm.toString() + " updated", "updated", localPrm);
+							listener.progress("Parameter added: " + localPrm.toString(), "updated", localPrm);
 							// the parameter is new. Create it (if asked)
 							remotePrmList.add(localPrm);
 						}
 					} else {
-						listener.progress("Parameter " + localPrm.toString() + " updated", "updated", localPrm);
+						listener.progress("Parameter updated: " + localPrm.toString(), "updated", localPrm);
 						remotePrm.setPropertyName(localPrm.getPropertyName());
 						remotePrm.setPropertyValue(localPrm.getPropertyValue());
 						remotePrmList.add(remotePrm);

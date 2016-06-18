@@ -17,7 +17,6 @@ import org.pockito.xcp.entitymanager.api.PersistentProperty;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.message.Message;
 
-import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfTypedObject;
 import com.documentum.fc.common.DfException;
@@ -85,10 +84,9 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 		final List<T> resultList = new ArrayList<T>();
 		
 		@Override
-		public void handleRow(IDfSession session, IDfCollection rs) throws DfException {
+		public void handleRow(IDfSession session, IDfTypedObject row) throws DfException {
 			
-			IDfTypedObject rawObject = rs.getTypedObject();
-			T newInstance = (T) em().load(getEntityClass(), rawObject);
+			T newInstance = (T) em().load(getEntityClass(), row);
 			resultList.add(newInstance);
 		}
 
@@ -111,32 +109,30 @@ public class XcpBeanQuery<T> extends AbstractTypedQuery<T> implements DmsBeanQue
 		MetaData meta = em.getMetaData(entityClass);
 
 		if (getQueryType() == QueryType.select) {
-			buffer.append("select ").append(getColums(meta)).append(" from ")
+			buffer.append("select ").append(getColumns(meta)).append(" from ")
 					.append(meta.getDmsType());
 		} else if (getQueryType() == QueryType.delete) {
 			buffer.append("delete ").append(meta.getDmsType()).append(" objects");
 		} else {
 			throw new NotYetImplemented();
 		}
-		if (this.expressions.isEmpty()) {
-			return buffer.toString();
-		}
-
-		buffer.append(" where");
-		String andOp = "";
-
-		for (Entry<String, Expression<?>> exprEntry : this.expressions.entrySet()) {
-
-			final Expression<?> expr = exprEntry.getValue();
-
-			buffer.append(andOp);
-			valueAsDql(buffer, expr);
-			andOp = " and";
+		if (!this.expressions.isEmpty()) {
+			buffer.append(" where");
+			String andOp = "";
+	
+			for (Entry<String, Expression<?>> exprEntry : this.expressions.entrySet()) {
+	
+				final Expression<?> expr = exprEntry.getValue();
+	
+				buffer.append(andOp);
+				valueAsDql(buffer, expr);
+				andOp = " and";
+			}
 		}
 		return addHints(addOrders(buffer.toString()));
 	}
 
-	public String getColums(MetaData meta) {
+	public String getColumns(MetaData meta) {
 		StringBuffer buffer = new StringBuffer();
 		Collection<PersistentProperty> props = meta.getPersistentProperties();
 		String comma = "";

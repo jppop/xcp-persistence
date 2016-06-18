@@ -98,6 +98,15 @@ public class XcpBeanQueryTest {
 	}
 
 	@Test
+	public void testSelectIsLimited() {
+		
+		DmsBeanQuery<Document> query = em.createBeanQuery(Document.class);
+		query.setParameter("name", eq("a name")).setMaxResults(5);
+		assertEquals("from dm_document where object_name = 'a name' ENABLE (RETURN_TOP 5)",
+				extractFromPart(query.asDql()));
+	}
+	
+	@Test
 	public void repatingAttributeIsPrecededByAny() {
 		
 		DmsBeanQuery<Document> query = em.createBeanQuery(Document.class);

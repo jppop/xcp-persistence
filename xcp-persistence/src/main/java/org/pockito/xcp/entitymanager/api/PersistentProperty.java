@@ -151,7 +151,7 @@ public abstract class PersistentProperty {
 			}
 			if (value != null) {
 				if (rawClass.isAssignableFrom(boolean.class)) {
-					dqlValue = Boolean.class.cast(value).booleanValue() ? "T" : "F";
+					dqlValue = Boolean.class.cast(value).booleanValue() ? "1" : "0";
 				} else if (rawClass.isAssignableFrom(int.class)) {
 					dqlValue = Integer.class.cast(value).toString();
 				} else if (rawClass.isAssignableFrom(double.class)) {

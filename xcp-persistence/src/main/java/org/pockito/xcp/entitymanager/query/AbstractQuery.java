@@ -102,7 +102,7 @@ public abstract class AbstractQuery {
 		if (getHints().size() > 0) {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(originalQuery).append(" ENABLE (");
-			String sep = " ";
+			String sep = "";
 			for (Map.Entry<String, Object> entry : getHints().entrySet()) {
 				buffer.append(sep).append(entry.getKey()).append(" ").append(entry.getValue().toString());
 				sep = ", ";

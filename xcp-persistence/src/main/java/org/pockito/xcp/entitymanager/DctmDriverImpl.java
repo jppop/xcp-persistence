@@ -181,7 +181,7 @@ public class DctmDriverImpl implements DctmDriver {
 			col = queryExecutor.execute(session, IDfQuery.DF_READ_QUERY);
 			while (col.next()) {
 				count++;
-				rowHandler.handleRow(session, col);
+				rowHandler.handleRow(session, col.getTypedObject());
 			}
 		} catch (DfException e) {
 			logger.debug("failed to query the repository", e);

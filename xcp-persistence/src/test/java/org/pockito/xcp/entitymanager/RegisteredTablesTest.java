@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.pockito.dctm.test.RepositoryRequiredTest;
 import org.pockito.xcp.entitymanager.api.DmsBeanQuery;
+import org.pockito.xcp.entitymanager.api.DmsQuery.OrderDirection;
 import org.pockito.xcp.exception.XcpPersistenceException;
 import org.pockito.xcp.message.Message;
 
@@ -58,7 +59,8 @@ public class RegisteredTablesTest extends RepositoryRequiredTest {
 		final String expectedSegName = findAnyExtent();
 		assertNotNull(expectedSegName);
 
-		DmsBeanQuery<Extent> query = em.createBeanQuery(Extent.class).setMaxResults(1);
+		DmsBeanQuery<Extent> query = em.createBeanQuery(Extent.class).setOrder("segmentName", OrderDirection.asc)
+				.setMaxResults(1);
 		List<Extent> extents = query.getResultList();
 		assertNotNull(extents);
 		assertEquals(1, extents.size());
@@ -100,7 +102,7 @@ public class RegisteredTablesTest extends RepositoryRequiredTest {
 		IDfSession session = getRepository().getSessionForOperator(getRepository().getRepositoryName());
 		try {
 			IDfQuery query = createQuery();
-			query.setDQL("select segment_name from dm_extents enable (RETURN_TOP  1)");
+			query.setDQL("select segment_name from dm_extents order by 1 enable (RETURN_TOP  1)");
 			IDfCollection results = query.execute(session, IDfQuery.DF_READ_QUERY);
 			try {
 				if (results.next()) {

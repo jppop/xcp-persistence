@@ -6,6 +6,7 @@ import com.documentum.fc.client.IDfCollection;
 import com.documentum.fc.client.IDfQuery;
 import com.documentum.fc.client.IDfSession;
 import com.documentum.fc.client.IDfSessionManager;
+import com.documentum.fc.client.IDfTypedObject;
 import com.documentum.fc.common.DfException;
 import com.documentum.fc.common.IDfId;
 
@@ -32,7 +33,7 @@ public interface DctmDriver {
 			throws DmsException;
 
 	interface RowHandler {
-		void handleRow(IDfSession session, IDfCollection rs) throws DfException;
+		void handleRow(IDfSession session, IDfTypedObject row) throws DfException;
 	}
 	
 	int getObjectsByQuery(IDfSession session, String query, RowHandler rowHandler)
